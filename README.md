@@ -8,4 +8,4 @@ Proyecto: Software - UPC
 - Luis Israel Insuasti Rodriguez
 - Dayana Carolina Barriga Paredes
 - Alexis David Rivera Guerrero
-- Alex Jonathan Camacho Montenegro
+- Alex Jonathan Camacho Montenegro 6767
