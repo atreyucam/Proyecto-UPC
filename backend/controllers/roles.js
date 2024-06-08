@@ -1,17 +1,16 @@
 const { Rol } = require('../models/db_models');
 
-// Crear un nuevo rol
+// Crear un nuevo rol --V
 exports.createRole = async (req, res) => {
   try {
-    const { descripcion } = req.body;
-    const newRole = await Rol.create({ descripcion });
-    res.status(201).json(newRole);
+    const rol = await Rol.create(req.body);
+    res.status(201).json(rol);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
-// Obtener todos los roles
+// Obtener todos los roles --V
 exports.getAllRol = async (req, res) => {
   try {
     const roles = await Rol.findAll();
@@ -21,7 +20,7 @@ exports.getAllRol = async (req, res) => {
   }
 };
 
-// Obtener un rol por ID
+// Obtener un rol por ID --V
 exports.getRoleById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -35,34 +34,31 @@ exports.getRoleById = async (req, res) => {
   }
 };
 
-// Actualizar un rol
+// Actualizar un rol --V
 exports.updateRole = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { descripcion } = req.body;
-    const role = await Rol.findByPk(id);
-    if (!role) {
-      return res.status(404).json({ error: 'Role not found' });
+    const [updated] = await Rol.update(req.body, { where: { id_rol: req.params.id } });
+    if (updated) {
+      const updatedRol = await Rol.findByPk(req.params.id);
+      res.json(updatedRol);
+    } else {
+      res.status(404).json({ error: 'Rol no encontrado' });
     }
-    role.descripcion = descripcion;
-    await role.save();
-    res.status(200).json(role);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
-// Eliminar un rol
+// Eliminar un rol --V
 exports.deleteRole = async (req, res) => {
   try {
-    const { id } = req.params;
-    const role = await Rol.findByPk(id);
-    if (!role) {
-      return res.status(404).json({ error: 'Role not found' });
+    const deleted = await Rol.destroy({ where: { id_rol: req.params.id } });
+    if (deleted) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ error: 'Rol no encontrado' });
     }
-    await role.destroy();
-    res.status(204).json({ message: 'Role deleted' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 };

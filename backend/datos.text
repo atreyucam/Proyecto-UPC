@@ -1,0 +1,88 @@
+
+//----------------------------------------------------------------------------------//
+// para ciudadanos con roles
+{
+    "cedula": "1803916012",
+    "nombres": "Juan Carlos",
+    "apellidos": "Perez Martinez",
+    "telefono": "996126405",
+    "email": "juancarlos@gmail.com",
+    "password": "newpassword123",
+    "fecha_modificacion": "2024-05-22",
+    "id_circuito": 1,
+    "roles": [3]  // Rol: ciudadano (3)
+  }
+
+  {
+    "cedula": "1803916012",
+    "nombres": "Juan Carlos",
+    "apellidos": "Perez Martinez",
+    "telefono": "996126405",
+    "email": "juancarlos@gmail.com",
+    "password": "password123",
+    "fecha_creacion": "2024-05-21",
+    "fecha_modificacion": "2024-05-21",
+    "id_circuito": 1,
+    "roles": [1, 3]  // Roles: admin (1) y ciudadano (3)
+  }
+
+//----------------------------------------------------------------------------------//
+//Para crear los tipos de solicitud
+{
+  "descripcion": "servicios comunitarios",
+  "subtipos": [
+    { "descripcion": "local seguro" },
+    { "descripcion": "barrio seguro" },
+    { "descripcion": "asamblea comunitaria" },
+    { "descripcion": "capacitacion" },
+    { "descripcion": "traslado de valores" },
+    { "descripcion": "escuela segura" },
+    { "descripcion": "espacio publico recuperado" },
+    { "descripcion": "encargo de domicilio" },
+    { "descripcion": "guia de movilizacion y enseres" }
+  ]
+}
+
+{
+  "descripcion": "denuncia ciudadana",
+  "subtipos": [
+    { "descripcion": "robo" },
+    { "descripcion": "acoso" },
+    { "descripcion": "agresion verbal" },
+    { "descripcion": "agresion a mano armada" },
+    { "descripcion": "violencia domestica" },
+    { "descripcion": "agresion sexual" },
+    { "descripcion": "maltrato animal" },
+    { "descripcion": "maltrato infantil" },
+    { "descripcion": "estafa" },
+    { "descripcion": "extorsion" },
+    { "descripcion": "vandalismo" },
+    { "descripcion": "bullying" },
+    { "descripcion": "asesinato" }
+  ]
+}
+
+{
+  "descripcion": "boton seguridad",
+  "subtipos": [
+    { "descripcion": "atencion inmediata" }
+  ]
+}
+
+
+//si quieres crear solo un tipo de solicitud sin subtipo
+{
+  "descripcion": "boton seguridad",
+  "subtipos": [ ]
+}
+
+
+//----------------------------------------------------------------------------------//
+//subtipos
+// si quieres crear un nuevo subtipo asegurate que el tipo este previamente creado.
+Agregar un Nuevo Subtipo (POST)
+URL: http://localhost:3000/api/subtipos/tipo/1 (Reemplaza 1 con el id_tipo del TipoSolicitud al que deseas agregar el Subtipo)
+
+{
+  "descripcion": "nuevo subtipo"
+}

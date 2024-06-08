@@ -1,6 +1,5 @@
-const {DataTypes}= require('sequelize');
+const { DataTypes } = require('sequelize');
 const {sequelize} = require('../config/database');
-
 
 // 1. Tabla roles
 const Rol = sequelize.define('Rol', {
@@ -10,7 +9,7 @@ const Rol = sequelize.define('Rol', {
     autoIncrement: true,
   },
   descripcion: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(25),
     allowNull: false,
   },
 }, { tableName: 'Rol' });
@@ -20,148 +19,176 @@ const Persona = sequelize.define('Persona', {
   id_persona: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true,
+    autoIncrement: true
   },
-  cedula: {type: DataTypes.STRING, allowNull: false},
-  nombres: {type: DataTypes.STRING, allowNull: false},
-  apellidos: {type: DataTypes.STRING, allowNull:false},
-  telefono: {type: DataTypes.STRING, allowNull: false},
-  email: {type: DataTypes.STRING, allowNull: false},
-  password: {type: DataTypes.STRING, allowNull: false},
-  estado: {type: DataTypes.STRING, allowNull: false},
-  fecha_creacion: {type: DataTypes.DATE, allowNull: false},
-  fecha_modificacion: {type: DataTypes.DATE, allowNull: false}
+  cedula: {
+    type: DataTypes.STRING(10),
+    allowNull: false
+  },
+  nombres: {
+    type: DataTypes.STRING(100),
+    allowNull: false
+  },
+  apellidos: {
+    type: DataTypes.STRING(100),
+    allowNull: false
+  },
+  telefono: {
+    type: DataTypes.STRING(10),
+    allowNull: false
+  },
+  email: {
+    type: DataTypes.STRING(100),
+    allowNull: false
+  },
+  password: {
+    type: DataTypes.STRING(50),
+    allowNull: false
+  },
 }, { tableName: 'Persona' });
 
-// 3. Tabla asignacion_roles
-const AsignacionRol = sequelize.define('AsignacionRol', {
-  id_asignacion: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
+// 3. Tabla PersonaRol
+const PersonaRol = sequelize.define('PersonaRol', {
   id_persona: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'Persona',
+      model: Persona,
       key: 'id_persona'
-    }
+    },
+    primaryKey: true
   },
   id_rol: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'Rol',
+      model: Rol,
       key: 'id_rol'
-    }
-  },
-}, { tableName: 'asignacion_roles' });
+    },
+    primaryKey: true
+  }
+}, { tableName: 'PersonaRol' });
 
-// 4. Tabla Zona
-const Zona = sequelize.define('Zona', {
-  id_zona: {
+// 4. Circuito
+const Circuito = sequelize.define('Circuito', {
+  id_circuito: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true,
+    autoIncrement: true
   },
-  provincia: DataTypes.STRING,
-  ciudad: DataTypes.STRING,
-  barrio: DataTypes.STRING,
-  numeroZona: DataTypes.INTEGER,
-}, { tableName: 'Zona' });
+  provincia: {
+    type: DataTypes.STRING(50),
+    allowNull: false
+  },
+  ciudad: {
+    type: DataTypes.STRING(50),
+    allowNull: false
+  },
+  barrio: {
+    type: DataTypes.STRING(50),
+    allowNull: false
+  },
+  numero_circuito: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  }
+}, { tableName: 'Circuito' });
 
-// 5. Tabla persona_Zona
-const PersonaZona = sequelize.define('PersonaZona', {
-  id_zonaAsignacion: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
-  id_zona: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: 'Zona',
-      key: 'id_zona'
-    }
-  },
-  id_persona: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: 'Persona',
-      key: 'id_persona'
-    }
-  },
-  fecha_asignacion: DataTypes.DATE,
-  observacion: DataTypes.TEXT,
-}, { tableName: 'persona_Zona' });
-
-// 6. Tabla estados
-const Estado = sequelize.define('Estado', {
-  id_estado: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
-  descripcion: DataTypes.STRING,
-}, { tableName: 'Estado' });
-
-// 7. Tabla tipo_solicitud
+// 5. TipoSolicitud
 const TipoSolicitud = sequelize.define('TipoSolicitud', {
   id_tipo: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
   },
-  descripcion: DataTypes.STRING,
+  descripcion: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+  },
 }, { tableName: 'TipoSolicitud' });
 
-// 8. Tabla solicitudes_registradas
-const SolicitudRegistrada = sequelize.define('SolicitudRegistrada', {
-  id_solicitud: {
+// 6. Subtipo
+const Subtipo = sequelize.define('Subtipo', {
+  id_subtipo: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
   },
   id_tipo: {
     type: DataTypes.INTEGER,
+    allowNull: false,
     references: {
-      model: 'TipoSolicitud',
+      model: TipoSolicitud,
       key: 'id_tipo'
     }
   },
-  subtipoSolicitud: DataTypes.STRING,
-  descripcionSolicitud: DataTypes.TEXT,
-  fecha_creacion: DataTypes.DATE,
-  fecha_resuelto: DataTypes.DATE,
+  descripcion: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+  },
+}, { tableName: 'Subtipo' });
+
+// 7. Estado
+const Estado = sequelize.define('Estado', {
+  id_estado: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  descripcion: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+  },
+}, { tableName: 'Estado' });
+
+// 8. Solicitud
+const Solicitud = sequelize.define('Solicitud', {
+  id_solicitud: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
   id_estado: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'Estado',
-      key: 'id_estado'
-    }
+      model: Estado,
+      key: 'id_estado',
+    },
+    allowNull: false,
   },
-  puntoGPS: DataTypes.STRING,
-  direccion: DataTypes.STRING,
-  evidencia: DataTypes.STRING,
-  id_persona_policia: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: 'Persona',
-      key: 'id_persona'
-    }
+  fecha_creacion: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
   },
-  id_persona_solicitante: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: 'Persona',
-      key: 'id_persona'
-    }
+  puntoGPS: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
-  observacion_policia: DataTypes.TEXT,
-}, { tableName: 'SolicitudRegistrada' });
+  direccion: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  observacion: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+}, { tableName: 'Solicitud' });
 
-// 9. Tabla eventos_solicitudes
-const EventoSolicitud = sequelize.define('EventoSolicitud', {
+// 9. Evento
+const Evento = sequelize.define('Evento', {
   id_evento: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  evento: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+  },
+}, { tableName: 'Evento' });
+
+// 10. SolicitudEvento
+const SolicitudEvento = sequelize.define('SolicitudEvento', {
+  id_solicitudEvento: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
@@ -169,148 +196,217 @@ const EventoSolicitud = sequelize.define('EventoSolicitud', {
   id_solicitud: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'SolicitudRegistrada',
-      key: 'id_solicitud'
-    }
+      model: Solicitud,
+      key: 'id_solicitud',
+    },
+    allowNull: false
   },
-  tipo_evento: DataTypes.STRING,
-  fecha_evento: DataTypes.DATE,
+  id_evento: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Evento,
+      key: 'id_evento',
+    },
+    allowNull: false
+  },
+  accion: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+  },
+}, { tableName: 'SolicitudEvento' });
+
+// 11. SolicitudEventoPersona
+const SolicitudEventoPersona = sequelize.define('SolicitudEventoPersona', {
+  id_solicitudEvento: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: SolicitudEvento,
+      key: 'id_solicitudEvento',
+    },
+    allowNull: false,
+    primaryKey: true
+  },
   id_persona: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'Persona',
-      key: 'id_persona'
-    }
+      model: Persona,
+      key: 'id_persona',
+    },
+    allowNull: false,
+    primaryKey: true
   },
-  accion: DataTypes.STRING,
-  observacion: DataTypes.TEXT,
-}, { tableName: 'EventoSolicitud' });
+}, { tableName: 'SolicitudEventoPersona' });
 
-// 10. Tabla notificaciones
+// 12. TipoEvidencia
+const TipoEvidencia = sequelize.define('TipoEvidencia', {
+  id_evidencia: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  evidencia: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+  },
+}, { tableName: 'TipoEvidencia' });
+
+// 13. SolicitudEvidencia
+const SolicitudEvidencia = sequelize.define('SolicitudEvidencia', {
+  id_solicitud: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Solicitud,
+      key: 'id_solicitud',
+    },
+    allowNull: false,
+    primaryKey: true
+  },
+  id_evidencia: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: TipoEvidencia,
+      key: 'id_evidencia',
+    },
+    allowNull: false,
+    primaryKey: true
+  },
+  evidencia: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+}, { tableName: 'SolicitudEvidencia' });
+
+// 14. Notificacion
 const Notificacion = sequelize.define('Notificacion', {
   id_notificacion: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
   },
-  mensaje: DataTypes.TEXT,
-  fecha_envio: DataTypes.DATE,
-  tipo: DataTypes.STRING,
+  notificacion: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+  },
 }, { tableName: 'Notificacion' });
 
-// 11. Tabla notificaciones_destinatarios
-const NotificacionDestinatario = sequelize.define('NotificacionDestinatario', {
-  id: {
+// 15. SolicitudNotificacion
+const SolicitudNotificacion = sequelize.define('SolicitudNotificacion', {
+  id_solicitud: {
     type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
+    references: {
+      model: Solicitud,
+      key: 'id_solicitud',
+    },
+    allowNull: false,
+    primaryKey: true
   },
   id_notificacion: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'Notificacion',
-      key: 'id_notificacion'
-    }
+      model: Notificacion,
+      key: 'id_notificacion',
+    },
+    allowNull: false,
+    primaryKey: true
   },
-  id_persona: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: 'Persona',
-      key: 'id_persona'
-    }
-  },
-}, { tableName: 'NotificacionDestinatario' });
+}, { tableName: 'SolicitudNotificacion' });
 
-// 12. Tabla alertas
-const Alerta = sequelize.define('Alerta', {
-  id_alerta: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
-  fechaAlerta: DataTypes.DATE,
-  eventoRegistrado: DataTypes.STRING,
-  id_persona: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: 'Persona',
-      key: 'id_persona'
-    }
-  },
+// 16. NotificacionPersona
+const NotificacionPersona = sequelize.define('NotificacionPersona', {
   id_solicitud: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'SolicitudRegistrada',
-      key: 'id_solicitud'
-    }
+      model: Solicitud,
+      key: 'id_solicitud',
+    },
+    allowNull: false,
+    primaryKey: true
   },
-  descripcion: DataTypes.TEXT,
-  id_estado: {
+  id_notificacion: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'Estado',
-      key: 'id_estado'
-    }
+      model: Notificacion,
+      key: 'id_notificacion',
+    },
+    allowNull: false,
+    primaryKey: true
   },
-}, { tableName: 'Alerta' });
+  id_persona: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Persona,
+      key: 'id_persona',
+    },
+    allowNull: false,
+    primaryKey: true
+  },
+}, { tableName: 'NotificacionPersona' });
 
 // Definir Relaciones
-Rol.hasMany(AsignacionRol, { foreignKey: 'id_rol' });
-AsignacionRol.belongsTo(Rol, { foreignKey: 'id_rol' });
+// 1. Relacion de personas y roles
+Persona.belongsToMany(Rol, { through: PersonaRol, foreignKey: 'id_persona' });
+Rol.belongsToMany(Persona, { through: PersonaRol, foreignKey: 'id_rol' });
 
-Persona.hasMany(AsignacionRol, { foreignKey: 'id_persona' });
-AsignacionRol.belongsTo(Persona, { foreignKey: 'id_persona' });
+// 2. Relacion de personas a circuitos
+Circuito.hasMany(Persona, { foreignKey: 'id_circuito' });
+Persona.belongsTo(Circuito, { foreignKey: 'id_circuito' });
 
-Zona.hasMany(PersonaZona, { foreignKey: 'id_zona' });
-PersonaZona.belongsTo(Zona, { foreignKey: 'id_zona' });
+// 3. Relacion de tipos de solicitud a subtipos
+TipoSolicitud.hasMany(Subtipo, { foreignKey: 'id_tipo', onDelete: 'CASCADE' });
+Subtipo.belongsTo(TipoSolicitud, { foreignKey: 'id_tipo', onDelete: 'CASCADE' });
 
-Persona.hasMany(PersonaZona, { foreignKey: 'id_persona' });
-PersonaZona.belongsTo(Persona, { foreignKey: 'id_persona' });
+// 4. Relacion de estados a solicitudes
+Estado.hasMany(Solicitud, { foreignKey: 'id_estado' });
+Solicitud.belongsTo(Estado, { foreignKey: 'id_estado' });
 
-Estado.hasMany(SolicitudRegistrada, { foreignKey: 'id_estado' });
-SolicitudRegistrada.belongsTo(Estado, { foreignKey: 'id_estado' });
+// 5. Relacion de eventos y solicitudes a eventosSolicitudes
+Solicitud.hasMany(SolicitudEvento, { foreignKey: 'id_solicitud' });
+Evento.hasMany(SolicitudEvento, { foreignKey: 'id_evento' });
+SolicitudEvento.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
+SolicitudEvento.belongsTo(Evento, { foreignKey: 'id_evento' });
 
-TipoSolicitud.hasMany(SolicitudRegistrada, { foreignKey: 'id_tipo' });
-SolicitudRegistrada.belongsTo(TipoSolicitud, { foreignKey: 'id_tipo' });
+// 6. Relacion de Las solicituddes, eventos y personas
+SolicitudEvento.hasMany(SolicitudEventoPersona, { foreignKey: 'id_solicitudEvento' });
+Persona.hasMany(SolicitudEventoPersona, { foreignKey: 'id_persona' });
+SolicitudEventoPersona.belongsTo(SolicitudEvento, { foreignKey: 'id_solicitudEvento' });
+SolicitudEventoPersona.belongsTo(Persona, { foreignKey: 'id_persona' });
 
-Persona.hasMany(SolicitudRegistrada, { foreignKey: 'id_persona_policia', as: 'Policia' });
-SolicitudRegistrada.belongsTo(Persona, { foreignKey: 'id_persona_policia', as: 'Policia' });
+// 7. Relación entre Solicitud y Evidencia
+Solicitud.hasMany(SolicitudEvidencia, { foreignKey: 'id_solicitud' });
+TipoEvidencia.hasMany(SolicitudEvidencia, { foreignKey: 'id_evidencia' });
+SolicitudEvidencia.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
+SolicitudEvidencia.belongsTo(TipoEvidencia, { foreignKey: 'id_evidencia' });
 
-Persona.hasMany(SolicitudRegistrada, { foreignKey: 'id_persona_solicitante', as: 'Solicitante' });
-SolicitudRegistrada.belongsTo(Persona, { foreignKey: 'id_persona_solicitante', as: 'Solicitante' });
+// 8. Relación entre Solicitud y Notificación
+Solicitud.hasMany(SolicitudNotificacion, { foreignKey: 'id_solicitud' });
+Notificacion.hasMany(SolicitudNotificacion, { foreignKey: 'id_notificacion' });
+SolicitudNotificacion.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
+SolicitudNotificacion.belongsTo(Notificacion, { foreignKey: 'id_notificacion' });
 
-SolicitudRegistrada.hasMany(EventoSolicitud, { foreignKey: 'id_solicitud' });
-EventoSolicitud.belongsTo(SolicitudRegistrada, { foreignKey: 'id_solicitud' });
-
-Persona.hasMany(EventoSolicitud, { foreignKey: 'id_persona' });
-EventoSolicitud.belongsTo(Persona, { foreignKey: 'id_persona' });
-
-Notificacion.hasMany(NotificacionDestinatario, { foreignKey: 'id_notificacion' });
-NotificacionDestinatario.belongsTo(Notificacion, { foreignKey: 'id_notificacion' });
-
-Persona.hasMany(NotificacionDestinatario, { foreignKey: 'id_persona' });
-NotificacionDestinatario.belongsTo(Persona, { foreignKey: 'id_persona' });
-
-Persona.hasMany(Alerta, { foreignKey: 'id_persona' });
-Alerta.belongsTo(Persona, { foreignKey: 'id_persona' });
-
-SolicitudRegistrada.hasMany(Alerta, { foreignKey: 'id_solicitud' });
-Alerta.belongsTo(SolicitudRegistrada, { foreignKey: 'id_solicitud' });
-
-Estado.hasMany(Alerta, { foreignKey: 'id_estado' });
-Alerta.belongsTo(Estado, { foreignKey: 'id_estado' });
+// 9. Relación entre Notificación y Persona
+Solicitud.hasMany(NotificacionPersona, { foreignKey: 'id_solicitud' });
+Notificacion.hasMany(NotificacionPersona, { foreignKey: 'id_notificacion' });
+Persona.hasMany(NotificacionPersona, { foreignKey: 'id_persona' });
+NotificacionPersona.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
+NotificacionPersona.belongsTo(Notificacion, { foreignKey: 'id_notificacion' });
+NotificacionPersona.belongsTo(Persona, { foreignKey: 'id_persona' });
 
 module.exports = {
+  sequelize,
   Rol,
   Persona,
-  AsignacionRol,
-  Zona,
-  PersonaZona,
-  Estado,
+  PersonaRol,
+  Circuito,
   TipoSolicitud,
-  SolicitudRegistrada,
-  EventoSolicitud,
+  Subtipo,
+  Estado,
+  Solicitud,
+  Evento,
+  SolicitudEvento,
+  SolicitudEventoPersona,
+  TipoEvidencia,
+  SolicitudEvidencia,
   Notificacion,
-  NotificacionDestinatario,
-  Alerta
+  NotificacionPersona,
+  SolicitudNotificacion
 };

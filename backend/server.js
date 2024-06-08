@@ -20,9 +20,6 @@ sequelize.sync({ force: false }).then(() => {
 // Usar las rutas
 app.use('/api', roleRoutes);
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
 
 app.listen(port, async () => {
   console.log(`Server is running on port ${port}`);
