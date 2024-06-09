@@ -28,7 +28,7 @@ export function reducer(state, action) {
       throw new Error(`Unhandled action type: ${action.type}`);
     }
   }
-} 
+}  
 
 export function MaterialTailwindControllerProvider({ children }) {
   const initialState = {
