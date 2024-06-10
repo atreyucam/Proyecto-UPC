@@ -186,42 +186,22 @@ const Evento = sequelize.define('Evento', {
   },
 }, { tableName: 'Evento' });
 
-// 10. SolicitudEvento
-const SolicitudEvento = sequelize.define('SolicitudEvento', {
-  id_solicitudEvento: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
+// 10. SolicitudEventoPersona
+const SolicitudEventoPersona = sequelize.define('SolicitudEventoPersona', {
   id_solicitud: {
     type: DataTypes.INTEGER,
     references: {
       model: Solicitud,
       key: 'id_solicitud',
     },
-    allowNull: false
+    allowNull: false,
+    primaryKey: true
   },
   id_evento: {
     type: DataTypes.INTEGER,
     references: {
       model: Evento,
       key: 'id_evento',
-    },
-    allowNull: false
-  },
-  accion: {
-    type: DataTypes.STRING(50),
-    allowNull: false,
-  },
-}, { tableName: 'SolicitudEvento' });
-
-// 11. SolicitudEventoPersona
-const SolicitudEventoPersona = sequelize.define('SolicitudEventoPersona', {
-  id_solicitudEvento: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: SolicitudEvento,
-      key: 'id_solicitudEvento',
     },
     allowNull: false,
     primaryKey: true
@@ -234,10 +214,11 @@ const SolicitudEventoPersona = sequelize.define('SolicitudEventoPersona', {
     },
     allowNull: false,
     primaryKey: true
-  },
+  }
 }, { tableName: 'SolicitudEventoPersona' });
 
-// 12. TipoEvidencia
+
+// 11. TipoEvidencia
 const TipoEvidencia = sequelize.define('TipoEvidencia', {
   id_evidencia: {
     type: DataTypes.INTEGER,
@@ -250,7 +231,7 @@ const TipoEvidencia = sequelize.define('TipoEvidencia', {
   },
 }, { tableName: 'TipoEvidencia' });
 
-// 13. SolicitudEvidencia
+// 12. SolicitudEvidencia
 const SolicitudEvidencia = sequelize.define('SolicitudEvidencia', {
   id_solicitud: {
     type: DataTypes.INTEGER,
@@ -276,7 +257,7 @@ const SolicitudEvidencia = sequelize.define('SolicitudEvidencia', {
   },
 }, { tableName: 'SolicitudEvidencia' });
 
-// 14. Notificacion
+// 13. Notificacion
 const Notificacion = sequelize.define('Notificacion', {
   id_notificacion: {
     type: DataTypes.INTEGER,
@@ -289,7 +270,7 @@ const Notificacion = sequelize.define('Notificacion', {
   },
 }, { tableName: 'Notificacion' });
 
-// 15. SolicitudNotificacion
+// 14. SolicitudNotificacion
 const SolicitudNotificacion = sequelize.define('SolicitudNotificacion', {
   id_solicitud: {
     type: DataTypes.INTEGER,
@@ -311,7 +292,7 @@ const SolicitudNotificacion = sequelize.define('SolicitudNotificacion', {
   },
 }, { tableName: 'SolicitudNotificacion' });
 
-// 16. NotificacionPersona
+// 15. NotificacionPersona
 const NotificacionPersona = sequelize.define('NotificacionPersona', {
   id_solicitud: {
     type: DataTypes.INTEGER,
@@ -342,6 +323,7 @@ const NotificacionPersona = sequelize.define('NotificacionPersona', {
   },
 }, { tableName: 'NotificacionPersona' });
 
+
 // Definir Relaciones
 // 1. Relacion de personas y roles
 Persona.belongsToMany(Rol, { through: PersonaRol, foreignKey: 'id_persona' });
@@ -359,16 +341,12 @@ Subtipo.belongsTo(TipoSolicitud, { foreignKey: 'id_tipo', onDelete: 'CASCADE' })
 Estado.hasMany(Solicitud, { foreignKey: 'id_estado' });
 Solicitud.belongsTo(Estado, { foreignKey: 'id_estado' });
 
-// 5. Relacion de eventos y solicitudes a eventosSolicitudes
-Solicitud.hasMany(SolicitudEvento, { foreignKey: 'id_solicitud' });
-Evento.hasMany(SolicitudEvento, { foreignKey: 'id_evento' });
-SolicitudEvento.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
-SolicitudEvento.belongsTo(Evento, { foreignKey: 'id_evento' });
-
-// 6. Relacion de Las solicituddes, eventos y personas
-SolicitudEvento.hasMany(SolicitudEventoPersona, { foreignKey: 'id_solicitudEvento' });
+// 5. Relacion de solicitudes, eventos y personas
+Solicitud.hasMany(SolicitudEventoPersona, { foreignKey: 'id_solicitud' });
+Evento.hasMany(SolicitudEventoPersona, { foreignKey: 'id_evento' });
 Persona.hasMany(SolicitudEventoPersona, { foreignKey: 'id_persona' });
-SolicitudEventoPersona.belongsTo(SolicitudEvento, { foreignKey: 'id_solicitudEvento' });
+SolicitudEventoPersona.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
+SolicitudEventoPersona.belongsTo(Evento, { foreignKey: 'id_evento' });
 SolicitudEventoPersona.belongsTo(Persona, { foreignKey: 'id_persona' });
 
 // 7. Relación entre Solicitud y Evidencia
@@ -402,7 +380,6 @@ module.exports = {
   Estado,
   Solicitud,
   Evento,
-  SolicitudEvento,
   SolicitudEventoPersona,
   TipoEvidencia,
   SolicitudEvidencia,
