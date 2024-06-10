@@ -9,7 +9,7 @@ const Login = () => {
             <Typography variant="h2" className="font-bold mb-4">
               Inicio de sesión
             </Typography>
-            <Typography   
+            <Typography
               variant="paragraph"
               color="blue-gray"
               className="text-lg font-normal"
@@ -52,7 +52,7 @@ const Login = () => {
               />
             </div>
 
-            <Button className="mt-6" fullWidth>
+            <Button className="mt-6 bg-blue-gray-900" fullWidth>
               Ingresar
             </Button>
 

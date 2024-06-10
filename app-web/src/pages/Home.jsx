@@ -1,10 +1,9 @@
 import React from "react";
-import Sidebar from "./components/Sidebar";
-import Layout from "./components/Layout";
+
 const Home = () => {
   return (
     <>
-      <Layout />
+      <div>componetes 1</div>
     </>
   );
 };
