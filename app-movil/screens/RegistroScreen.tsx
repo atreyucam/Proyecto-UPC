@@ -9,10 +9,13 @@ import {
 } from "react-native";
 import { useAuth } from "@/hooks/useAuth";
 
-const LoginScreen = () => {
+const RegistroScreen = () => {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [telefono, setTelefono] = useState("");
 
   const handleLogin = () => {
     login(email, password);
@@ -30,17 +33,38 @@ const LoginScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>PILICIA APP</Text>
 
-      <Image
-        style={styles.logo}
-        source={require("@/assets/images/Escudo_Policia.jpg")}
-      />
+      {/* Aquí puedes ajustar estilos y layout según necesites */}
       <Text style={styles.title}>Inicio de Sesión</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Nombre"
+        value={nombre}
+        onChangeText={setNombre}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Apellido"
+        value={apellido}
+        onChangeText={setApellido}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Teléfono"
+        value={telefono}
+        onChangeText={setTelefono}
+        keyboardType="phone-pad"
+      />
+
       <TextInput
         style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
       />
+
       <TextInput
         style={styles.input}
         placeholder="Contraseña"
@@ -48,6 +72,7 @@ const LoginScreen = () => {
         value={password}
         onChangeText={setPassword}
       />
+
       <Pressable
         onPress={handleLogin}
         style={({ pressed }) => [
@@ -62,11 +87,8 @@ const LoginScreen = () => {
       >
         <Text style={{ color: "white", fontWeight: "bold" }}>Ingresar</Text>
       </Pressable>
-      <View style={styles.bottomLinks}>
-        <Pressable onPress={handleForgotPassword}>
-          <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
-        </Pressable>
-      </View>
+
+     
     </View>
   );
 };
@@ -107,4 +129,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default RegistroScreen;

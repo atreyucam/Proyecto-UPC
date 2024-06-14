@@ -1,8 +1,8 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "@/hooks/useAuth";
-import BottomTabNavigator from "./BottomTabNavigator";
-import AuthNavigator from "./AuthNavigator";
+import BottomTabAuthNavigator from "./BottomTabAuthNavigator";
+import BottomTabNavigator from "./BottomTabNavigator copy";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,7 +20,7 @@ const AppNavigator = () => {
       ) : (
         <Stack.Screen
           name="Auth"
-          component={AuthNavigator}
+          component={BottomTabAuthNavigator}
           options={{ headerShown: false }}
         />
       )}
