@@ -22,11 +22,9 @@ const BottomTabAuthNavigator = () => (
         // Devuelve el componente de icono con el nombre y estilo apropiados
         return <Icon name={iconName} size={size} color={color} />;
       },
+      tabBarActiveTintColor: "blue",
+      tabBarInactiveTintColor: "gray",
     })}
-    tabBarOptions={{
-      activeTintColor: "blue",
-      inactiveTintColor: "gray",
-    }}
   >
     <Tab.Screen name="Login" component={LoginScreen} />
     <Tab.Screen name="Registro" component={RegistroScreen} />

@@ -11,7 +11,8 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "**/*.jsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "hooks/useAuth.jsx", "components/navigation/AppNavigator.jsx", "components/navigation/AuthNavigator.jsx"  ]
+    "expo-env.d.ts",
+  ]
 }
