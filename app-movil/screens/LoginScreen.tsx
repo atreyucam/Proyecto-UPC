@@ -3,13 +3,11 @@ import {
   View,
   Text,
   TextInput,
-  Button,
+  Pressable,
   Image,
-  TouchableOpacity,
   StyleSheet,
 } from "react-native";
 import { useAuth } from "@/hooks/useAuth";
-
 
 const LoginScreen = () => {
   const { login } = useAuth();
@@ -30,6 +28,8 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>PILICIA APP</Text>
+
       <Image
         style={styles.logo}
         source={require("@/assets/images/Escudo_Policia.jpg")}
@@ -48,14 +48,27 @@ const LoginScreen = () => {
         value={password}
         onChangeText={setPassword}
       />
-      <Button title="Ingresar" onPress={handleLogin} />
+      <Pressable
+        onPress={handleLogin}
+        style={({ pressed }) => [
+          {
+            backgroundColor: pressed ? "#ddd" : "#007BFF",
+            padding: 10,
+            alignItems: "center",
+            marginVertical: 10,
+            borderRadius: 5,
+          },
+        ]}
+      >
+        <Text style={{ color: "white", fontWeight: "bold" }}>Ingresar</Text>
+      </Pressable>
       <View style={styles.bottomLinks}>
-        <TouchableOpacity onPress={handleSignUp}>
+        <Pressable onPress={handleSignUp}>
           <Text style={styles.linkText}>Registrarse</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleForgotPassword}>
+        </Pressable>
+        <Pressable onPress={handleForgotPassword}>
           <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );
