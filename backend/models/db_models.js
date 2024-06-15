@@ -23,7 +23,11 @@ const Persona = sequelize.define('Persona', {
   },
   cedula: {
     type: DataTypes.STRING(10),
-    allowNull: false
+    allowNull: false,
+    unique: true,
+    validate: {
+      isNumeric: true,
+    }
   },
   nombres: {
     type: DataTypes.STRING(100),
@@ -39,13 +43,28 @@ const Persona = sequelize.define('Persona', {
   },
   email: {
     type: DataTypes.STRING(100),
-    allowNull: false
+    allowNull: false,
+    unique: true,  // Único
+    validate: {
+      isEmail: true
+    }
   },
   password: {
     type: DataTypes.STRING(50),
     allowNull: false
   },
-}, { tableName: 'Persona' });
+}, { tableName: 'Persona',
+  indexes: [
+    {
+      unique: true,
+      fields: ['cedula']
+    },
+    {
+      unique: true,
+      fields: ['email']
+    }
+  ]
+ });
 
 // 3. Tabla PersonaRol
 const PersonaRol = sequelize.define('PersonaRol', {
@@ -151,6 +170,14 @@ const Solicitud = sequelize.define('Solicitud', {
     references: {
       model: Estado,
       key: 'id_estado',
+    },
+    allowNull: false,
+  },
+  id_subtipo: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Subtipo,
+      key: 'id_subtipo',
     },
     allowNull: false,
   },
@@ -340,6 +367,10 @@ Subtipo.belongsTo(TipoSolicitud, { foreignKey: 'id_tipo', onDelete: 'CASCADE' })
 // 4. Relacion de estados a solicitudes
 Estado.hasMany(Solicitud, { foreignKey: 'id_estado' });
 Solicitud.belongsTo(Estado, { foreignKey: 'id_estado' });
+
+// Relacion de solicitudes a subtipos
+Subtipo.hasMany(Solicitud, { foreignKey: 'id_subtipo' });
+Solicitud.belongsTo(Subtipo, { foreignKey: 'id_subtipo' });
 
 // 5. Relacion de solicitudes, eventos y personas
 Solicitud.hasMany(SolicitudEventoPersona, { foreignKey: 'id_solicitud' });

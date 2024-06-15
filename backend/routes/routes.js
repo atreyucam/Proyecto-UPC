@@ -5,6 +5,7 @@ const personaController = require('../controllers/persona');
 const circuitoController = require('../controllers/circuito');
 const tipoSolicitudController = require('../controllers/tipoSolicitud');
 const subtipoController = require('../controllers/subtipoSolicitud');
+const solicitudController = require('../controllers/solicitud');
 
 // Rutas para roles
 router.post('/roles', roleController.createRole);
@@ -41,5 +42,16 @@ router.get('/subtipo', subtipoController.getAllSubtipos);
 router.get('/subtipo/:id_subtipo', subtipoController.getSubtipoById);
 router.put('/subtipo/:id_subtipo', subtipoController.updateSubtipo);
 router.delete('/subtipo/:id_subtipo', subtipoController.deleteSubtipo);
+
+// Rutas de solicitud por parte del usuario
+router.post('/solicitud', solicitudController.createSolicitud);
+router.get('/solicitud', solicitudController.getAllSolicitudes);
+router.get('/solicitud/:id', solicitudController.getSolicitudById);
+router.put('/solicitud/:id', solicitudController.updateSolicitud);
+router.delete('/solicitud/:id', solicitudController.deleteSolicitud);
+router.post('/solicitud/:id/assign', solicitudController.assignPolicia);
+router.post('/solicitud/:id/resolve', solicitudController.resolveSolicitud);
+router.post('/solicitud/:id/event', solicitudController.registrarEvento);  // Nueva ruta para registrar eventos
+
 
 module.exports = router;
