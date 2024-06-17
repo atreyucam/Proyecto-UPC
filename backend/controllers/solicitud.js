@@ -46,6 +46,43 @@ exports.getAllSolicitudes = async (req, res) => {
     }
   };
 
+  exports.getAllSolicitudesPersona = async (req, res) => {
+    const { id_persona } = req.query;
+  
+    try {
+      const solicitudes = await Solicitud.findAll({
+        include: [
+          {
+            model: SolicitudEventoPersona,
+            include: [
+              {
+                model: Persona,
+                where: { id_persona },
+                required: true  // Solo incluye si hay coincidencia
+              },
+              {
+                model: Evento,
+                where: { id_evento: [1, 2, 3] }, // Filtrar eventos de creación
+                required: true  // Solo incluye si hay coincidencia
+              }
+            ],
+            required: true  // Solo incluye si hay coincidencia
+          },
+          {
+            model: Estado
+          },
+          {
+            model: Subtipo
+          }
+        ]
+      });
+  
+      res.status(200).json(solicitudes);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
 // Obtener una solicitud por ID
 exports.getSolicitudById = async (req, res) => {
     const { id } = req.params;

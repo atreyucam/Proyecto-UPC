@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { sequelize } = require('./config/database');
-const modelo = require('./models/db_models')
+const modelo = require('./models/db_models');
+const cors = require('cors');
 const express = require('express');
 // Importar las rutas
 const roleRoutes = require('./routes/routes');
@@ -8,8 +9,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 
+app.use(cors());
 app.use(express.json());
-
 // Comprobacion de tablas en PostgreSQL
 sequelize.sync({ force: false }).then(() => {
   console.log("Tablas sincronizadas");
@@ -21,7 +22,7 @@ sequelize.sync({ force: false }).then(() => {
 app.use('/api', roleRoutes);
 
 
-app.listen(port, async () => {
+app.listen(port, '0.0.0.0', async () => {
   console.log(`Server is running on port ${port}`);
   try {
     await sequelize.authenticate();

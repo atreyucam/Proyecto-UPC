@@ -1,21 +1,142 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import axios from "axios";
 
-const Denunciar = () => (
-  <View style={styles.container}>
-    <Text style={styles.text}>Denunciar</Text>
-  </View>
-);
+const Denunciar = () => {
+  const [direccion, setDireccion] = useState("");
+  const [observacion, setObservacion] = useState("");
+  const [puntoGPS, setPuntoGPS] = useState("");
+  const [tipos, setTipos] = useState([]);
+  const [subtipos, setSubtipos] = useState([]);
+  const [selectedTipo, setSelectedTipo] = useState("");
+  const [selectedSubtipo, setSelectedSubtipo] = useState("");
+
+  useEffect(() => {
+    // Fetch tipos de solicitudes
+    const fetchTipos = async () => {
+      try {
+        const response = await axios.get("http://192.168.0.6:3000/api/tipoSolicitud/");
+        setTipos(response.data);
+      } catch (error) {
+        Alert.alert("Error", "Hubo un problema al obtener los tipos de solicitudes");
+      }
+    };
+
+    fetchTipos();
+  }, []);
+
+  useEffect(() => {
+    // Fetch subtipos based on selected tipo
+    const fetchSubtipos = async () => {
+      if (selectedTipo) {
+        try {
+          const response = await axios.get(`http://192.168.0.6:3000/api/tipos/${selectedTipo}/subtipos`);
+          setSubtipos(response.data);
+        } catch (error) {
+          Alert.alert("Error", "Hubo un problema al obtener los subtipos");
+        }
+      }
+    };
+
+    fetchSubtipos();
+  }, [selectedTipo]);
+
+  const handleSubmit = async () => {
+    const data = {
+      id_persona: 1,  // ID fijo para pruebas
+      id_estado: 1,  // Estado inicial "Pendiente"
+      id_subtipo: selectedSubtipo,  // Subtipo seleccionado por el usuario
+      puntoGPS: puntoGPS,
+      direccion: direccion,
+      observacion: observacion
+    };
+
+    try {
+      const response = await axios.post("http://192.168.0.6:3000/api/solicitud", data);
+      if (response.status === 201) {
+        Alert.alert("Éxito", "Denuncia registrada con éxito");
+      } else {
+        Alert.alert("Error", "Hubo un problema al registrar la denuncia");
+      }
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.label}>Tipo de Solicitud</Text>
+      <Picker
+        selectedValue={selectedTipo}
+        onValueChange={(itemValue, itemIndex) => setSelectedTipo(itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item label="Seleccione un tipo" value="" />
+        {tipos.map((tipo) => (
+          <Picker.Item key={tipo.id_tipo} label={tipo.descripcion} value={tipo.id_tipo} />
+        ))}
+      </Picker>
+
+      <Text style={styles.label}>Subtipo</Text>
+      <Picker
+        selectedValue={selectedSubtipo}
+        onValueChange={(itemValue, itemIndex) => setSelectedSubtipo(itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item label="Seleccione un subtipo" value="" />
+        {subtipos.map((subtipo) => (
+          <Picker.Item key={subtipo.id_subtipo} label={subtipo.descripcion} value={subtipo.id_subtipo} />
+        ))}
+      </Picker>
+
+      <Text style={styles.label}>Dirección</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ingrese la dirección"
+        value={direccion}
+        onChangeText={setDireccion}
+      />
+      <Text style={styles.label}>Observación</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ingrese una observación"
+        value={observacion}
+        onChangeText={setObservacion}
+      />
+      <Text style={styles.label}>Punto GPS</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ingrese el punto GPS"
+        value={puntoGPS}
+        onChangeText={setPuntoGPS}
+      />
+      <Button title="Enviar Denuncia" onPress={handleSubmit} />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    padding: 16,
+    backgroundColor: '#fff'
   },
-  text: {
-    fontSize: 24,
+  label: {
+    fontSize: 18,
+    marginBottom: 8
   },
+  picker: {
+    height: 50,
+    marginBottom: 12
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 12,
+    paddingHorizontal: 8
+  }
 });
 
 export default Denunciar;

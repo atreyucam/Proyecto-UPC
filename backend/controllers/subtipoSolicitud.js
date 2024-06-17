@@ -48,6 +48,18 @@ exports.getSubtipoById = async (req, res) => {
   }
 };
 
+//obtener subtipos por tipo
+exports.getSubtiposByTipo = async (req, res) => {
+  const { id_tipo } = req.params;
+  try {
+    const subtipos = await Subtipo.findAll({ where: { id_tipo } });
+    res.status(200).json(subtipos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 // Actualizar Subtipo --V
 // Aqui podemos actualizar hasta de que tipo es, siempre revisando que exista el tipo de solicitud
 exports.updateSubtipo = async (req, res) => {

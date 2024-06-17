@@ -42,10 +42,15 @@ router.get('/subtipo', subtipoController.getAllSubtipos);
 router.get('/subtipo/:id_subtipo', subtipoController.getSubtipoById);
 router.put('/subtipo/:id_subtipo', subtipoController.updateSubtipo);
 router.delete('/subtipo/:id_subtipo', subtipoController.deleteSubtipo);
+router.get('/tipos/:id_tipo/subtipos', subtipoController.getSubtiposByTipo);
+
 
 // Rutas de solicitud por parte del usuario
 router.post('/solicitud', solicitudController.createSolicitud);
 router.get('/solicitud', solicitudController.getAllSolicitudes);
+// ruta nueva
+router.get('/solicitudPersona', solicitudController.getAllSolicitudesPersona);
+
 router.get('/solicitud/:id', solicitudController.getSolicitudById);
 router.put('/solicitud/:id', solicitudController.updateSolicitud);
 router.delete('/solicitud/:id', solicitudController.deleteSolicitud);
