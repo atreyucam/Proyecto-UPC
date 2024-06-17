@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, FlatList, Alert } from "react-native";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 
 const MisDenunciasScreen = () => {
@@ -8,11 +8,14 @@ const MisDenunciasScreen = () => {
 
   const fetchDenuncias = async () => {
     try {
-      const response = await axios.get("http://192.168.0.6:3000/api/solicitudPersona", {
-        params: {
-          id_persona: 1  // ID fijo para pruebas
+      const response = await axios.get(
+        "http://localhost:3000/api/solicitudPersona",
+        {
+          params: {
+            id_persona: 1, // ID fijo para pruebas
+          },
         }
-      });
+      );
       setDenuncias(response.data);
     } catch (error) {
       Alert.alert("Error", "Hubo un problema al obtener las denuncias");
@@ -56,7 +59,7 @@ const MisDenunciasScreen = () => {
       <FlatList
         data={denuncias}
         renderItem={renderItem}
-        keyExtractor={item => item.id_solicitud.toString()}
+        keyExtractor={(item) => item.id_solicitud.toString()}
       />
     </View>
   );
@@ -66,23 +69,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#fff'
+    backgroundColor: "#fff",
   },
   header: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
-    textAlign: 'center'
+    textAlign: "center",
   },
   item: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc'
+    borderBottomColor: "#ccc",
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold'
-  }
+    fontWeight: "bold",
+  },
 });
 
 export default MisDenunciasScreen;
