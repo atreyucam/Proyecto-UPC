@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Realizar Llamada con Twilio</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 90vh;
+    }
+
+    div {
+      background: white;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    input, button {
+      font-size: 16px;
+      padding: 10px;
+      margin-top: 10px;
+      width: 250px; /* Ancho fijo para todos los elementos */
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <input type="text" id="phone" placeholder="Ingresa número a llamar">
+    <button onclick="makeCall()">Llamar</button>
+  </div>
+  <script>
+    function makeCall() {
+      const phone = document.getElementById('phone').value;
+      fetch(`/call?to=${phone}`)
+        .then(response => response.text())
+        .then(data => alert(data))
+        .catch(err => console.error('Error:', err));
+    }
+  </script>
+</body>
+</html>
