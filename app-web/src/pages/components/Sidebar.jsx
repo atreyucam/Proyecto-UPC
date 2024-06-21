@@ -13,7 +13,7 @@ const Sidebar = () => {
       <aside
         className={`bg-white shadow-sm  ${
           openSidenav ? "translate-x-0" : "-translate-x-80"
-        } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0 border border-blue-gray-100`}
+        } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0 border border-black-gray-100`}
       >
         <div className={`relative`}>
           <Link to="/" className="py-6 px-8 text-center">
@@ -48,7 +48,7 @@ const Sidebar = () => {
                       color="inherit"
                       className="font-medium capitalize"
                     >
-                      LOGIN
+                      Login
                     </Typography>
                   </Button>
                 )}
@@ -71,6 +71,28 @@ const Sidebar = () => {
                       className="font-medium capitalize"
                     >
                       Home
+                    </Typography>
+                  </Button>
+                )}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/3" exact>
+                {({ isActive }) => (
+                  <Button
+                    className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${
+                      isActive
+                        ? "bg-gray-900 text-white"
+                        : "bg-white text-gray-900"
+                    }`}
+                    variant={isActive ? "gradient" : "text"}
+                    fullWidth
+                  >
+                    <Typography
+                      color="inherit"
+                      className="font-medium capitalize"
+                    >
+                      Solicitud
                     </Typography>
                   </Button>
                 )}

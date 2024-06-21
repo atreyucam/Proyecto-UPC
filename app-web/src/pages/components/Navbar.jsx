@@ -34,7 +34,7 @@ export function DashboardNavbar() {
       <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center">
         <div className="capitalize">
           <Typography variant="h6" color="blue-gray">
-            MENU
+            @UPC
           </Typography>
         </div>
 
