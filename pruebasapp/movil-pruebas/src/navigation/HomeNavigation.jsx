@@ -26,7 +26,7 @@ export default function HomeNavigation() {
   const [index, setIndex] = React.useState(0);
   const routes = [
     { key: "home", title: "Home", icon: "home-outline" },
-    { key: "denuncia", title: "Denuncia", icon: "file-document-outline" },
+    { key: "denuncia", title: "Denuncia", icon: "police-station" },
     { key: "emergencia", title: "Emergencia", icon: "car-emergency" },
     { key: "ajustes", title: "Ajustes", icon: "cog" },
   ];

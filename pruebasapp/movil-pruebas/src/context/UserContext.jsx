@@ -2,7 +2,8 @@ import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 
 const UserContext = createContext();
-const API_URL = "http://localhost:5000/api";
+const API_URL = "http://192.168.200.35:5000/api";
+//const API_URL = "http://localhost:5000/api";
 
 const UserProvider = ({ children }) => {
   const [userState, setUserState] = useState({
