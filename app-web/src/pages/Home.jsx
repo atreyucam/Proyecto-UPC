@@ -1,15 +1,46 @@
 import React, { useState } from 'react';
 import ApexCharts from 'react-apexcharts';
-import { FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
-
+import PropTypes from 'prop-types';
+import { FiAlertCircle, FiCheckCircle, FiUserCheck, FiShield, FiSmile, FiFlag } from 'react-icons/fi';
+const Button = ({ text, subText, number, onClick, icon }) => {
+  return (
+    <button
+      className="w-full h-full bg-white text-gray-800 p-4 rounded-lg shadow-md flex flex-col items-start justify-between hover:bg-black hover:text-white transition duration-300"
+      onClick={onClick}
+    >
+      <div className="text-left flex justify-between items-center w-full">
+        <div>
+          <span className="block text-lg font-bold">{text}</span>
+          <span className="block text-sm">{subText}</span>
+          {number !== null && <span className="block text-lg font-bold">{number}</span>}
+        </div>
+        {icon}
+      </div>
+    </button>
+  );
+};
+Button.propTypes = {
+  text: PropTypes.string.isRequired,
+  subText: PropTypes.string,
+  number: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onClick: PropTypes.func.isRequired,
+  icon: PropTypes.element.isRequired,
+};
+Button.defaultProps = {
+  subText: '',
+  number: null,
+};
 const Home = () => {
   // Datos y opciones del gráfico de pastel
   const pieChartData = [150, 30];
   const pieChartOptions = {
     chart: {
       type: 'pie',
-      width: 200,
-      height: 200,
+      width: '100%', // Ajustar el ancho del gráfico de pastel al 100%
+      height: '100%', // Ajustar el alto del gráfico de pastel al 100%
+      toolbar: {
+        show: true, // Ocultar la barra de herramientas del gráfico
+      },
     },
     labels: ['Robo', 'Estado Resuelto'],
     colors: ['#007bff', '#28a745'],
@@ -90,42 +121,84 @@ const Home = () => {
   const currentRecords = policeData.slice(indexOfFirstRecord, indexOfLastRecord);
 
   return (
+    
     <div className="container mx-auto px-3 py-8">
-      {/* Cuadros de información */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white rounded-lg p-3 flex items-center justify-between shadow-md">
+      {/* Botones con iconos */}
+      <div className="grid grid-cols-4 gap-2 mb-5">
+        <div className="p-5 bg-gray-100 rounded-lg">
+          <Button
+            text="Disponible"
+            subText="Online"
+            icon={<FiUserCheck size={24} />}
+            onClick={() => console.log('Botón Disponible presionado')}
+          />
+        </div>
+        <div className="p-5 bg-gray-100 rounded-lg">
+          <Button
+            text="Total Resueltos"
+            subText="Resuelto"
+            number={100}
+            icon={<FiCheckCircle size={24} />}
+            onClick={() => console.log('Botón Estado presionado')}
+          />
+        </div>
+        <div className="p-5 bg-gray-100 rounded-lg">
+          <Button
+            text="Policías en línea"
+            number={50}
+            icon={<FiSmile size={24} />}
+            onClick={() => console.log('Botón Amistad presionado')}
+          />
+        </div>
+        <div className="p-5 bg-gray-100 rounded-lg">
+          <Button
+            text="Seguridad"
+            number={200}
+            icon={<FiShield size={24} />}
+            onClick={() => console.log('Botón Seguridad presionado')}
+          />
+        </div>
+      </div>
+       
+     {/* Gráficos */}
+     <div className="grid grid-cols-4 gap-4">
+        <div className="col-span-3 bg-white p-4 rounded-lg shadow-md">
+        <h2 className="text-lg font-bold mb-4">Desempeños</h2>
+          <ApexCharts options={lineChartOptions} series={lineChartData} type="line" height={300} />
+        </div>
+
+        <div className="col-span-1 bg-white p-1 rounded-lg shadow-md flex flex-col justify-center items-center">
+          {/* Cuadros de información */}
+      <div className="grid grid-cols-2 gap-5 mb-8">
+        <div className="bg-white rounded-lg p-4 shadow-md">
           <div className="flex items-center">
             <div className="mr-3">
               <FiAlertCircle size={20} color="#007bff" />
             </div>
             <div>
-              <p className="text-base font-bold">Robo</p>
+              <p className="text-base font-bold">Robos</p>
               <p className="text-sm">150</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-3 flex items-center justify-between shadow-md">
+        <div className="bg-white rounded-lg p-3 shadow-md">
           <div className="flex items-center">
             <div className="mr-3">
               <FiCheckCircle size={20} color="#28a745" />
             </div>
             <div>
-              <p className="text-base font-bold">Estado Resuelto</p>
+              <p className="text-base font-bold">Resueltos</p>
               <p className="text-sm">30</p>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Gráfico de pastel */}
-      <div className="w-1/3 mx-auto mt-8">
-        <ApexCharts options={pieChartOptions} series={pieChartData} type="pie" />
-      </div>
-
-      {/* Gráfico de líneas */}
-      <div className="bg-white p-4 rounded-lg shadow-md mt-8">
-        <ApexCharts options={lineChartOptions} series={lineChartData} type="line" height={350} />
+          <h2 className="text-lg font-bold mb-14">Distribución de Casos</h2>
+          <div className="w-full">
+            <ApexCharts options={pieChartOptions} series={pieChartData} type="pie" />
+          </div>
+        </div>
       </div>
 
       {/* Tabla de policías recientes */}
