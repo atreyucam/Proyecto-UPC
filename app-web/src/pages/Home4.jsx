@@ -1,10 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FiUserCheck, FiCheckCircle, FiSmile } from 'react-icons/fi';
 import ApexCharts from 'react-apexcharts';
 
 const Home4 = () => {
-
-  // Datos y opciones combinadas para el gráfico de columnas, áreas y líneas
   const combinedSeries = [
     {
       name: 'Policias no activos',
@@ -81,6 +79,55 @@ const Home4 = () => {
     },
   };
 
+  const initialPoliceData = [
+    { id: 1, firstName: 'John', lastName: 'Doe', rank: 'Sargento', circuit: 'Circuito 1', status: 'Activo' },
+    { id: 2, firstName: 'Jane', lastName: 'Smith', rank: 'Oficial', circuit: 'Circuito 2', status: 'No activo' },
+    { id: 3, firstName: 'Michael', lastName: 'Johnson', rank: 'Capitán', circuit: 'Circuito 3', status: 'Activo' },
+    { id: 4, firstName: 'Emily', lastName: 'Davis', rank: 'Sargento', circuit: 'Circuito 4', status: 'No activo' },
+    { id: 5, firstName: 'Daniel', lastName: 'Wilson', rank: 'Oficial', circuit: 'Circuito 5', status: 'Activo' },
+    { id: 6, firstName: 'Sarah', lastName: 'Brown', rank: 'Sargento', circuit: 'Circuito 6', status: 'No activo' },
+    { id: 7, firstName: 'Emma', lastName: 'Lee', rank: 'Oficial', circuit: 'Circuito 7', status: 'Activo' },
+    { id: 8, firstName: 'James', lastName: 'Miller', rank: 'Sargento', circuit: 'Circuito 8', status: 'No activo' },
+    { id: 9, firstName: 'Olivia', lastName: 'White', rank: 'Capitán', circuit: 'Circuito 9', status: 'Activo' },
+    { id: 10, firstName: 'Noah', lastName: 'Davis', rank: 'Oficial', circuit: 'Circuito 10', status: 'No activo' },
+  ];
+
+  const [policeData, setPoliceData] = useState(initialPoliceData);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPolice, setSelectedPolice] = useState(null);
+  const recordsPerPage = 4;
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleAssignClick = (police) => {
+    setSelectedPolice(police);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmAssign = () => {
+    if (selectedPolice) {
+      setPoliceData(prevData =>
+        prevData.map(police =>
+          police.id === selectedPolice.id ? { ...police, status: 'En Progreso' } : police
+        )
+      );
+    }
+    setIsModalOpen(false);
+    setSelectedPolice(null);
+  };
+
+  const handleCancelAssign = () => {
+    setIsModalOpen(false);
+    setSelectedPolice(null);
+  };
+
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = policeData.slice(indexOfFirstRecord, indexOfLastRecord);
+
   return (
     <div className="container mx-auto px-3 py-8">
       <div className="grid grid-cols-2 gap-5">
@@ -111,14 +158,85 @@ const Home4 = () => {
           </div>
         </div>
 
-      
-
-        {/* Gráfico de columnas, áreas y líneas */}
         <div className="bg-white rounded-lg p-4 shadow-md">
           <h2 className="text-lg font-bold mb-4">Fuentes de Tráfico</h2>
           <ApexCharts options={combinedOptions} series={combinedSeries} type="line" height={350} />
         </div>
       </div>
+
+      <div className="mt-8">
+        <h2 className="text-lg font-bold mb-4">Policías Recientes</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border-b p-2">Nombre</th>
+                <th className="border-b p-2">Apellido</th>
+                <th className="border-b p-2">Rango</th>
+                <th className="border-b p-2">Circuito</th>
+                <th className="border-b p-2">Estado</th>
+                <th className="border-b p-2">Asignación</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentRecords.map(police => (
+                <tr key={police.id} className="text-center">
+                  <td className="border-b p-2">{police.firstName}</td>
+                  <td className="border-b p-2">{police.lastName}</td>
+                  <td className="border-b p-2">{police.rank}</td>
+                  <td className="border-b p-2">{police.circuit}</td>
+                  <td className="border-b p-2">{police.status}</td>
+                  <td className="border-b p-2">
+                    <button
+                      className={`px-4 py-2 rounded ${police.status === 'Activo' ? 'bg-blue-500 text-white' : 'bg-gray-300 cursor-not-allowed'}`}
+                      onClick={() => police.status === 'Activo' && handleAssignClick(police)}
+                      disabled={police.status !== 'Activo'}
+                    >
+                      Asignar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="flex justify-center mt-4">
+
+        {Array.from({ length: Math.ceil(policeData.length / recordsPerPage) }, (_, index) => (
+            <button
+              key={index + 1}
+              className={`mx-1 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-4 rounded-lg">
+            <h2 className="text-lg font-bold mb-4">Confirmar Asignación</h2>
+            <p>¿Desea asignar al oficial {selectedPolice.firstName} {selectedPolice.lastName}?</p>
+            <div className="flex justify-end mt-4">
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
+                onClick={handleCancelAssign}
+              >
+                Cancelar
+              </button>
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+                onClick={handleConfirmAssign}
+              >
+                Aceptar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

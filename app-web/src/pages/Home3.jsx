@@ -105,6 +105,7 @@ const Home3 = () => {
           <h4 className="text-2xl font-bold">Gestión de Circuitos</h4>
           <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={() => setIsCircuitoModalOpen(true)}>
             Agregar
+
           </button>
         </div>
         <div className="grid gap-4">

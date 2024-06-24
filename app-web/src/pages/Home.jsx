@@ -222,17 +222,8 @@ const Home = () => {
                   <td className="border-b p-2">{police.createdAt}</td>
                   <td className="border-b p-2">{police.rank}</td>
                   <td className="border-b p-2">{police.address}</td>
-                  <td className="border-b p-2">
-                    <select
-                      className="p-1 rounded bg-gray-200"
-                      value={police.status}
-                      onChange={(e) => handleStatusChange(police.id, e.target.value)}
-                    >
-                      <option value="En Progreso">En Progreso</option>
-                      <option value="Por Asignar">Por Asignar</option>
-                      <option value="Resuelto">Resuelto</option>
-                    </select>
-                  </td>
+                  <td className="border-b p-2">{police.status}</td>
+                  
                 </tr>
               ))}
             </tbody>
