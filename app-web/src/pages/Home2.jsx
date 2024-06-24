@@ -75,9 +75,9 @@ const Home2 = () => {
   return (
     <section className="flex justify-center items-center h-screen bg-gray-100 relative">
       {/* Texto vertical al lado izquierdo */}
-      <div className="absolute left-0 top-1/2 transform -translate-y-1/2">
-        <h2 className="text-white text-4xl font-bold transform -rotate-90 origin-top-left ml-4">
-          UPC DIGITAL
+      <div className="absolute left-7 top-1/2 transform -translate-y-1/2">
+        <h2 className="text-black text-6xl font-bold transform -rotate-90 origin-top-center ml-10">
+          @UPC DIGITAL
         </h2>
       </div>
 
