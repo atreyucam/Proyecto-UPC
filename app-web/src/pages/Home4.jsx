@@ -96,6 +96,12 @@ const Home4 = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPolice, setSelectedPolice] = useState(null);
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [reports, setReports] = useState([
+    { id: 1, type: 'Robo', address: 'Calle 123', phone: '555-1234', reference: 'Cerca del parque', description: 'Sustracción de objetos de valor.', denunciante: 'Juan Pérez' },
+    { id: 2, type: 'Atraco', address: 'Avenida Principal', phone: '555-5678', reference: 'Frente al banco', description: 'Violencia en intento de robo.', denunciante: 'María González' },
+    { id: 3, type: 'Incendio', address: 'Calle 456', phone: '555-7890', reference: 'Zona industrial', description: 'Fuego en fábrica abandonada.', denunciante: 'Pedro Rodríguez' },
+  ]);
   const recordsPerPage = 4;
 
   const handlePageChange = (page) => {
@@ -108,20 +114,31 @@ const Home4 = () => {
   };
 
   const handleConfirmAssign = () => {
-    if (selectedPolice) {
+    if (selectedPolice && selectedReport) {
+      // Actualizar el estado de policeData con el nuevo estado 'En Progreso'
       setPoliceData(prevData =>
         prevData.map(police =>
           police.id === selectedPolice.id ? { ...police, status: 'En Progreso' } : police
         )
       );
+      
+      // Filtrar los reportes para quitar el reporte asignado
+      const updatedReports = reports.filter(report => report.id !== selectedReport.id);
+      setReports(updatedReports);
     }
     setIsModalOpen(false);
     setSelectedPolice(null);
+    setSelectedReport(null);
   };
 
   const handleCancelAssign = () => {
     setIsModalOpen(false);
     setSelectedPolice(null);
+    setSelectedReport(null);
+  };
+
+  const handleSelectReport = (report) => {
+    setSelectedReport(report);
   };
 
   const indexOfLastRecord = currentPage * recordsPerPage;
@@ -159,7 +176,7 @@ const Home4 = () => {
         </div>
 
         <div className="bg-white rounded-lg p-4 shadow-md">
-          <h2 className="text-lg font-bold mb-4">Fuentes de Tráfico</h2>
+          <h2 className="text-lg font-bold mb-4">Disponibilidad</h2>
           <ApexCharts options={combinedOptions} series={combinedSeries} type="line" height={350} />
         </div>
       </div>
@@ -202,8 +219,7 @@ const Home4 = () => {
         </div>
         
         <div className="flex justify-center mt-4">
-
-        {Array.from({ length: Math.ceil(policeData.length / recordsPerPage) }, (_, index) => (
+          {Array.from({ length: Math.ceil(policeData.length / recordsPerPage) }, (_, index) => (
             <button
               key={index + 1}
               className={`mx-1 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
@@ -220,6 +236,45 @@ const Home4 = () => {
           <div className="bg-white p-4 rounded-lg">
             <h2 className="text-lg font-bold mb-4">Confirmar Asignación</h2>
             <p>¿Desea asignar al oficial {selectedPolice.firstName} {selectedPolice.lastName}?</p>
+
+            <h3 className="text-md font-bold mt-4">Seleccionar Reporte</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border-b p-2">Tipo de Denuncia</th>
+                    <th className="border-b p-2">Dirección</th>
+                    <th className="border-b p-2">Teléfono</th>
+                    <th className="border-b p-2">Referencia</th>
+                    <th className="border-b p-2">Descripción</th>
+                    <th className="border-b p-2">Denunciante</th>
+                    <th className="border-b p-2">Seleccionar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reports.map(report => (
+                    <tr key={report.id} className="text-center">
+                      <td className="border-b p-2">{report.type}</td>
+                      <td className="border-b p-2">{report.address}</td>
+                      <td className="border-b p-2">{report.phone}</td>
+                      <td className="border-b p-2">{report.reference}</td>
+                      <td className="border-b p-2">{report.description}</td>
+                      <td className="border-b p-2">{report.denunciante}</td>
+                      <td className="border-b p-2">
+                        <button
+                          className={`px-4 py-2 rounded ${selectedReport && selectedReport.id === report.id ? 'bg-blue-500 text-white' : 'bg-gray-300 cursor-not-allowed'}`}
+                          onClick={() => handleSelectReport(report)}
+                          disabled={selectedReport && selectedReport.id === report.id}
+                        >
+                          Seleccionar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
             <div className="flex justify-end mt-4">
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
@@ -228,8 +283,9 @@ const Home4 = () => {
                 Cancelar
               </button>
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded"
+                className={`bg-blue-500 text-white px-4 py-2 rounded ${selectedReport ? '' : 'cursor-not-allowed'}`}
                 onClick={handleConfirmAssign}
+                disabled={!selectedReport}
               >
                 Aceptar
               </button>
