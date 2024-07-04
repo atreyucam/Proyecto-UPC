@@ -1,10 +1,7 @@
 import React, { useContext, useEffect } from "react";
-import {
-  Provider as PaperProvider,
-  BottomNavigation,
-  DefaultTheme,
-} from "react-native-paper";
-import { View } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Provider as PaperProvider, DefaultTheme } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import DenunciaScreen from "../screens/DenunciaScreen";
 import AjustesScreen from "../screens/AjustesScreen";
@@ -12,6 +9,9 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-native";
 import EmergenciaScreen from "../screens/Emergencia";
 import HomeScreen from "../screens/HomeScreen";
+import MisDenunciasScreen from "../screens/MisDenunciasScreen";
+
+const Tab = createBottomTabNavigator();
 
 export default function HomeNavigation() {
   const { authState } = useContext(AuthContext);
@@ -23,33 +23,41 @@ export default function HomeNavigation() {
     }
   }, [authState.isAuthenticated]);
 
-  const [index, setIndex] = React.useState(0);
-  const routes = [
-    { key: "home", title: "Home", icon: "home-outline" },
-    { key: "denuncia", title: "Denuncia", icon: "police-station" },
-    { key: "emergencia", title: "Emergencia", icon: "car-emergency" },
-    { key: "ajustes", title: "Ajustes", icon: "cog" },
-  ];
-
-  const renderScene = BottomNavigation.SceneMap({
-    home: HomeScreen,
-    denuncia: DenunciaScreen,
-    emergencia: EmergenciaScreen,
-    ajustes: AjustesScreen,
-  });
-
   return (
     <PaperProvider theme={DefaultTheme}>
-      <View style={{ flex: 1 }}>
-        <BottomNavigation
-          navigationState={{ index, routes }}
-          onIndexChange={setIndex}
-          renderScene={renderScene}
-          renderIcon={({ route, color }) => (
-            <Icon name={route.icon} color={color} size={24} />
-          )}
-        />
-      </View>
+      <NavigationContainer>
+        <Tab.Navigator
+          screenOptions={({ route }) => ({
+            tabBarIcon: ({ color, size }) => {
+              let iconName;
+
+              if (route.name === "Home") {
+                iconName = "home-outline";
+              } else if (route.name === "Denuncia") {
+                iconName = "police-station";
+              } else if (route.name === "Emergencia") {
+                iconName = "car-emergency";
+              } else if (route.name === "Ajustes") {
+                iconName = "cog";
+              }
+
+              return <Icon name={iconName} size={size} color={color} />;
+            },
+            headerShown: false, // Ocultar el topbar
+            tabBarActiveTintColor: "#78288c",
+            tabBarInactiveTintColor: "gray",
+            tabBarStyle: { backgroundColor: "#f5f5f5" },
+            tabBarLabelStyle: { fontWeight: "bold" },
+            tabBarHideOnKeyboard: true,
+            tabBarAllowFontScaling: false,
+          })}
+        >
+          <Tab.Screen name="Home" component={HomeScreen} />
+          <Tab.Screen name="Denuncia" component={DenunciaScreen} />
+          <Tab.Screen name="Emergencia" component={EmergenciaScreen} />
+          <Tab.Screen name="Ajustes" component={AjustesScreen} />
+        </Tab.Navigator>
+      </NavigationContainer>
     </PaperProvider>
   );
 }

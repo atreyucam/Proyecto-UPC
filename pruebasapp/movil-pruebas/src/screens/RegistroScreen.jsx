@@ -283,13 +283,19 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 10,
   },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#78288c",
+    borderRadius: 4,
+    marginBottom: 10,
+  },
   bottomLinks: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
   },
   picker: {
-    height: 50,
+    height: 40,
     width: "100%",
     marginBottom: 10,
   },

@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { TextInput, Button } from "react-native-paper"; // Importa componentes necesarios de react-native-paper
+import { TextInput, Button, Appbar, IconButton } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
-import {
-  StyleSheet,
-  View,
-  PermissionsAndroid,
-  Platform,
-  Image,
-  Alert,
-} from "react-native";
+import * as Location from "expo-location";
+import { StyleSheet, View, Image, Alert, ScrollView, Text } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import * as ImagePicker from "expo-image-picker";
+import Notificacion from "./components/Notificacion";
+import { useNavigate } from "react-router-native";
+import MenuOpcionNav from "./components/MenuOpcionNav";
 
-export default function DebunciaScreen() {
+export default function DenunciaScreen() {
   const [imageSource, setImageSource] = useState(null);
+  const [ubicacion, setUbicacion] = useState(null);
+  const [marker, setMarker] = useState(null);
+  const navigate = useNavigate();
+
+  const [initialRegion, setInitialRegion] = useState({
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.005, // Reduce para hacer zoom
+    longitudeDelta: 0.005, // Reduce para hacer zoom
+  });
+  const [formData, setFormData] = useState({
+    tipoDenuncia: "",
+    descripcion: "",
+  });
 
   const handleSelectImage = async (option) => {
     let pickerResult;
@@ -48,22 +58,40 @@ export default function DebunciaScreen() {
       });
     }
 
-    if (!pickerResult.cancelled) {
-      setImageSource({ uri: pickerResult.uri });
+    if (!pickerResult.canceled) {
+      const { uri } = pickerResult.assets[0];
+      setImageSource({ uri });
+      console.log({ uri }); // Loguea el valor de la imagen seleccionada
     }
   };
 
-  const [marker, setMarker] = useState(null);
-  const [initialRegion, setInitialRegion] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
-  const [formData, setFormData] = useState({
-    tipoDenuncia: "",
-    descripcion: "",
-  });
+  const getLocation = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permiso denegado",
+          "Se necesita el permiso de ubicación para esta funcionalidad."
+        );
+        return;
+      }
+      let location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+      setUbicacion({ latitude, longitude });
+      setMarker({ latitude, longitude });
+      setInitialRegion((prevRegion) => ({
+        ...prevRegion,
+        latitude,
+        longitude,
+      }));
+    } catch (error) {
+      console.error("Error al obtener la ubicación:", error);
+    }
+  };
+
+  useEffect(() => {
+    getLocation();
+  }, []);
 
   const handleFormChange = (field, value) => {
     setFormData({
@@ -72,129 +100,129 @@ export default function DebunciaScreen() {
     });
   };
 
-  useEffect(() => {
-    const requestLocationPermission = async () => {
-      if (Platform.OS === "android") {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: "Permiso de ubicacion",
-            message: "Necesitamos permiso para obtener tu ubicación",
-            buttonNeutral: "Preguntar despues",
-            buttonNegative: "Cancelar",
-            buttonPositive: "OK",
+  const handleSubmit = () => {
+    const denunciaData = {
+      ...formData,
+      ubicacion: ubicacion
+        ? {
+            latitude: ubicacion.latitude,
+            longitude: ubicacion.longitude,
           }
-        );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          locateCurrentPosition();
-        } else {
-          console.log("Permiso de ubicacion denegado");
-        }
-      } else {
-        locateCurrentPosition();
-      }
+        : null,
+      imagen: imageSource ? imageSource.uri : null,
     };
 
-    requestLocationPermission();
-  }, []);
-
-  const locateCurrentPosition = () => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        const newRegion = {
-          latitude,
-          longitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        };
-        setInitialRegion(newRegion);
-        setMarker({ latitude, longitude });
-      },
-      (error) => console.log(error.message),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-    );
-  };
-
-  const handleSubmit = () => {
-    console.log(formData); // Aquí podrías enviar los datos del formulario a tu backend u otro manejo
-    // Lógica para enviar la denuncia
+    console.log(denunciaData);
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.mapContainer}>
-        <MapView style={styles.map} initialRegion={initialRegion}>
-          {marker && (
-            <Marker
-              coordinate={marker}
-              title="Current Location"
-              description="This is your current location"
-            />
-          )}
-        </MapView>
-      </View>
-
-      {/* FORMULARIO */}
-      <View style={styles.container}>
-        <View style={styles.pickerContainer}>
-          <Picker
-            style={styles.picker}
-            selectedValue={formData.tipoDenuncia}
-            onValueChange={(itemValue) =>
-              handleFormChange("tipoDenuncia", itemValue)
-            }
-          >
-            <Picker.Item label="Seleccione tipo de denuncia" value="" />
-            <Picker.Item label="Denuncia 1" value="denuncia1" />
-            <Picker.Item label="Denuncia 2" value="denuncia2" />
-            {/* Agrega más tipos de denuncia según necesites */}
-          </Picker>
-        </View>
-        <TextInput
-          label="Descripción de la denuncia"
-          value={formData.descripcion}
-          onChangeText={(text) => handleFormChange("descripcion", text)}
-          style={styles.input}
-          multiline
+      <Appbar.Header>
+        <Appbar.Content title="DENUNCIAS" />
+        
+        <IconButton
+          icon="clipboard-list"
+          color="white"
+          size={24}
+          onPress={() => navigate("/misDenuncias")} // Navegar a la pantalla "Mis Denuncias"
         />
-
-        {/* IMAGENS */}
-        <View>
-          <Button
-            icon="camera"
-            mode="contained"
-            onPress={() => handleSelectImage("gallery")}
-            style={styles.inputFoto}
-          >
-            Seleccionar Imagen
-          </Button>
-
-          <Button
-            icon="camera"
-            mode="contained"
-            onPress={() => handleSelectImage("camera")}
-            style={styles.inputFoto}
-          >
-            Tomar Foto
-          </Button>
-
-          {imageSource && (
-            <Image
-              source={{ uri: imageSource.uri }}
-              style={{ width: 200, height: 200, marginTop: 20 }}
-            />
-          )}
+        <Notificacion />
+      </Appbar.Header>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.mapContainer}>
+          <MapView style={styles.map} region={initialRegion}>
+            {marker && (
+              <Marker
+                coordinate={marker}
+                title="Ubicación Actual"
+                description="Esta es tu ubicación actual"
+              />
+            )}
+          </MapView>
         </View>
+        <View style={styles.formContainer}>
+          <View style={styles.pickerContainer}>
+            <Picker
+              style={styles.picker}
+              selectedValue={formData.tipoDenuncia}
+              onValueChange={(itemValue) =>
+                handleFormChange("tipoDenuncia", itemValue)
+              }
+            >
+              <Picker.Item label="Seleccione tipo de denuncia" value="" />
+              <Picker.Item label="Robo" value="robo" />
+              <Picker.Item label="Asalto" value="asalto" />
+              <Picker.Item
+                label="Violencia doméstica"
+                value="violencia_domestica"
+              />
+              <Picker.Item label="Acoso" value="acoso" />
+              <Picker.Item label="Vandalismo" value="vandalismo" />
+              <Picker.Item label="Tráfico de drogas" value="trafico_drogas" />
+              <Picker.Item
+                label="Accidente de tráfico"
+                value="accidente_trafico"
+              />
+              <Picker.Item
+                label="Disturbio público"
+                value="disturbio_publico"
+              />
+              <Picker.Item label="Fraude" value="fraude" />
+              <Picker.Item label="Secuestro" value="secuestro" />
+              <Picker.Item label="Desaparición" value="desaparicion" />
+              <Picker.Item label="Amenaza" value="amenaza" />
+              <Picker.Item label="Hurto" value="hurto" />
+              <Picker.Item label="Violación" value="violacion" />
+              <Picker.Item label="Homicidio" value="homicidio" />
+              <Picker.Item label="Corrupción" value="corrupcion" />
+              <Picker.Item label="Otros" value="otros" />
+            </Picker>
+          </View>
+          <TextInput
+            label="Descripción de la denuncia"
+            value={formData.descripcion}
+            onChangeText={(text) => handleFormChange("descripcion", text)}
+            style={styles.input}
+            multiline
+          />
+          <View style={styles.imagePickerContainer}>
+            <Button
+              icon="camera"
+              mode="contained"
+              onPress={() => handleSelectImage("gallery")}
+              style={styles.inputFoto}
+            >
+              Seleccionar Imagen
+            </Button>
 
-        <Button
-          mode="contained"
-          onPress={handleSubmit}
-          style={styles.buttonDenuncia}
-        >
-          Emitir Denuncia
-        </Button>
-      </View>
+            <Button
+              icon="camera"
+              mode="contained"
+              onPress={() => handleSelectImage("camera")}
+              style={styles.inputFoto}
+            >
+              Tomar Foto
+            </Button>
+          </View>
+          <Button
+            mode="contained"
+            onPress={handleSubmit}
+            style={styles.buttonDenuncia}
+          >
+            Emitir Denuncia
+          </Button>
+
+          <View style={{ alignItems: "center", marginTop: 20 }}>
+            <Text style={{ textAlign: "center" }}>Tu Evidencia</Text>
+            {imageSource && (
+              <Image
+                source={{ uri: imageSource.uri }}
+                style={styles.imagePreview}
+              />
+            )}
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -202,29 +230,32 @@ export default function DebunciaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 50,
+  },
+  scrollContent: {
+    padding: 10,
+    flexGrow: 1,
   },
   mapContainer: {
-    flex: 1,
+    height: 270,
   },
   map: {
     ...StyleSheet.absoluteFillObject,
+    height: 250,
   },
   formContainer: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
+    paddingBottom: 20,
+  },
+  imagePreview: {
+    width: "100%",
+    height: 200,
+    marginTop: 20,
   },
   input: {
     marginBottom: 10,
     marginHorizontal: 10,
   },
-  button: {
-    marginTop: 20,
-    marginHorizontal: 20,
-  },
   inputFoto: {
-    marginHorizontal: 50,
+    marginHorizontal: 10,
     marginVertical: 5,
   },
   pickerContainer: {
@@ -241,7 +272,10 @@ const styles = StyleSheet.create({
   },
   buttonDenuncia: {
     marginHorizontal: 10,
-    marginTop: 20,
-    paddingVertical: 10,
+    paddingVertical: 5,
+    backgroundColor: "red",
+  },
+  imagePickerContainer: {
+    alignItems: "center",
   },
 });
