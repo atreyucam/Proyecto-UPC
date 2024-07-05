@@ -30,12 +30,7 @@ router.post("/", createUsuario);
 router.get("/:id_usuario", authMiddleware, getUsuarioById);
 
 // Actualizar un usuario por ID
-router.put(
-  "/:id_usuario",
-  authMiddleware,
-  upload.single("imagen"),
-  updateUsuario
-);
+router.put("/:id_usuario", authMiddleware, updateUsuario);
 
 // Eliminar un usuario por ID
 router.delete(

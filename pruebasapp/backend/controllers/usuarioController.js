@@ -4,20 +4,28 @@ import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { usuarioSchema } from "../utils/validationSchemas.js";
+import Rol from "../models/Rol.js";
+import Usuario_rol from "../models/Usuario_rol.js";
+import { ESTADOUSUARIO } from "../config/CONSTANTES.js";
 
-// Controlador para crear un nuevo usuario
 async function createUsuario(req, res) {
-  console.log(req.body);
-
   try {
     // Validar datos de entrada
     const { error, value } = usuarioSchema.validate(req.body);
-    /* if (error) {
+    if (error) {
       return res.status(400).json({ message: error.details[0].message });
-    } */
-    const { nombres, apellidos, cedula, email, password, telefono, genero } =
-      req.body;
+    }
 
+    const {
+      nombres,
+      apellidos,
+      cedula,
+      email,
+      password,
+      telefono,
+      genero,
+      id_rol,
+    } = value;
 
     // Verificar si el email ya está registrado
     const existingUser = await Usuario.findOne({ where: { email } });
@@ -33,15 +41,19 @@ async function createUsuario(req, res) {
       return res.status(400).json({ message: "La cédula ya está registrada" });
     }
 
-    // Subir imagen de perfil
-    /* let rutaImagen = null;
-    if (req.file) {
-      const imagen = req.file;
-      const extension = path.extname(imagen.originalname);
-      const nombreArchivo = `${uuidv4()}${extension}`;
-      rutaImagen = path.join("uploads", nombreArchivo);
-      fs.renameSync(imagen.path, rutaImagen);
-    } */
+    // Verificar si el teléfono ya está registrado
+    const existingTelefono = await Usuario.findOne({ where: { telefono } });
+    if (existingTelefono) {
+      return res
+        .status(400)
+        .json({ message: "El teléfono ya está registrado" });
+    }
+
+    // Verificar si el rol existe
+    const rol = await Rol.findByPk(id_rol);
+    if (!rol) {
+      return res.status(404).json({ message: "El rol no existe" });
+    }
 
     // Hashear la contraseña antes de guardarla en la base de datos
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -52,14 +64,15 @@ async function createUsuario(req, res) {
       apellidos,
       cedula,
       email,
+      fecha_registro: new Date(),
       password: hashedPassword,
       telefono,
-      //imagen: rutaImagen ? `${process.env.SERVER_HOST}/${rutaImagen}` : null, // Usar la URL de la imagen si se proporcionó
-      //fecha_nacimiento,
-      id_rol: 1,
-      id_estado_usuario: 2,
+      id_estado_usuario: ESTADOUSUARIO.ACTIVO, // Asignar el estado de usuario por defecto
       genero,
     });
+
+    // Asignar el rol al usuario recién creado
+    await Usuario_rol.create({ id_usuario: nuevoUsuario.id_usuario, id_rol });
 
     res.status(201).json(nuevoUsuario);
   } catch (error) {
@@ -103,31 +116,16 @@ async function updateUsuario(req, res) {
     cedula,
     email,
     password,
-    fecha_nacimiento,
     id_rol,
     id_estado_usuario,
     genero,
   } = req.body;
 
   try {
-    const usuario = await Usuario.findByPk(id_usuario);
+    // Buscar el usuario por su ID
+    let usuario = await Usuario.findByPk(id_usuario);
     if (!usuario) {
       return res.status(404).json({ message: "Usuario no encontrado" });
-    }
-
-    // Subir imagen de perfil
-    let rutaImagen = usuario.imagen;
-    if (req.file) {
-      const imagen = req.file;
-      const extension = path.extname(imagen.originalname);
-      const nombreArchivo = `${uuidv4()}${extension}`;
-      rutaImagen = path.join("uploads", nombreArchivo);
-      fs.renameSync(imagen.path, rutaImagen);
-
-      // Eliminar la imagen anterior si existe
-      if (usuario.imagen) {
-        fs.unlinkSync(usuario.imagen);
-      }
     }
 
     // Hashear la nueva contraseña si se proporciona
@@ -136,6 +134,7 @@ async function updateUsuario(req, res) {
       hashedPassword = await bcrypt.hash(password, 10);
     }
 
+    // Actualizar el usuario con los nuevos datos
     await usuario.update({
       nombres,
       apellidos,
@@ -147,6 +146,11 @@ async function updateUsuario(req, res) {
       id_rol,
       id_estado_usuario,
       genero,
+    });
+
+    // Recuperar el usuario actualizado con la relación del rol si es necesario
+    usuario = await Usuario.findByPk(id_usuario, {
+      include: [Rol], // Incluir el modelo de Rol si es necesario
     });
 
     res.status(200).json(usuario);

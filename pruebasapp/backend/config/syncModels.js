@@ -13,6 +13,7 @@ import Usuario_rol from "../models/Usuario_rol.js";
 import Provincia from "../models/Provincia.js";
 import Ciudad from "../models/Ciudad.js";
 import Denuncia from "../models/Denuncia.js";
+import Denuncia_policia from "../models/Denuncia_policia.js";
 
 
 const initializeModels = async () => {

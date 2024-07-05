@@ -9,6 +9,7 @@ import {
   updateRol,
   deleteRol,
 } from "../controllers/rolController.js"; // Importa el controlador correspondiente
+import { getRolesForUser } from "../controllers/usuario_rol_Controller.js";
 
 const router = Router();
 
@@ -35,6 +36,14 @@ router.delete(
   authMiddleware,
   roleMiddleware("SUPERADMIN"),
   deleteRol
+);
+
+// GET roles asignados a un usuario
+router.get(
+  "/usuario_roles/usuario/:id_usuario/roles",
+  authMiddleware,
+  roleMiddleware("SUPERADMIN"),
+  getRolesForUser
 );
 
 export default router;

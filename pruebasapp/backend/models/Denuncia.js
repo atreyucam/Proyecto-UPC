@@ -37,7 +37,23 @@ Denuncia.init(
       type: DataTypes.FLOAT,
       allowNull: true,
     },
+    fecha_inicio: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    fecha_fin: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     id_usuario: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: Usuario,
+        key: "id_usuario",
+      },
+    },
+    id_gestor: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {

@@ -4,7 +4,7 @@ export const usuarioSchema = Joi.object({
   nombres: Joi.string().trim().required().messages({
     "any.required": "El campo de nombres es obligatorio",
     "string.empty": "El campo de nombres no puede estar vacío",
-    "string.length": "minimo 10 caracteres",
+    "string.length": "Mínimo 10 caracteres",
   }),
   apellidos: Joi.string().trim().required().messages({
     "any.required": "El campo de apellidos es obligatorio",
@@ -16,12 +16,17 @@ export const usuarioSchema = Joi.object({
     "string.length": "La cedula debe tener exactamente 10 caracteres",
     "string.pattern.base": "La cedula solo puede contener números",
   }),
-  telefono: Joi.string().trim().length(10).pattern(/^\d+$/).required().messages({
-    "any.required": "El campo de telefono es obligatorio",
-    "string.empty": "El campo de telefono no puede estar vacío",
-    "string.length": "La telefono debe tener exactamente 10 caracteres",
-    "string.pattern.base": "La telefono solo puede contener números",
-  }),
+  telefono: Joi.string()
+    .trim()
+    .length(10)
+    .pattern(/^\d+$/)
+    .required()
+    .messages({
+      "any.required": "El campo de telefono es obligatorio",
+      "string.empty": "El campo de telefono no puede estar vacío",
+      "string.length": "El teléfono debe tener exactamente 10 caracteres",
+      "string.pattern.base": "El teléfono solo puede contener números",
+    }),
   email: Joi.string().trim().email().required().messages({
     "any.required": "El campo de correo electrónico es obligatorio",
     "string.empty": "El campo de correo electrónico no puede estar vacío",
@@ -32,11 +37,6 @@ export const usuarioSchema = Joi.object({
     "string.empty": "El campo de contraseña no puede estar vacío",
     "string.min": "La contraseña debe tener al menos 6 caracteres",
   }),
-/*   fecha_nacimiento: Joi.date().iso().required().messages({
-    "any.required": "El campo de fecha de nacimiento es obligatorio",
-    "date.base":
-      "La fecha de nacimiento debe estar en formato ISO (YYYY-MM-DD)",
-  }), */
   estado_usuario: Joi.string()
     .valid("activo", "inactivo", "suspendido")
     .default("inactivo")
@@ -50,6 +50,11 @@ export const usuarioSchema = Joi.object({
       "any.required": "El campo de género es obligatorio",
       "any.only": "El género debe ser masculino, femenino u otro",
     }),
+
+  id_rol: Joi.number().integer().required().messages({
+    "any.required": "El campo de rol es obligatorio",
+    "number.base": "El campo de rol debe ser un número entero",
+  }),
 });
 
 export const categoriaSchema = Joi.object({
@@ -153,5 +158,36 @@ export const tipoPublicacionSchema = Joi.object({
   nombre: Joi.string().trim().required().messages({
     "any.required": "El campo de nombre es obligatorio",
     "string.empty": "El campo de nombre no puede estar vacío",
+  }),
+});
+
+export const denunciaSchema = Joi.object({
+  id_tipo_denuncia: Joi.number().integer().positive().required().messages({
+    "any.required": "El tipo de denuncia es obligatorio",
+  }),
+  evidencia: Joi.string().max(150).allow(null).trim(),
+  descripcion: Joi.string().trim().required().messages({
+    "any.required": "La descripción es obligatoria",
+    "string.empty": "La descripción no puede estar vacía",
+  }),
+  latitud: Joi.number().required().messages({
+    "any.required": "La latitud es obligatoria",
+  }),
+  longitud: Joi.number().required().messages({
+    "any.required": "La longitud es obligatoria",
+  }),
+  id_usuario: Joi.number().integer().positive().required().messages({
+    "any.required": "El civil es obligatorio",
+  }),
+  id_gestor: Joi.number().integer().positive().allow(null),
+  id_estado_denuncia: Joi.number().integer().positive().required().messages({
+    "any.required": "El estado de denuncia es obligatorio",
+  }),
+});
+
+export const tipoDenunciaSchema = Joi.object({
+  nombre: Joi.string().trim().required().messages({
+    "any.required": "El nombre es obligatorio",
+    "string.empty": "El nombre no puede estar vacío",
   }),
 });
