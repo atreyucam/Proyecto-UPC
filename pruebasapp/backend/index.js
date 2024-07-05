@@ -24,11 +24,11 @@ app.use("/src/uploads", express.static("src/uploads"));
 app.use(express.json());
 
 // Usar las rutas
-app.use("/api/auth", authRoutes);
+/* app.use("/api/auth", authRoutes);
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/ubicaciones", ubicacionesRoutes);
 app.use("/api/roles", rolesRoutes);
-
+ */
 //INICIALIZAR EL SERVIDOR
 const iniciarServidor = async () => {
   await conectarDB(); // Espera a que se complete la conexión a la base de datos

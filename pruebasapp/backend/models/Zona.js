@@ -10,11 +10,11 @@ Zona.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    provincia: DataTypes.STRING,
-    ciudad: DataTypes.STRING,
-    barrio: DataTypes.STRING,
-    numeroZona: DataTypes.INTEGER,
-  },
+    nombre: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+    },
+   },
   {
     sequelize,
     modelName: "Zona",
@@ -22,3 +22,5 @@ Zona.init(
     timestamps: false,
   }
 );
+
+export default Zona;

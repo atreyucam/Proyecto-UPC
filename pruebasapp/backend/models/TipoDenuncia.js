@@ -1,27 +1,26 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/database.js";
 
-class Rol extends Model {}
+class TipoDenuncia extends Model {}
 
-Rol.init(
+TipoDenuncia.init(
   {
-    id_rol: {
+    id_tipo_denuncia: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     nombre: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(50),
       allowNull: false,
-      unique: true,
     },
   },
   {
     sequelize,
-    modelName: "Rol",
-    tableName: "roles",
+    modelName: "TipoDenuncia",
+    tableName: "tipos_denuncia",
     timestamps: false,
   }
 );
 
-export default Rol;
+export default TipoDenuncia;

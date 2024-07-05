@@ -1,7 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/database.js";
-import Rol from "./Rol.js";
-import Estado_usuario from "./Estadousuario.js";
+import Estado_usuario from "./Estado_usuario.js";
 
 class Usuario extends Model {}
 
@@ -60,14 +59,6 @@ Usuario.init(
         key: "id_estado_usuario",
       },
     },
-    id_rol: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: Rol, // Modelo de Rol
-        key: "id_rol",
-      },
-    },
   },
   {
     sequelize,
@@ -78,11 +69,6 @@ Usuario.init(
 );
 
 // Definir restricciones de clave externa
-Usuario.belongsTo(Rol, {
-  foreignKey: "id_rol",
-  onDelete: "SET NULL",
-  onUpdate: "CASCADE",
-});
 
 Usuario.belongsTo(Estado_usuario, {
   foreignKey: "id_estado_usuario",

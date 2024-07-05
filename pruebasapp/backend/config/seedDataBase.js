@@ -3,15 +3,29 @@ import bcrypt from "bcryptjs";
 // utils/initializeDatabase.js
 import Rol from "../models/Rol.js";
 import Usuario from "../models/Usuario.js";
-import Estado_usuario from "../models/Estadousuario.js";
+import Estado_usuario from "../models/Estado_usuario.js";
 import Provincia from "../models/Provincia.js";
 import Ciudad from "../models/Ciudad.js";
+import Zona from "../models/Zona.js";
+import Estacion from "../models/Estacion.js";
+import Policia from "../models/Policia.js";
+import Usuario_rol from "../models/Usuario_rol.js";
+import Estado_denuncia from "../models/Estado_denuncia.js";
+import TipoDenuncia from "../models/TipoDenuncia.js";
+import Denuncia from "../models/Denuncia.js";
 
 const initializeDatabase = async () => {
   try {
     await initializeRoles();
+    await initializeZonas();
+    await initializeEstaciones();
     await initializeEstadoUsuario();
+    await initializeTipoDenuncia();
+    await initializeEstadoDenuncia();
     await initializeUsuarios();
+    await initializePolicias();
+    await initializeUsuariosRoles();
+    await initializeDenuncias();
     await initializeProvincias();
     await initializeCiudades();
   } catch (error) {
@@ -23,14 +37,47 @@ const initializeRoles = async () => {
   const existingRoles = await Rol.findAll();
   if (existingRoles.length === 0) {
     const roles = [
-      { id_rol: 1, nombre: "ADMIN" },
-      { id_rol: 2, nombre: "CLIENTE" },
-      { id_rol: 3, nombre: "SUPERADMIN" },
+      { id_rol: 1, nombre: "SUPERADMIN" },
+      { id_rol: 2, nombre: "ADMIN" },
+      { id_rol: 3, nombre: "POLICIA" },
+      { id_rol: 4, nombre: "CIVIL" },
     ];
     await Rol.bulkCreate(roles);
     console.log("Roles iniciales creados.");
   } else {
     console.log("Roles ya existen.");
+  }
+};
+
+const initializeZonas = async () => {
+  const existingZonas = await Zona.findAll();
+  if (existingZonas.length === 0) {
+    const zonas = [
+      { id_zona: 1, nombre: "Zona 1" },
+      { id_zona: 2, nombre: "Zona 2" },
+      { id_zona: 3, nombre: "Zona 3" },
+    ];
+
+    await Zona.bulkCreate(zonas);
+    console.log("Zonas iniciales creadas.");
+  } else {
+    console.log("Zonas iniciales ya existen.");
+  }
+};
+
+const initializeEstaciones = async () => {
+  const existingEstaciones = await Estacion.findAll();
+  if (existingEstaciones.length === 0) {
+    const estaciones = [
+      { id_estacion: 1, nombre: "Estación 1", direccion: "Dirección 1" },
+      { id_estacion: 2, nombre: "Estación 2", direccion: "Dirección 2" },
+      { id_estacion: 3, nombre: "Estación 3", direccion: "Dirección 3" },
+    ];
+
+    await Estacion.bulkCreate(estaciones);
+    console.log("Estaciones iniciales creadas.");
+  } else {
+    console.log("Estaciones iniciales ya existen.");
   }
 };
 
@@ -48,6 +95,39 @@ const initializeEstadoUsuario = async () => {
   }
 };
 
+const initializeEstadoDenuncia = async () => {
+  const existingEstadosDenuncia = await Estado_denuncia.findAll();
+  if (existingEstadosDenuncia.length === 0) {
+    const estadosDenuncia = [
+      { id_estado_denuncia: 1, nombre: "PENDIENTE" },
+      { id_estado_denuncia: 2, nombre: "EN PROCESO" },
+      { id_estado_denuncia: 3, nombre: "RESUELTA" },
+      { id_estado_denuncia: 4, nombre: "CERRADA" },
+    ];
+    await Estado_denuncia.bulkCreate(estadosDenuncia);
+    console.log("Estados de denuncia iniciales creados.");
+  } else {
+    console.log("Estados de denuncia ya existen.");
+  }
+};
+
+const initializeTipoDenuncia = async () => {
+  const existingTiposDenuncia = await TipoDenuncia.findAll();
+  if (existingTiposDenuncia.length === 0) {
+    const tiposDenuncia = [
+      { id_tipo_denuncia: 1, nombre: "Robo" },
+      { id_tipo_denuncia: 2, nombre: "Acoso" },
+      { id_tipo_denuncia: 3, nombre: "Fraude" },
+      { id_tipo_denuncia: 4, nombre: "Maltrato animal" },
+      { id_tipo_denuncia: 5, nombre: "Otros" },
+    ];
+    await TipoDenuncia.bulkCreate(tiposDenuncia);
+    console.log("Tipos de denuncia iniciales creados.");
+  } else {
+    console.log("Tipos de denuncia ya existen.");
+  }
+};
+
 const initializeUsuarios = async () => {
   const existingUsuarios = await Usuario.findAll({ limit: 3 }); // Verificar si ya existen usuarios
   if (existingUsuarios.length === 0) {
@@ -62,32 +142,56 @@ const initializeUsuarios = async () => {
         telefono: "1234567890",
         email: "usuario1@example.com",
         password: hashedPassword,
-        imagen: "https://i.ytimg.com/vi/MZVygd1oOXs/maxresdefault.jpg",
-        id_rol: 1,
         id_estado_usuario: 1,
       },
       {
         nombres: "Nombre2",
         apellidos: "Apellidos2",
-        nombre_usuario: "Usuario2",
         cedula: "0987654321",
         genero: "femenino",
         telefono: "1234567891",
         email: "usuario2@example.com",
         password: hashedPassword,
-        id_rol: 2,
         id_estado_usuario: 1,
       },
       {
         nombres: "Nombre3",
         apellidos: "Apellidos3",
-        nombre_usuario: "Usuario3",
         cedula: "1357924680",
         telefono: "1234567893",
         genero: "masculino",
         email: "usuario3@example.com",
         password: hashedPassword,
-        id_rol: 3,
+        id_estado_usuario: 1,
+      },
+      {
+        nombres: "Nombre4",
+        apellidos: "Apellidos4",
+        cedula: "2468135790",
+        genero: "masculino",
+        telefono: "1234567894",
+        email: "usuario4@example.com",
+        password: hashedPassword,
+        id_estado_usuario: 1,
+      },
+      {
+        nombres: "Nombre5",
+        apellidos: "Apellidos5",
+        cedula: "2568135790",
+        genero: "masculino",
+        telefono: "1235567895",
+        email: "usuario5@example.com",
+        password: hashedPassword,
+        id_estado_usuario: 1,
+      },
+      {
+        nombres: "Nombre6",
+        apellidos: "Apellidos6",
+        cedula: "2668135790",
+        genero: "masculino",
+        telefono: "1236567896",
+        email: "usuario6@example.com",
+        password: hashedPassword,
         id_estado_usuario: 1,
       },
     ];
@@ -96,6 +200,102 @@ const initializeUsuarios = async () => {
     console.log("Usuarios iniciales creados.");
   } else {
     console.log("Usuarios iniciales ya existen.");
+  }
+};
+
+const initializePolicias = async () => {
+  const existingPolicias = await Policia.findAll({ limit: 3 });
+  if (existingPolicias.length === 0) {
+    const policias = [
+      {
+        id_usuario: 1,
+        rango: "Sargento",
+        placa: "ABC123",
+        id_estacion: 1,
+        id_zona: 1,
+      },
+      {
+        id_usuario: 2,
+        rango: "Teniente",
+        placa: "XYZ789",
+        id_estacion: 2,
+        id_zona: 2,
+      },
+      {
+        id_usuario: 3,
+        rango: "Capitán",
+        placa: "LMN456",
+        id_estacion: 3,
+        id_zona: 3,
+      },
+    ];
+
+    await Policia.bulkCreate(policias);
+    console.log("Policías iniciales creados.");
+  } else {
+    console.log("Policías iniciales ya existen.");
+  }
+};
+
+const initializeUsuariosRoles = async () => {
+  const existingUsuariosRoles = await Usuario_rol.findAll();
+  if (existingUsuariosRoles.length === 0) {
+    const usuariosRoles = [
+      { id_usuario: 1, id_rol: 1 },
+      { id_usuario: 2, id_rol: 2 },
+      { id_usuario: 2, id_rol: 3 },
+      { id_usuario: 2, id_rol: 4 },
+      { id_usuario: 3, id_rol: 3 },
+      { id_usuario: 3, id_rol: 4 },
+      { id_usuario: 4, id_rol: 4 },
+      { id_usuario: 5, id_rol: 4 },
+      { id_usuario: 6, id_rol: 4 },
+    ];
+
+    await Usuario_rol.bulkCreate(usuariosRoles);
+    console.log("Usuarios_Roles iniciales creados.");
+  } else {
+    console.log("Usuarios_Roles iniciales ya existen.");
+  }
+};
+
+const initializeDenuncias = async () => {
+  const existingDenuncias = await Denuncia.findAll();
+  if (existingDenuncias.length === 0) {
+    const denuncias = [
+      {
+        id_tipo_denuncia: 1,
+        evidencia: "https://ejemplo.com/evidencia1.jpg",
+        descripcion: "Robo reportado en la calle principal.",
+        latitud: 40.7128,
+        longitud: -74.006,
+        id_usuario: 1,
+        id_estado_denuncia: 1,
+      },
+      {
+        id_tipo_denuncia: 2,
+        evidencia: "https://ejemplo.com/evidencia2.jpg",
+        descripcion: "Acoso verbal en el parque central.",
+        latitud: 34.0522,
+        longitud: -118.2437,
+        id_usuario: 2,
+        id_estado_denuncia: 2,
+      },
+      {
+        id_tipo_denuncia: 3,
+        evidencia: "https://ejemplo.com/evidencia3.jpg",
+        descripcion: "Fraude bancario reportado por teléfono.",
+        latitud: 51.5074,
+        longitud: -0.1278,
+        id_usuario: 3,
+        id_estado_denuncia: 1,
+      },
+    ];
+
+    await Denuncia.bulkCreate(denuncias);
+    console.log("Denuncias iniciales creadas.");
+  } else {
+    console.log("Denuncias iniciales ya existen.");
   }
 };
 
