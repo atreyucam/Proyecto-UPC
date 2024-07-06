@@ -26,6 +26,7 @@ exports.createPersona = async (req, res) => {
         email,
         password,
         id_circuito,
+        disponibilidad: roles.includes(2) ? 'Disponible' : null  // Si el rol es policía, disponible
       },
       { transaction }
     );
@@ -136,10 +137,15 @@ exports.getAllPersona = async (req, res) => {
 exports.getCiudadanos = async (req, res) => {
   try {
     const ciudadanos = await Persona.findAll({
-      include: {
-        model: Rol,
-        where: { id_rol: 3 }
-      }
+      include: [
+        {
+          model: Rol,
+          where: { id_rol: 3 }
+        },
+        {
+          model: Circuito
+        }
+      ]
     });
     res.status(200).json(ciudadanos);
   } catch (error) {
@@ -166,6 +172,34 @@ exports.getPolicias = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Obtener los detalles de un policía por ID
+exports.getPoliciaById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const policia = await Persona.findByPk(id, {
+      include: [
+        {
+          model: Circuito,
+          attributes: ['provincia', 'ciudad', 'barrio']
+        },
+        {
+          model: Rol,
+          where: { id_rol: 2 }
+        }
+      ]
+    });
+
+    if (!policia) {
+      return res.status(404).json({ error: "Policía no encontrado" });
+    }
+
+    res.json(policia);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 // Obtener usuarios que son ciudadanos y policías
 exports.getCiudadanosPolicias = async (req, res) => {

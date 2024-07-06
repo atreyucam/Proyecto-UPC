@@ -1,4 +1,4 @@
-const { Solicitud, SolicitudEventoPersona, NotificacionPersona, Evento, Estado, Subtipo, Persona } = require('../models/db_models');
+const { Solicitud, SolicitudEventoPersona, NotificacionPersona, Evento, Estado, Subtipo, Persona, TipoSolicitud, Circuito } = require('../models/db_models');
 
 // crear una nueva solicitud
 exports.createSolicitud = async (req,res) => {
@@ -155,9 +155,15 @@ exports.assignPolicia = async (req, res) => {
   
       await NotificacionPersona.create({
         id_solicitud: id,
-        id_notificacion: 2,  // Suponiendo que el ID 1 es la notificación de "Policía en camino"
+        id_notificacion: 1,  // Suponiendo que el ID 1 es la notificación de "Policía en camino"
         id_persona
       });
+
+      // Actualizar el estado de disponibilidad del policía a 'Ocupado'
+    await Persona.update(
+      { disponibilidad: 'Ocupado' },
+      { where: { id_persona } }
+    );
   
       res.status(200).json({ message: 'Policía asignado y notificado. En camino' });
     } catch (error) {
@@ -212,9 +218,91 @@ exports.resolveSolicitud = async (req, res) => {
         id_notificacion: 2,  // Suponiendo que el ID 2 es la notificación de "Policía llegó y resolvió el caso"
         id_persona
       });
+
+      // Actualizar el estado de disponibilidad del policía a 'Disponible'
+    await Persona.update(
+      { disponibilidad: 'Disponible' },
+      { where: { id_persona } }
+    );
   
       res.status(200).json({ message: 'Solicitud resuelta y notificada.' });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   };
+
+// ---------------------------------------------------------------------------------------------------
+// Metodo para frontend
+
+// Obtener toda la información de una solicitud por ID
+exports.getSolicitudFullInfo = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const solicitud = await Solicitud.findByPk(id, {
+      include: [
+        {
+          model: Estado,
+          attributes: ['id_estado', 'descripcion']
+        },
+        {
+          model: Subtipo,
+          attributes: ['id_subtipo', 'descripcion'],
+          include: {
+            model: TipoSolicitud,
+            attributes: ['id_tipo', 'descripcion']
+          }
+        },
+        {
+          model: SolicitudEventoPersona,
+          include: [
+            {
+              model: Evento,
+              attributes: ['id_evento', 'evento']
+            },
+            {
+              model: Persona,
+              attributes: ['id_persona', 'cedula', 'nombres', 'apellidos', 'telefono', 'email'],
+              include: {
+                model: Circuito,
+                attributes: ['provincia', 'ciudad', 'barrio']
+              }
+            }
+          ]
+        }
+      ]
+    });
+
+    if (!solicitud) {
+      return res.status(404).json({ error: 'Solicitud no encontrada' });
+    }
+
+    res.status(200).json(solicitud);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Traer toda la info de solicitudes
+exports.getAllSolicitudesFullInfo = async (req, res) => {
+  try {
+    const solicitudes = await Solicitud.findAll({
+      include: [
+        {
+          model: Estado,
+          attributes: ['descripcion']
+        },
+        {
+          model: Subtipo,
+          attributes: ['descripcion'],
+          include: {
+            model: TipoSolicitud,
+            attributes: ['descripcion']
+          }
+        }
+      ]
+    });
+    res.status(200).json(solicitudes);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

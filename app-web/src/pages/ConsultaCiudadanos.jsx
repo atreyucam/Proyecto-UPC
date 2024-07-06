@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { FiCheckCircle } from "react-icons/fi";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
-const ConsultaPolicia = () => {
-  const [policias, setPolicias] = useState([]);
-  const [filteredPolicias, setFilteredPolicias] = useState([]);
+const ConsultaCircuito = () => {
+  const [ciudadanos, setCiudadanos] = useState([]);
+  const [filteredCiudadanos, setFilteredCiudadanos] = useState([]);
   const [filtros, setFiltros] = useState({
     provincia: "",
     ciudad: "",
@@ -14,20 +13,19 @@ const ConsultaPolicia = () => {
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [barrios, setBarrios] = useState([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const policiasRes = await axios.get(
-          "http://localhost:3000/api/policias"
+        const CiudadanosRes = await axios.get(
+          "http://localhost:3000/api/ciudadanos"
         );
         const provinciasRes = await axios.get(
           "http://localhost:3000/api/provincias"
         );
 
-        setPolicias(policiasRes.data);
-        setFilteredPolicias(policiasRes.data);
+        setCiudadanos(CiudadanosRes.data);
+        setFilteredCiudadanos(CiudadanosRes.data);
         setProvincias(provinciasRes.data);
       } catch (error) {
         console.error("Error fetching data", error);
@@ -65,7 +63,7 @@ const ConsultaPolicia = () => {
   };
 
   const handleBuscarClick = () => {
-    let filtered = policias;
+    let filtered = ciudadanos;
 
     if (filtros.provincia) {
       filtered = filtered.filter(
@@ -83,14 +81,10 @@ const ConsultaPolicia = () => {
       );
     }
 
-    setFilteredPolicias(filtered);
+    setFilteredCiudadanos(filtered);
   };
 
-  const handleVerClick = (id) => {
-    navigate(`/policias/${id}`);
-  };
-
-  const handleLimpiarFiltroClick = () => {
+  const handleLimpiarClick = () => {
     setFiltros({
       provincia: "",
       ciudad: "",
@@ -98,7 +92,11 @@ const ConsultaPolicia = () => {
     });
     setCiudades([]);
     setBarrios([]);
-    setFilteredPolicias(policias);
+    setFilteredCiudadanos(ciudadanos);
+  };
+
+  const handleVerClick = (barrio) => {
+    alert(`Mostrando detalles del barrio: ${barrio}`);
   };
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -110,19 +108,19 @@ const ConsultaPolicia = () => {
 
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = filteredPolicias.slice(
+  const currentRecords = filteredCiudadanos.slice(
     indexOfFirstRecord,
     indexOfLastRecord
   );
 
   return (
     <div className="container mx-auto px-3 py-8">
-      <h1 className="text-2xl font-bold mb-6">Lista de policías</h1>
+      <h1 className="text-2xl font-bold mb-6">Lista de ciudadanos</h1>
       <div className="grid grid-cols-2 gap-5">
         <div className="bg-gray-100 rounded-lg">
           <Button
             text="Policías registrados"
-            number={filteredPolicias.length}
+            number={filteredCiudadanos.length}
             icon={<FiCheckCircle size={24} />}
             onClick={() => console.log("Botón Policías presionado")}
           />
@@ -182,14 +180,14 @@ const ConsultaPolicia = () => {
             </button>
             <button
               className="bg-red-500 text-white px-4 py-2 rounded"
-              onClick={handleLimpiarFiltroClick}
+              onClick={handleLimpiarClick}
             >
               Limpiar Filtro
             </button>
           </div>
         </div>
 
-        <h2 className="text-lg font-bold mb-4">Policías</h2>
+        <h2 className="text-lg font-bold mb-4">Ciudadanos</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
             <thead>
@@ -213,7 +211,7 @@ const ConsultaPolicia = () => {
                   <td className="border-b p-2">
                     <button
                       className="bg-blue-500 text-white px-4 py-2 rounded"
-                      onClick={() => handleVerClick(police.id_persona)}
+                      onClick={() => handleVerClick(police.Circuito.barrio)}
                     >
                       Ver
                     </button>
@@ -223,9 +221,10 @@ const ConsultaPolicia = () => {
             </tbody>
           </table>
         </div>
+
         <div className="flex justify-center mt-4">
           {Array.from(
-            { length: Math.ceil(filteredPolicias.length / recordsPerPage) },
+            { length: Math.ceil(filteredCiudadanos.length / recordsPerPage) },
             (_, index) => (
               <button
                 key={index + 1}
@@ -265,4 +264,4 @@ const Button = ({ text, number, onClick, icon }) => {
   );
 };
 
-export default ConsultaPolicia;
+export default ConsultaCircuito;
