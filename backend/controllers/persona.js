@@ -1,4 +1,4 @@
-const { Persona, PersonaRol, sequelize } = require('../models/db_models');
+const { Persona, PersonaRol, Rol, sequelize, Circuito } = require('../models/db_models');
 
 // Crear una nueva persona --V
 exports.createPersona = async (req, res) => {
@@ -48,15 +48,7 @@ exports.createPersona = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-// Obtener todas las personas --V
-exports.getAllPersona = async (req, res) => {
-  try {
-    const personas = await Persona.findAll();
-    res.status(200).json(personas);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+
 
 // Obtener una persona por ID --V
 exports.getPersonaById = async (req, res) => {
@@ -124,6 +116,105 @@ exports.deletePersona = async (req, res) => {
     res.status(204).send();
   } catch (error) {
     await transaction.rollback();
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// Consultas por roles de usuario
+// Obtener todas las personas --V
+exports.getAllPersona = async (req, res) => {
+  try {
+    const personas = await Persona.findAll();
+    res.status(200).json(personas);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Obtener solo ciudadanos
+exports.getCiudadanos = async (req, res) => {
+  try {
+    const ciudadanos = await Persona.findAll({
+      include: {
+        model: Rol,
+        where: { id_rol: 3 }
+      }
+    });
+    res.status(200).json(ciudadanos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Obtener solo policías
+exports.getPolicias = async (req, res) => {
+  try {
+    const policias = await Persona.findAll({
+      include: [
+        {
+          model: Rol,
+          where: { id_rol: 2 }
+        },
+        {
+          model: Circuito
+        }
+      ],
+    });
+    res.status(200).json(policias);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Obtener usuarios que son ciudadanos y policías
+exports.getCiudadanosPolicias = async (req, res) => {
+  try {
+    // Encontrar personas que tengan exactamente dos roles
+    const personas = await Persona.findAll({
+      include: {
+        model: Rol,
+        attributes: ['id_rol'],
+        through: {
+          attributes: []
+        }
+      }
+    });
+
+    // Filtrar personas que tengan exactamente los roles de 'ciudadano' y 'policia'
+    const ciudadanosPolicias = personas.filter(persona => {
+      const roles = persona.Rols.map(rol => rol.id_rol);
+      return roles.length === 2 && roles.includes(2) && roles.includes(3);
+    });
+
+    res.status(200).json(ciudadanosPolicias);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Obtener usuarios que son ciudadanos, policías y admin
+exports.getAdminCiudadanosPolicias  = async (req, res) => {
+  try {
+    // Encontrar personas que tengan exactamente dos roles
+    const personas = await Persona.findAll({
+      include: {
+        model: Rol,
+        attributes: ['id_rol'],
+        through: {
+          attributes: []
+        }
+      }
+    });
+
+    // Filtrar personas que tengan exactamente los roles de 'ciudadano' y 'policia'
+    const ciudadanosPoliciasAdmin = personas.filter(persona => {
+      const roles = persona.Rols.map(rol => rol.id_rol);
+      return roles.length === 3 && roles.includes(2) && roles.includes(3) && roles.includes(1);
+    });
+
+    res.status(200).json(ciudadanosPoliciasAdmin);
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };

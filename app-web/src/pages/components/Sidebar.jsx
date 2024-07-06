@@ -17,7 +17,7 @@ const Sidebar = () => {
       >
         <div className={`relative`}>
           <Link to="/" className="py-6 px-8 text-center">
-            <Typography variant="h6">POLICE-APP</Typography>
+            <Typography variant="h6">UPC - app Web</Typography>
           </Link>
           <IconButton
             variant="text"
@@ -115,6 +115,28 @@ const Sidebar = () => {
                       className="font-medium capitalize"
                     >
                       Asignacion
+                    </Typography>
+                  </Button>
+                )}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/5" exact>
+                {({ isActive }) => (
+                  <Button
+                    className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${
+                      isActive
+                        ? "bg-gray-900 text-white"
+                        : "bg-white text-gray-900"
+                    }`}
+                    variant={isActive ? "gradient" : "text"}
+                    fullWidth
+                  >
+                    <Typography
+                      color="inherit"
+                      className="font-medium capitalize"
+                    >
+                      Consulta Policias
                     </Typography>
                   </Button>
                 )}

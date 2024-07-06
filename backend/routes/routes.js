@@ -20,6 +20,11 @@ router.get('/personas', personaController.getAllPersona);
 router.get('/personas/:id_persona', personaController.getPersonaById);
 router.put('/personas/:id_persona', personaController.updatePersona);
 router.delete('/personas/:id_persona', personaController.deletePersona);
+// nuevos filtros para personas
+router.get('/ciudadanos', personaController.getCiudadanos);
+router.get('/policias', personaController.getPolicias);
+router.get('/ciudadanoPolicia', personaController.getCiudadanosPolicias);
+router.get('/adminCiudadanoPolicia', personaController.getAdminCiudadanosPolicias);
 
 // Ruta para circuitos
 router.post('/circuitos', circuitoController.createCircuito);
@@ -58,5 +63,11 @@ router.post('/solicitud/:id/assign', solicitudController.assignPolicia);
 router.post('/solicitud/:id/resolve', solicitudController.resolveSolicitud);
 router.post('/solicitud/:id/event', solicitudController.registrarEvento);  // Nueva ruta para registrar eventos
 
+
+
+// Nuevas rutas para uso del filtro de -> provincias, ciudades y barrios
+router.get('/provincias', circuitoController.getAllProvincias);
+router.get('/ciudades/:provincia', circuitoController.getCiudadesByProvincia);
+router.get('/barrios/:provincia/:ciudad', circuitoController.getBarriosByCiudad);
 
 module.exports = router;
