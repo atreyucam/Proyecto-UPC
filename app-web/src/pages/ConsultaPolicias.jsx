@@ -16,6 +16,7 @@ const ConsultaPolicia = () => {
   const [barrios, setBarrios] = useState([]);
   const [selectedPolice, setSelectedPolice] = useState(null);
   const [historial, setHistorial] = useState([]);
+  const [selectedHistorial, setSelectedHistorial] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
   const navigate = useNavigate();
@@ -114,6 +115,7 @@ const ConsultaPolicia = () => {
 
   const handleRowClick = (police) => {
     setSelectedPolice(police);
+    setSelectedHistorial(null);
     // Limpia el historial al seleccionar un nuevo policía
     setHistorial([]);
     addToHistorial(police);
@@ -129,6 +131,11 @@ const ConsultaPolicia = () => {
         descripcion: "Descripción", // Ajustar según los datos reales
       },
     ]);
+  };
+
+  const handleHistorialVerClick = (entry, event) => {
+    event.stopPropagation();
+    setSelectedHistorial(entry);
   };
 
   return (
@@ -267,60 +274,86 @@ const ConsultaPolicia = () => {
       </div>
 
       {selectedPolice && (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h2 className="text-xl font-bold mb-2">Detalles del Policía</h2>
-                <div className="mb-2">
-                  <strong>Nombre:</strong>{" "}
-                  {`${selectedPolice.nombres} ${selectedPolice.apellidos}`}
-                </div>
-                <div className="mb-2">
-                  <strong>Teléfono:</strong> {selectedPolice.telefono}
-                </div>
+        <div className="mt-8 bg-white p-4 rounded-lg shadow-lg">
+          <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow-md">
+            <div >
+              <h2 className="text-xl font-bold mb-2">Detalles del Policía</h2>
+              <div className="mb-2">
+                <strong>Nombre:</strong>{" "}
+                {`${selectedPolice.nombres} ${selectedPolice.apellidos}`}
               </div>
-              <div>
-                <div className="mb-2">
-                  <strong>Cédula:</strong> {selectedPolice.cedula}
-                </div>
-                <div className="mb-2">
-                  <strong>Barrio:</strong> {selectedPolice.Circuito.barrio}
-                </div>
+              <div className="mb-2">
+                <strong>Teléfono:</strong> {selectedPolice.telefono}
               </div>
             </div>
-            <h3 className="text-lg font-bold mb-2 mt-4">Historial</h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border-b p-2">Nombre</th>
-                    <th className="border-b p-2">Tipo de denuncia</th>
-                    <th className="border-b p-2">Duración</th>
-                    <th className="border-b p-2">Estado</th>
-                    <th className="border-b p-2">Descripción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {historial.map((entry, index) => (
-                    <tr key={index} className="text-center">
-                      <td className="border-b p-2">{entry.nombre}</td>
-                      <td className="border-b p-2">{entry.tipo}</td>
-                      <td className="border-b p-2">{entry.duracion}</td>
-                      <td className="border-b p-2">{entry.estado}</td>
-                      <td className="border-b p-2">{entry.descripcion}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div>
+              <div className="mb-2">
+                <strong>Cédula:</strong> {selectedPolice.cedula}
+              </div>
+              <div className="mb-2">
+                <strong>Barrio:</strong> {selectedPolice.Circuito.barrio}
+              </div>
             </div>
-            <button
-              className="mt-4 bg-red-500 text-white px-4 py-2 rounded self-start"
-              onClick={() => setSelectedPolice(null)}
-            >
-              Cerrar
-            </button>
           </div>
+          
+          <h3 className="text-lg font-bold mb-2 mt-4">Historial</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border-b p-2">Nombre</th>
+                  <th className="border-b p-2">Tipo de denuncia</th>
+                  <th className="border-b p-2">Duración</th>
+                  <th className="border-b p-2">Estado</th>
+                  <th className="border-b p-2">Descripción</th>
+                  <th className="border-b p-2">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historial.map((entry, index) => (
+                  <tr
+                    key={index}
+                    className="text-center cursor-pointer hover:bg-gray-200"
+                  >
+                    <td className="border-b p-2">{entry.nombre}</td>
+                    <td className="border-b p-2">{entry.tipo}</td>
+                    <td className="border-b p-2">{entry.duracion}</td>
+                    <td className="border-b p-2">{entry.estado}</td>
+                    <td className="border-b p-2">{entry.descripcion}</td>
+                    <td className="border-b p-2">
+                      <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                        onClick={(e) => handleHistorialVerClick(entry, e)}
+                      >
+                        Ver
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {selectedHistorial && (
+            <div className="mt-4 bg-gray-100 p-4 rounded-lg shadow-md">
+              <h3 className="text-lg font-bold mb-2">Detalles del Historial</h3>
+              <div className="mb-2">
+                <strong>Nombre:</strong> {selectedHistorial.nombre}
+              </div>
+              <div className="mb-2">
+                <strong>Tipo de denuncia:</strong> {selectedHistorial.tipo}
+              </div>
+              <div className="mb-2">
+                <strong>Duración:</strong> {selectedHistorial.duracion}
+              </div>
+              <div className="mb-2">
+                <strong>Estado:</strong> {selectedHistorial.estado}
+              </div>
+              <div className="mb-2">
+                <strong>Descripción:</strong> {selectedHistorial.descripcion}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

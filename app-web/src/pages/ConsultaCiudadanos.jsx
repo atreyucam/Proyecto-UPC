@@ -15,6 +15,7 @@ const ConsultaCircuito = () => {
   const [barrios, setBarrios] = useState([]);
   const [selectedCitizen, setSelectedCitizen] = useState(null);
   const [historial, setHistorial] = useState([]);
+  const [selectedHistorial, setSelectedHistorial] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,6 +102,7 @@ const ConsultaCircuito = () => {
     setSelectedCitizen(citizen);
     // Limpia el historial al seleccionar un nuevo ciudadano
     setHistorial([]);
+    setSelectedHistorial(null);
     addToHistorial(citizen);
   };
 
@@ -123,9 +125,8 @@ const ConsultaCircuito = () => {
     setHistorial(nuevoHistorial);
   };
 
-  const handleCloseDetails = () => {
-    setSelectedCitizen(null);
-    setHistorial([]);
+  const handleVerHistorialClick = (item) => {
+    setSelectedHistorial(item);
   };
 
   return (
@@ -245,75 +246,92 @@ const ConsultaCircuito = () => {
         </div>
 
         {selectedCitizen && (
-          <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col gap-4">
+          <div >
+          <div className="mt-8 bg-white p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-2">Detalles del Ciudadano</h2>
+            <div>
               <div>
-                <h2 className="text-xl font-bold mb-2">
-                  Detalles del Ciudadano
-                </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <strong>Nombre:</strong>{" "}
-                    {`${selectedCitizen.nombres} ${selectedCitizen.apellidos}`}
-                  </div>
-                  <div>
-                    <strong>Cédula:</strong> {selectedCitizen.cedula}
-                  </div>
-                  <div>
-                    <strong>Teléfono:</strong> {selectedCitizen.telefono}
-                  </div>
-                  <div>
-                    <strong>Barrio:</strong> {selectedCitizen.Circuito.barrio}
-                  </div>
-                  <div>
-                    <strong>Ciudad:</strong> {selectedCitizen.Circuito.ciudad}
-                  </div>
-                  <div>
-                    <strong>Provincia:</strong>{" "}
-                    {selectedCitizen.Circuito.provincia}
-                  </div>
-                </div>
+                <strong>Nombre:</strong> {selectedCitizen.nombres}
               </div>
               <div>
-                <h2 className="text-xl font-bold mb-2">Historial</h2>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border-b p-2">Tipo</th>
-                        <th className="border-b p-2">Duración</th>
-                        <th className="border-b p-2">Estado</th>
-                        <th className="border-b p-2">Descripción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {historial.map((item, index) => (
-                        <tr key={index} className="text-center">
-                          <td className="border-b p-2">{item.tipo}</td>
-                          <td className="border-b p-2">{item.duracion}</td>
-                          <td className="border-b p-2">{item.estado}</td>
-                          <td className="border-b p-2">{item.descripcion}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <strong>Apellido:</strong> {selectedCitizen.apellidos}
               </div>
-              <button
-                className="bg-red-500 text-white px-4 py-2 rounded"
-                onClick={handleCloseDetails}
-              >
-                Cerrar
-              </button>
+              <div>
+                <strong>Cédula:</strong> {selectedCitizen.cedula}
+              </div>
+              <div>
+                <strong>Teléfono:</strong> {selectedCitizen.telefono}
+              </div>
+              <div>
+                <strong>Barrio:</strong> {selectedCitizen.Circuito.barrio}
+              </div>
+              <div>
+                <strong>Ciudad:</strong> {selectedCitizen.Circuito.ciudad}
+              </div>
+              <div>
+                <strong>Provincia:</strong> {selectedCitizen.Circuito.provincia}
+              </div>
             </div>
+            </div>
+            <div className="mt-8">
+              <h2 className="text-xl font-bold mb-2">Historial</h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border-b p-2">Tipo</th>
+                      <th className="border-b p-2">Duración</th>
+                      <th className="border-b p-2">Estado</th>
+                      <th className="border-b p-2">Descripción</th>
+                      <th className="border-b p-2">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historial.map((item, index) => (
+                      <tr key={index} className="text-center">
+                        <td className="border-b p-2">{item.tipo}</td>
+                        <td className="border-b p-2">{item.duracion}</td>
+                        <td className="border-b p-2">{item.estado}</td>
+                        <td className="border-b p-2">{item.descripcion}</td>
+                        <td className="border-b p-2">
+                          <button
+                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                            onClick={() => handleVerHistorialClick(item)}
+                          >
+                            Ver
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            {selectedHistorial && (
+              <div className="mt-8 bg-gray-100 p-4 rounded-lg shadow-lg">
+                <h2 className="text-xl font-bold mb-2">Detalles del Historial</h2>
+                <div>
+                  <div>
+                    <strong>Tipo:</strong> {selectedHistorial.tipo}
+                  </div>
+                  <div>
+                    <strong>Duración:</strong> {selectedHistorial.duracion}
+                  </div>
+                  <div>
+                    <strong>Estado:</strong> {selectedHistorial.estado}
+                  </div>
+                  <div>
+                    <strong>Descripción:</strong> {selectedHistorial.descripcion}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
     </div>
   );
 };
-
-
 
 const Button = ({ text, number, onClick, icon }) => {
   return (
@@ -333,4 +351,5 @@ const Button = ({ text, number, onClick, icon }) => {
     </button>
   );
 };
+
 export default ConsultaCircuito;
