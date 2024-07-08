@@ -120,6 +120,7 @@ const Sidebar = () => {
                 )}
               </NavLink>
             </li>
+           
           </ul>
         </div>
       </aside>
