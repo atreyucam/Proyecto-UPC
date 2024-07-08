@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import Layout from './components/Layout';
 
 const Home3 = () => {
-  
   // Estado para gestionar circuitos
   const [solicitudes, setSolicitudes] = useState([]);
   const [isCircuitoModalOpen, setIsCircuitoModalOpen] = useState(false);
@@ -97,7 +96,6 @@ const Home3 = () => {
     adminsActualizados.splice(index, 1);
     setAdministradores(adminsActualizados);
   };
-  
 
   return (
     <div className="container mx-auto p-4">
@@ -271,7 +269,6 @@ const Home3 = () => {
                 </button>
               </div>
             </div>
-           
           </div>
         )}
       </div>

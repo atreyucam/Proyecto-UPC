@@ -53,6 +53,10 @@ const Persona = sequelize.define('Persona', {
     type: DataTypes.STRING(50),
     allowNull: false
   },
+  disponibilidad: {
+    type: DataTypes.STRING(50),
+    allowNull: true, // Permitimos nulo para otros roles
+  }
 }, { tableName: 'Persona',
   indexes: [
     {

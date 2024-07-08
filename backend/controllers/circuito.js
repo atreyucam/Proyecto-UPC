@@ -66,3 +66,50 @@ exports.deleteCircuito = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+
+
+// -------------------------------------------------------------------
+// Nuevos metodos para filtros
+// 6. Obtener todas las provincias
+exports.getAllProvincias = async (req, res) => {
+  try {
+    const provincias = await Circuito.findAll({
+      attributes: ['provincia'],
+      group: ['provincia'],
+    });
+    res.json(provincias);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// 7. Obtener todas las ciudades de una provincia
+exports.getCiudadesByProvincia = async (req, res) => {
+  try {
+    const { provincia } = req.params;
+    const ciudades = await Circuito.findAll({
+      attributes: ['ciudad'],
+      where: { provincia },
+      group: ['ciudad'],
+    });
+    res.json(ciudades);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// 8. Obtener todos los barrios de una ciudad
+exports.getBarriosByCiudad = async (req, res) => {
+  try {
+    const { provincia, ciudad } = req.params;
+    const barrios = await Circuito.findAll({
+      attributes: ['barrio'],
+      where: { provincia, ciudad },
+      group: ['barrio'],
+    });
+    res.json(barrios);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
