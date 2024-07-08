@@ -23,6 +23,15 @@ const Home3 = () => {
   const [telefonoAdmin, setTelefonoAdmin] = useState('');
   const [editingAdminIndex, setEditingAdminIndex] = useState(null);
 
+  // Estado para gestionar datos del policía
+  const [nombrePolicia, setNombrePolicia] = useState('');
+  const [apellidoPolicia, setApellidoPolicia] = useState('');
+  const [cedulaPolicia, setCedulaPolicia] = useState('');
+  const [rangoPolicia, setRangoPolicia] = useState('');
+  const [direccionPolicia, setDireccionPolicia] = useState('');
+  const [telefonoPolicia, setTelefonoPolicia] = useState('');
+  const [isPoliciaModalOpen, setIsPoliciaModalOpen] = useState(false); 
+
   // Funciones para gestionar circuitos
   const handleAddOrEditCircuito = () => {
     const nuevoCircuito = { nombre: nombreCircuito, provincia: provinciaCircuito, ciudad: ciudadCircuito, barrio: barrioCircuito, numeroCircuito };
@@ -96,6 +105,53 @@ const Home3 = () => {
     adminsActualizados.splice(index, 1);
     setAdministradores(adminsActualizados);
   };
+
+  // Función para crear un nuevo policía
+  const handleAddPolicia = async () => {
+    // Crear un objeto con los datos del nuevo policía
+    const nuevoPolicia = {
+      nombre: nombrePolicia,
+      apellido: apellidoPolicia,
+      cedula: cedulaPolicia,
+      rango: rangoPolicia,
+      direccion: direccionPolicia,
+      telefono: telefonoPolicia
+    };
+
+    try {
+      // Realizar la petición POST al servidor para crear el policía
+      const response = await fetch('/api/crear-policia', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(nuevoPolicia)
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al crear el policía');
+      }
+
+      // Limpiar los campos después de la creación exitosa
+      setNombrePolicia('');
+      setApellidoPolicia('');
+      setCedulaPolicia('');
+      setRangoPolicia('');
+      setDireccionPolicia('');
+      setTelefonoPolicia('');
+
+      // Cerrar el modal después de la creación exitosa
+      setIsPoliciaModalOpen(false);
+
+
+
+      alert('Policía creado exitosamente');
+    } catch (error) {
+      alert('Error al crear el policía: ' + error.message);
+    }
+  };
+
+
 
   return (
     <div className="container mx-auto p-4">
@@ -272,7 +328,93 @@ const Home3 = () => {
           </div>
         )}
       </div>
+      
+      {/* Formulario y Modal para crear un nuevo policía */}
+      <div className="mt-8">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-2xl font-bold">Gestionar Policías</h4>
+          <button
+            className="bg-green-500 text-white px-4 py-2 rounded"
+            onClick={() => setIsPoliciaModalOpen(true)}
+          >
+            Agregar
+          </button>
+        </div>
+        <div className="grid gap-4">
+        
+        </div>
+        {/* Modal para agregar/editar policía */}
+        {isPoliciaModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white p-6 rounded shadow-lg w-96">
+              <h5 className="text-xl font-bold mb-4">Agregar Policía</h5>
+              <div className="flex flex-col gap-4 mb-4">
+                <input
+                  type="text"
+                  placeholder="Nombre"
+                  className="border p-2 rounded"
+                  value={nombrePolicia}
+                  onChange={(e) => setNombrePolicia(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Apellido"
+                  className="border p-2 rounded"
+                  value={apellidoPolicia}
+                  onChange={(e) => setApellidoPolicia(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Cédula"
+                  className="border p-2 rounded"
+                  value={cedulaPolicia}
+                  onChange={(e) => setCedulaPolicia(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Rango"
+                  className="border p-2 rounded"
+                  value={rangoPolicia}
+                  onChange={(e) => setRangoPolicia(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Dirección"
+                  className="border p-2 rounded"
+                  value={direccionPolicia}
+                  onChange={(e) => setDireccionPolicia(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Teléfono"
+                  className="border p-2 rounded"
+                  value={telefonoPolicia}
+                  onChange={(e) => setTelefonoPolicia(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                  onClick={() => setIsPoliciaModalOpen(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="bg-green-500 text-white px-4 py-2 rounded"
+                  onClick={handleAddPolicia}
+                >
+                  Crear Policía
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
     </div>
+
+    
+
   );
 };
 
