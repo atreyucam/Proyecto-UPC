@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FiCheckCircle } from "react-icons/fi";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const ConsultaCircuito = () => {
   const [ciudadanos, setCiudadanos] = useState([]);
@@ -13,9 +14,9 @@ const ConsultaCircuito = () => {
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [barrios, setBarrios] = useState([]);
-  const [selectedCitizen, setSelectedCitizen] = useState(null);
   const [historial, setHistorial] = useState([]);
   const [selectedHistorial, setSelectedHistorial] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,17 +71,17 @@ const ConsultaCircuito = () => {
 
     if (filtros.provincia) {
       filtered = filtered.filter(
-        (citizen) => citizen.Circuito.provincia === filtros.provincia
+        (ciudadan) => ciudadan.Circuito.provincia === filtros.provincia
       );
     }
     if (filtros.ciudad) {
       filtered = filtered.filter(
-        (citizen) => citizen.Circuito.ciudad === filtros.ciudad
+        (ciudadan) => ciudadan.Circuito.ciudad === filtros.ciudad
       );
     }
     if (filtros.barrio) {
       filtered = filtered.filter(
-        (citizen) => citizen.Circuito.barrio === filtros.barrio
+        (ciudadan) => ciudadan.Circuito.barrio === filtros.barrio
       );
     }
 
@@ -98,36 +99,11 @@ const ConsultaCircuito = () => {
     setFilteredCiudadanos(ciudadanos);
   };
 
-  const handleVerClick = (citizen) => {
-    setSelectedCitizen(citizen);
-    // Limpia el historial al seleccionar un nuevo ciudadano
-    setHistorial([]);
-    setSelectedHistorial(null);
-    addToHistorial(citizen);
+  
+  const handleRowClick = (ciudadan) => {
+    navigate(`/ciudadanos/${ciudadan.id_persona}`);
   };
 
-  const addToHistorial = (citizen) => {
-    // Simulación de datos de historial, ajustar según datos reales
-    const nuevoHistorial = [
-      {
-        tipo: "Tipo de denuncia 1",
-        duracion: "Duración 1",
-        estado: "Estado 1",
-        descripcion: "Descripción 1",
-      },
-      {
-        tipo: "Tipo de denuncia 2",
-        duracion: "Duración 2",
-        estado: "Estado 2",
-        descripcion: "Descripción 2",
-      },
-    ];
-    setHistorial(nuevoHistorial);
-  };
-
-  const handleVerHistorialClick = (item) => {
-    setSelectedHistorial(item);
-  };
 
   return (
     <div className="container mx-auto px-3 py-8">
@@ -217,23 +193,23 @@ const ConsultaCircuito = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredCiudadanos.map((citizen) => (
+              {filteredCiudadanos.map((ciudadan) => (
                 <tr
-                  key={citizen.id_persona}
+                  key={ciudadan.id_persona}
                   className="text-center cursor-pointer hover:bg-gray-200"
-                  onClick={() => handleVerClick(citizen)}
+                  onClick={() => handleRowClick(ciudadan)}
                 >
-                  <td className="border-b p-2">{citizen.cedula}</td>
-                  <td className="border-b p-2">{citizen.nombres}</td>
-                  <td className="border-b p-2">{citizen.apellidos}</td>
-                  <td className="border-b p-2">{citizen.telefono}</td>
-                  <td className="border-b p-2">{citizen.Circuito.barrio}</td>
+                  <td className="border-b p-2">{ciudadan.cedula}</td>
+                  <td className="border-b p-2">{ciudadan.nombres}</td>
+                  <td className="border-b p-2">{ciudadan.apellidos}</td>
+                  <td className="border-b p-2">{ciudadan.telefono}</td>
+                  <td className="border-b p-2">{ciudadan.Circuito.barrio}</td>
                   <td className="border-b p-2">
                     <button
                       className="bg-blue-500 text-white px-4 py-2 rounded"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleVerClick(citizen);
+                        handleRowClick(ciudadan);
                       }}
                     >
                       Ver
@@ -244,111 +220,25 @@ const ConsultaCircuito = () => {
             </tbody>
           </table>
         </div>
-
-        {selectedCitizen && (
-          <div >
-          <div className="mt-8 bg-white p-4 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-2">Detalles del Ciudadano</h2>
-            <div>
-              <div>
-                <strong>Nombre:</strong> {selectedCitizen.nombres}
-              </div>
-              <div>
-                <strong>Apellido:</strong> {selectedCitizen.apellidos}
-              </div>
-              <div>
-                <strong>Cédula:</strong> {selectedCitizen.cedula}
-              </div>
-              <div>
-                <strong>Teléfono:</strong> {selectedCitizen.telefono}
-              </div>
-              <div>
-                <strong>Barrio:</strong> {selectedCitizen.Circuito.barrio}
-              </div>
-              <div>
-                <strong>Ciudad:</strong> {selectedCitizen.Circuito.ciudad}
-              </div>
-              <div>
-                <strong>Provincia:</strong> {selectedCitizen.Circuito.provincia}
-              </div>
-            </div>
-            </div>
-            <div className="mt-8">
-              <h2 className="text-xl font-bold mb-2">Historial</h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border-b p-2">Tipo</th>
-                      <th className="border-b p-2">Duración</th>
-                      <th className="border-b p-2">Estado</th>
-                      <th className="border-b p-2">Descripción</th>
-                      <th className="border-b p-2">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historial.map((item, index) => (
-                      <tr key={index} className="text-center">
-                        <td className="border-b p-2">{item.tipo}</td>
-                        <td className="border-b p-2">{item.duracion}</td>
-                        <td className="border-b p-2">{item.estado}</td>
-                        <td className="border-b p-2">{item.descripcion}</td>
-                        <td className="border-b p-2">
-                          <button
-                            className="bg-blue-500 text-white px-4 py-2 rounded"
-                            onClick={() => handleVerHistorialClick(item)}
-                          >
-                            Ver
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            {selectedHistorial && (
-              <div className="mt-8 bg-gray-100 p-4 rounded-lg shadow-lg">
-                <h2 className="text-xl font-bold mb-2">Detalles del Historial</h2>
-                <div>
-                  <div>
-                    <strong>Tipo:</strong> {selectedHistorial.tipo}
-                  </div>
-                  <div>
-                    <strong>Duración:</strong> {selectedHistorial.duracion}
-                  </div>
-                  <div>
-                    <strong>Estado:</strong> {selectedHistorial.estado}
-                  </div>
-                  <div>
-                    <strong>Descripción:</strong> {selectedHistorial.descripcion}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
 };
 
-const Button = ({ text, number, onClick, icon }) => {
+const Button = ({ text, number, icon, onClick }) => {
   return (
-    <button
-      className="flex items-center justify-between bg-white text-gray-800 p-4 rounded-lg shadow-md hover:bg-black hover:text-white transition duration-300 w-full"
+    <div
       onClick={onClick}
+      className="flex items-center justify-between bg-white p-4 rounded-lg shadow-md cursor-pointer"
     >
-      <div className="flex items-center space-x-4">
-        <div>{icon}</div>
+      <div className="flex items-center">
+        {icon && <div className="mr-3">{icon}</div>}
         <div>
-          <span className="block text-lg font-bold">{text}</span>
-          {number !== null && (
-            <span className="block text-lg font-bold">{number}</span>
-          )}
+          <p className="text-sm text-gray-600">{text}</p>
+          <p className="text-lg font-bold text-gray-900">{number}</p>
         </div>
       </div>
-    </button>
+    </div>
   );
 };
 

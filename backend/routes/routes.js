@@ -22,6 +22,7 @@ router.put('/personas/:id_persona', personaController.updatePersona);
 router.delete('/personas/:id_persona', personaController.deletePersona);
 // nuevos filtros para personas
 router.get('/ciudadanos', personaController.getCiudadanos);
+router.get("/ciudadanos/:id", personaController.getCiudadanoById);
 router.get('/policias', personaController.getPolicias);
 router.get("/policias/:id", personaController.getPoliciaById);
 router.get('/ciudadanoPolicia', personaController.getCiudadanosPolicias);

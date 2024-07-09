@@ -152,7 +152,32 @@ exports.getCiudadanos = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// agregue esta funcion para poder llamar a los detalles del ciudadano por getId en frontend 
+exports.getCiudadanoById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ciudadano = await Persona.findByPk(id, {
+      include: [
+        {
+          model: Circuito,
+          attributes: ['provincia', 'ciudad', 'barrio']
+        },
+        {
+          model: Rol,
+          where: { id_rol: 3 }
+        }
+      ]
+    });
 
+    if (!ciudadano) {
+      return res.status(404).json({ error: "Ciudadano no encontrado" });
+    }
+
+    res.json(ciudadano);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 // Obtener solo policías
 exports.getPolicias = async (req, res) => {
   try {
