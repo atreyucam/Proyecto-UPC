@@ -114,28 +114,7 @@ const ConsultaPolicia = () => {
   );
 
   const handleRowClick = (police) => {
-    setSelectedPolice(police);
-    setSelectedHistorial(null);
-    // Limpia el historial al seleccionar un nuevo policía
-    setHistorial([]);
-    addToHistorial(police);
-  };
-
-  const addToHistorial = (police) => {
-    setHistorial([
-      {
-        nombre: `${police.nombres} ${police.apellidos}`,
-        tipo: "Tipo de denuncia", // Ajustar según los datos reales
-        duracion: "Duración", // Ajustar según los datos reales
-        estado: "Estado", // Ajustar según los datos reales
-        descripcion: "Descripción", // Ajustar según los datos reales
-      },
-    ]);
-  };
-
-  const handleHistorialVerClick = (entry, event) => {
-    event.stopPropagation();
-    setSelectedHistorial(entry);
+    navigate(`/policias/${police.id_persona}`);
   };
 
   return (
@@ -272,93 +251,10 @@ const ConsultaPolicia = () => {
           )}
         </div>
       </div>
-
-      {selectedPolice && (
-        <div className="mt-8 bg-white p-4 rounded-lg shadow-lg">
-          <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow-md">
-            <div >
-              <h2 className="text-xl font-bold mb-2">Detalles del Policía</h2>
-              <div className="mb-2">
-                <strong>Nombre:</strong>{" "}
-                {`${selectedPolice.nombres} ${selectedPolice.apellidos}`}
-              </div>
-              <div className="mb-2">
-                <strong>Teléfono:</strong> {selectedPolice.telefono}
-              </div>
-            </div>
-            <div>
-              <div className="mb-2">
-                <strong>Cédula:</strong> {selectedPolice.cedula}
-              </div>
-              <div className="mb-2">
-                <strong>Barrio:</strong> {selectedPolice.Circuito.barrio}
-              </div>
-            </div>
-          </div>
-          
-          <h3 className="text-lg font-bold mb-2 mt-4">Historial</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border-b p-2">Nombre</th>
-                  <th className="border-b p-2">Tipo de denuncia</th>
-                  <th className="border-b p-2">Duración</th>
-                  <th className="border-b p-2">Estado</th>
-                  <th className="border-b p-2">Descripción</th>
-                  <th className="border-b p-2">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {historial.map((entry, index) => (
-                  <tr
-                    key={index}
-                    className="text-center cursor-pointer hover:bg-gray-200"
-                  >
-                    <td className="border-b p-2">{entry.nombre}</td>
-                    <td className="border-b p-2">{entry.tipo}</td>
-                    <td className="border-b p-2">{entry.duracion}</td>
-                    <td className="border-b p-2">{entry.estado}</td>
-                    <td className="border-b p-2">{entry.descripcion}</td>
-                    <td className="border-b p-2">
-                      <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded"
-                        onClick={(e) => handleHistorialVerClick(entry, e)}
-                      >
-                        Ver
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {selectedHistorial && (
-            <div className="mt-4 bg-gray-100 p-4 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold mb-2">Detalles del Historial</h3>
-              <div className="mb-2">
-                <strong>Nombre:</strong> {selectedHistorial.nombre}
-              </div>
-              <div className="mb-2">
-                <strong>Tipo de denuncia:</strong> {selectedHistorial.tipo}
-              </div>
-              <div className="mb-2">
-                <strong>Duración:</strong> {selectedHistorial.duracion}
-              </div>
-              <div className="mb-2">
-                <strong>Estado:</strong> {selectedHistorial.estado}
-              </div>
-              <div className="mb-2">
-                <strong>Descripción:</strong> {selectedHistorial.descripcion}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
+
 
 const Button = ({ text, number, icon, onClick }) => {
   return (
