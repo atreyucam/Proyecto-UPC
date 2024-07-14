@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiCheckCircle } from "react-icons/fi";
+import { FiCheckCircle, FiEdit, FiTrash, FiSave, FiX, FiEye } from "react-icons/fi";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -14,9 +14,10 @@ const ConsultaPolicia = () => {
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [barrios, setBarrios] = useState([]);
-  const [selectedPolice, setSelectedPolice] = useState(null);
-  const [historial, setHistorial] = useState([]);
-  const [selectedHistorial, setSelectedHistorial] = useState(null);
+  const [editingPoliceId, setEditingPoliceId] = useState(null);
+  const [editedPolice, setEditedPolice] = useState({});
+  const [deletePoliceId, setDeletePoliceId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
   const navigate = useNavigate();
@@ -24,12 +25,8 @@ const ConsultaPolicia = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const policiasRes = await axios.get(
-          "http://localhost:3000/api/policias"
-        );
-        const provinciasRes = await axios.get(
-          "http://localhost:3000/api/provincias"
-        );
+        const policiasRes = await axios.get("http://localhost:3000/api/policias");
+        const provinciasRes = await axios.get("http://localhost:3000/api/provincias");
 
         setPolicias(policiasRes.data);
         setFilteredPolicias(policiasRes.data);
@@ -108,10 +105,58 @@ const ConsultaPolicia = () => {
 
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = filteredPolicias.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
-  );
+  const currentRecords = filteredPolicias.slice(indexOfFirstRecord, indexOfLastRecord);
+
+  const handleEditClick = (police) => {
+    setEditingPoliceId(police.id_persona);
+    setEditedPolice(police);
+  };
+
+  const handleDeleteClick = (id) => {
+    setDeletePoliceId(id);
+    setShowDeleteModal(true);
+  };
+
+  const handleSaveClick = async (id) => {
+    try {
+      await axios.put(`http://localhost:3000/api/personas/${id}`, editedPolice);
+      setPolicias((prev) =>
+        prev.map((police) =>
+          police.id_persona === id ? { ...police, ...editedPolice } : police
+        )
+      );
+      setFilteredPolicias((prev) =>
+        prev.map((police) =>
+          police.id_persona === id ? { ...police, ...editedPolice } : police
+        )
+      );
+      setEditingPoliceId(null);
+      setEditedPolice({});
+    } catch (error) {
+      console.error("Error updating police", error);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:3000/api/personas/${deletePoliceId}`);
+      setPolicias((prev) =>
+        prev.filter((police) => police.id_persona !== deletePoliceId)
+      );
+      setFilteredPolicias((prev) =>
+        prev.filter((police) => police.id_persona !== deletePoliceId)
+      );
+      setShowDeleteModal(false);
+      setDeletePoliceId(null);
+    } catch (error) {
+      console.error("Error deleting police", error);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setDeletePoliceId(null);
+  };
 
   const handleRowClick = (police) => {
     navigate(`/policias/${police.id_persona}`);
@@ -206,27 +251,121 @@ const ConsultaPolicia = () => {
             </thead>
             <tbody>
               {currentRecords.map((police) => (
-                <tr
-                  key={police.id_persona}
-                  className="text-center cursor-pointer hover:bg-gray-200"
-                  onClick={() => handleRowClick(police)}
-                >
-                  <td className="border-b p-2">{police.cedula}</td>
-                  <td className="border-b p-2">{police.nombres}</td>
-                  <td className="border-b p-2">{police.apellidos}</td>
-                  <td className="border-b p-2">{police.telefono}</td>
-                  <td className="border-b p-2">{police.Circuito.barrio}</td>
-                  <td className="border-b p-2">
-                    <button
-                      className="bg-blue-500 text-white px-4 py-2 rounded"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRowClick(police);
-                      }}
-                    >
-                      Ver
-                    </button>
-                  </td>
+                <tr key={police.id_persona}>
+                  {editingPoliceId === police.id_persona ? (
+                    <>
+                      <td className="border-b p-2">
+                        <input
+                          type="text"
+                          value={editedPolice.cedula}
+                          onChange={(e) =>
+                            setEditedPolice({
+                              ...editedPolice,
+                              cedula: e.target.value,
+                            })
+                          }
+                          className="border p-2 rounded"
+                        />
+                      </td>
+                      <td className="border-b p-2">
+                        <input
+                          type="text"
+                          value={editedPolice.nombres}
+                          onChange={(e) =>
+                            setEditedPolice({
+                              ...editedPolice,
+                              nombres: e.target.value,
+                            })
+                          }
+                          className="border p-2 rounded"
+                        />
+                      </td>
+                      <td className="border-b p-2">
+                        <input
+                          type="text"
+                          value={editedPolice.apellidos}
+                          onChange={(e) =>
+                            setEditedPolice({
+                              ...editedPolice,
+                              apellidos: e.target.value,
+                            })
+                          }
+                          className="border p-2 rounded"
+                        />
+                      </td>
+                      <td className="border-b p-2">
+                        <input
+                          type="text"
+                          value={editedPolice.telefono}
+                          onChange={(e) =>
+                            setEditedPolice({
+                              ...editedPolice,
+                              telefono: e.target.value,
+                            })
+                          }
+                          className="border p-2 rounded"
+                        />
+                      </td>
+                      <td className="border-b p-2">
+                        <input
+                          type="text"
+                          value={editedPolice.Circuito.barrio}
+                          onChange={(e) =>
+                            setEditedPolice({
+                              ...editedPolice,
+                              Circuito: {
+                                ...editedPolice.Circuito,
+                                barrio: e.target.value,
+                              },
+                            })
+                          }
+                          className="border p-2 rounded"
+                        />
+                      </td>
+                      <td className="border-b p-2">
+                        <button
+                          className="bg-green-500 text-white px-4 py-2 rounded"
+                          onClick={() => handleSaveClick(police.id_persona)}
+                        >
+                          <FiSave size={20} />
+                        </button>
+                        <button
+                          className="bg-red-500 text-white px-4 py-2 rounded ml-2"
+                          onClick={() => setEditingPoliceId(null)}
+                        >
+                          <FiX size={20} />
+                        </button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="border-b p-2">{police.cedula}</td>
+                      <td className="border-b p-2">{police.nombres}</td>
+                      <td className="border-b p-2">{police.apellidos}</td>
+                      <td className="border-b p-2">{police.telefono}</td>
+                      <td className="border-b p-2">{police.Circuito.barrio}</td>
+                      <td className="border-b p-2">
+                        <button
+                          className="bg-blue-500 text-white px-4 py-2 rounded"
+                          onClick={() => handleEditClick(police)}
+                        >
+                          <FiEdit size={20} />
+                        </button>
+                        <button
+                          className="bg-red-500 text-white px-4 py-2 rounded ml-2"
+                          onClick={() => handleDeleteClick(police.id_persona)}
+                        >
+                          <FiTrash size={20} />
+                        </button>
+                        <button
+                          className="bg-purple-500 text-white px-4 py-2 rounded ml-2"
+                          onClick={() => handleRowClick(police)}
+                        >
+                          <FiEye size={20} />
+                        </button>
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -251,10 +390,33 @@ const ConsultaPolicia = () => {
           )}
         </div>
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-4 rounded shadow-lg">
+            <h2 className="text-lg font-bold mb-4">
+              ¿Está seguro de que desea eliminar este policía?
+            </h2>
+            <div className="flex justify-end">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded mr-2"
+                onClick={handleConfirmDelete}
+              >
+                Eliminar
+              </button>
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded"
+                onClick={handleCancelDelete}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
 
 const Button = ({ text, number, icon, onClick }) => {
   return (

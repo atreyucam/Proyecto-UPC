@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { FiCheckCircle } from "react-icons/fi";
+import { FiCheckCircle, FiEdit, FiSave, FiXCircle, FiTrash, FiEye } from "react-icons/fi";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const ConsultaCircuito = () => {
   const [ciudadanos, setCiudadanos] = useState([]);
@@ -14,19 +14,16 @@ const ConsultaCircuito = () => {
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [barrios, setBarrios] = useState([]);
-  const [historial, setHistorial] = useState([]);
-  const [selectedHistorial, setSelectedHistorial] = useState(null);
+  const [editingCiudadano, setEditingCiudadano] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [ciudadanoToDelete, setCiudadanoToDelete] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ciudadanosRes = await axios.get(
-          "http://localhost:3000/api/ciudadanos"
-        );
-        const provinciasRes = await axios.get(
-          "http://localhost:3000/api/provincias"
-        );
+        const ciudadanosRes = await axios.get("http://localhost:3000/api/ciudadanos");
+        const provinciasRes = await axios.get("http://localhost:3000/api/provincias");
 
         setCiudadanos(ciudadanosRes.data);
         setFilteredCiudadanos(ciudadanosRes.data);
@@ -44,9 +41,7 @@ const ConsultaCircuito = () => {
     setFiltros((prevFiltros) => ({ ...prevFiltros, [name]: value }));
 
     if (name === "provincia") {
-      const ciudadesRes = await axios.get(
-        `http://localhost:3000/api/ciudades/${value}`
-      );
+      const ciudadesRes = await axios.get(`http://localhost:3000/api/ciudades/${value}`);
       setCiudades(ciudadesRes.data);
       setBarrios([]);
       setFiltros((prevFiltros) => ({
@@ -55,9 +50,7 @@ const ConsultaCircuito = () => {
         barrio: "",
       }));
     } else if (name === "ciudad") {
-      const barriosRes = await axios.get(
-        `http://localhost:3000/api/barrios/${filtros.provincia}/${value}`
-      );
+      const barriosRes = await axios.get(`http://localhost:3000/api/barrios/${filtros.provincia}/${value}`);
       setBarrios(barriosRes.data);
       setFiltros((prevFiltros) => ({
         ...prevFiltros,
@@ -70,19 +63,13 @@ const ConsultaCircuito = () => {
     let filtered = ciudadanos;
 
     if (filtros.provincia) {
-      filtered = filtered.filter(
-        (ciudadan) => ciudadan.Circuito.provincia === filtros.provincia
-      );
+      filtered = filtered.filter((ciudadano) => ciudadano.Circuito.provincia === filtros.provincia);
     }
     if (filtros.ciudad) {
-      filtered = filtered.filter(
-        (ciudadan) => ciudadan.Circuito.ciudad === filtros.ciudad
-      );
+      filtered = filtered.filter((ciudadano) => ciudadano.Circuito.ciudad === filtros.ciudad);
     }
     if (filtros.barrio) {
-      filtered = filtered.filter(
-        (ciudadan) => ciudadan.Circuito.barrio === filtros.barrio
-      );
+      filtered = filtered.filter((ciudadano) => ciudadano.Circuito.barrio === filtros.barrio);
     }
 
     setFilteredCiudadanos(filtered);
@@ -99,11 +86,56 @@ const ConsultaCircuito = () => {
     setFilteredCiudadanos(ciudadanos);
   };
 
-  
-  const handleRowClick = (ciudadan) => {
-    navigate(`/ciudadanos/${ciudadan.id_persona}`);
+  const handleEditClick = (ciudadano) => {
+    setEditingCiudadano(ciudadano);
   };
 
+  const handleSaveClick = async (ciudadano) => {
+    try {
+      await axios.put(`http://localhost:3000/api/personas/${ciudadano.id_persona}`, ciudadano);
+      setCiudadanos((prevCiudadanos) =>
+        prevCiudadanos.map((c) => (c.id_persona === ciudadano.id_persona ? ciudadano : c))
+      );
+      setFilteredCiudadanos((prevFiltered) =>
+        prevFiltered.map((c) => (c.id_persona === ciudadano.id_persona ? ciudadano : c))
+      );
+      setEditingCiudadano(null);
+    } catch (error) {
+      console.error("Error updating ciudadano", error);
+    }
+  };
+
+  const handleDeleteClick = (ciudadano) => {
+    setShowDeleteModal(true);
+    setCiudadanoToDelete(ciudadano);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:3000/api/personas/${ciudadanoToDelete.id_persona}`);
+      setCiudadanos((prevCiudadanos) =>
+        prevCiudadanos.filter((c) => c.id_persona !== ciudadanoToDelete.id_persona)
+      );
+      setFilteredCiudadanos((prevFiltered) =>
+        prevFiltered.filter((c) => c.id_persona !== ciudadanoToDelete.id_persona)
+      );
+      setShowDeleteModal(false);
+      setCiudadanoToDelete(null);
+    } catch (error) {
+      console.error("Error deleting ciudadano", error);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setCiudadanoToDelete(null);
+  };
+
+  const handleRowClick = (ciudadano) => {
+    if (!editingCiudadano) {
+      navigate(`/ciudadanos/${ciudadano.id_persona}`);
+    }
+  };
 
   return (
     <div className="container mx-auto px-3 py-8">
@@ -193,27 +225,120 @@ const ConsultaCircuito = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredCiudadanos.map((ciudadan) => (
+              {filteredCiudadanos.map((ciudadano) => (
                 <tr
-                  key={ciudadan.id_persona}
-                  className="text-center cursor-pointer hover:bg-gray-200"
-                  onClick={() => handleRowClick(ciudadan)}
+                  key={ciudadano.id_persona}
+                  className={`border-b ${
+                    editingCiudadano?.id_persona === ciudadano.id_persona ? "bg-yellow-100" : ""
+                  }`}
                 >
-                  <td className="border-b p-2">{ciudadan.cedula}</td>
-                  <td className="border-b p-2">{ciudadan.nombres}</td>
-                  <td className="border-b p-2">{ciudadan.apellidos}</td>
-                  <td className="border-b p-2">{ciudadan.telefono}</td>
-                  <td className="border-b p-2">{ciudadan.Circuito.barrio}</td>
                   <td className="border-b p-2">
-                    <button
-                      className="bg-blue-500 text-white px-4 py-2 rounded"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRowClick(ciudadan);
-                      }}
-                    >
-                      Ver
-                    </button>
+                    {editingCiudadano?.id_persona === ciudadano.id_persona ? (
+                      <input
+                        type="text"
+                        value={editingCiudadano.cedula}
+                        onChange={(e) =>
+                          setEditingCiudadano((prevCiudadano) => ({
+                            ...prevCiudadano,
+                            cedula: e.target.value,
+                          }))
+                        }
+                        className="border rounded p-1 w-full"
+                      />
+                    ) : (
+                      ciudadano.cedula
+                    )}
+                  </td>
+                  <td className="border-b p-2">
+                    {editingCiudadano?.id_persona === ciudadano.id_persona ? (
+                      <input
+                        type="text"
+                        value={editingCiudadano.nombres}
+                        onChange={(e) =>
+                          setEditingCiudadano((prevCiudadano) => ({
+                            ...prevCiudadano,
+                            nombres: e.target.value,
+                          }))
+                        }
+                        className="border rounded p-1 w-full"
+                      />
+                    ) : (
+                      ciudadano.nombres
+                    )}
+                  </td>
+                  <td className="border-b p-2">
+                    {editingCiudadano?.id_persona === ciudadano.id_persona ? (
+                      <input
+                        type="text"
+                        value={editingCiudadano.apellidos}
+                        onChange={(e) =>
+                          setEditingCiudadano((prevCiudadano) => ({
+                            ...prevCiudadano,
+                            apellidos: e.target.value,
+                          }))
+                        }
+                        className="border rounded p-1 w-full"
+                      />
+                    ) : (
+                      ciudadano.apellidos
+                    )}
+                  </td>
+                  <td className="border-b p-2">
+                    {editingCiudadano?.id_persona === ciudadano.id_persona ? (
+                      <input
+                        type="text"
+                        value={editingCiudadano.telefono}
+                        onChange={(e) =>
+                          setEditingCiudadano((prevCiudadano) => ({
+                            ...prevCiudadano,
+                            telefono: e.target.value,
+                          }))
+                        }
+                        className="border rounded p-1 w-full"
+                      />
+                    ) : (
+                      ciudadano.telefono
+                    )}
+                  </td>
+                  <td className="border-b p-2">{ciudadano.Circuito.barrio}</td>
+                  <td className="border-b p-2 flex gap-2">
+                    {editingCiudadano?.id_persona === ciudadano.id_persona ? (
+                      <>
+                        <button
+                          className="bg-green-500 text-white px-4 py-1 rounded"
+                          onClick={() => handleSaveClick(editingCiudadano)}
+                        >
+                          <FiSave size={20} />
+                        </button>
+                        <button
+                          className="bg-red-500 text-white px-4 py-1 rounded"
+                          onClick={() => setEditingCiudadano(null)}
+                        >
+                          <FiXCircle size={20} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className="bg-blue-500 text-white px-4 py-1 rounded"
+                          onClick={() => handleEditClick(ciudadano)}
+                        >
+                          <FiEdit size={20} />
+                        </button>
+                        <button
+                          className="bg-red-500 text-white px-4 py-1 rounded"
+                          onClick={() => handleDeleteClick(ciudadano)}
+                        >
+                          <FiTrash size={20} />
+                        </button>
+                        <Link
+                          to={`/ciudadanos/${ciudadano.id_persona}`}
+                          className="bg-gray-500 text-white px-4 py-1 rounded"
+                        >
+                          <FiEye size={20} />
+                        </Link>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -221,6 +346,28 @@ const ConsultaCircuito = () => {
           </table>
         </div>
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <p className="text-lg font-bold mb-4">¿Estás seguro de eliminar este ciudadano?</p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded"
+                onClick={confirmDelete}
+              >
+                Sí, eliminar
+              </button>
+              <button
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                onClick={cancelDelete}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -24,7 +24,10 @@ router.delete('/personas/:id_persona', personaController.deletePersona);
 router.get('/ciudadanos', personaController.getCiudadanos);
 router.get("/ciudadanos/:id", personaController.getCiudadanoById);
 router.get('/policias', personaController.getPolicias);
+router.put("/policias/:id", personaController.updatePolicia);
+router.delete("/policias/:id", personaController.deletePolicia);
 router.get("/policias/:id", personaController.getPoliciaById);
+
 router.get('/ciudadanoPolicia', personaController.getCiudadanosPolicias);
 router.get('/adminCiudadanoPolicia', personaController.getAdminCiudadanosPolicias);
 
@@ -69,6 +72,7 @@ router.get('/solicitudes', solicitudController.getAllSolicitudesFullInfo);
 
 // Nuevas rutas para uso del filtro de -> provincias, ciudades y barrios
 router.get('/provincias', circuitoController.getAllProvincias);
+
 router.get('/ciudades/:provincia', circuitoController.getCiudadesByProvincia);
 router.get('/barrios/:provincia/:ciudad', circuitoController.getBarriosByCiudad);
 
