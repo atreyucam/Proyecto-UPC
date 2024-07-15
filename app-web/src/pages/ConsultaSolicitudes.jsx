@@ -7,9 +7,22 @@ const ConsultaSolicitudes = () => {
   const [filtros, setFiltros] = useState({
     tipo: "",
     subtipo: "",
+    estado: "",
+    provincia: "",
+    ciudad: "",
+    barrio: "",
+    fechaInicio: "",
+    fechaFin: "",
   });
   const [tipos, setTipos] = useState([]);
   const [subtipos, setSubtipos] = useState([]);
+  const [estados, setEstados] = useState([]);
+  const [provincias, setProvincias] = useState([]);
+  const [ciudades, setCiudades] = useState([]);
+  const [barrios, setBarrios] = useState([]);
+
+  const recordsPerPage = 10; // Número de registros por página
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,10 +32,19 @@ const ConsultaSolicitudes = () => {
         );
         const tiposRes = await axios.get(
           "http://localhost:3000/api/tipoSolicitud"
-        ); // Asegúrate de tener esta API
+        );
+        const estadosRes = await axios.get(
+          "http://localhost:3000/api/estadoSolicitudes"
+        );
+        const provinciasRes = await axios.get(
+          "http://localhost:3000/api/provincias"
+        );
+
         setSolicitudes(solicitudesRes.data);
         setFilteredSolicitudes(solicitudesRes.data);
         setTipos(tiposRes.data);
+        setEstados(estadosRes.data);
+        setProvincias(provinciasRes.data);
       } catch (error) {
         console.error("Error fetching data", error);
       }
@@ -36,47 +58,78 @@ const ConsultaSolicitudes = () => {
     setFiltros((prevFiltros) => ({ ...prevFiltros, [name]: value }));
 
     if (name === "tipo") {
-      const subtiposRes = await axios.get(
-        `http://localhost:3000/api/subtipo/${value}`
-      );
-      setSubtipos(subtiposRes.data);
-      setFiltros((prevFiltros) => ({ ...prevFiltros, subtipo: "" }));
+      try {
+        const subtiposRes = await axios.get(
+          `http://localhost:3000/api/tipos/${value}/subtipos`
+        );
+        setSubtipos(subtiposRes.data);
+        setFiltros((prevFiltros) => ({ ...prevFiltros, subtipo: "" }));
+      } catch (error) {
+        console.error("Error fetching subtipos", error);
+      }
+    }
+
+    if (name === "provincia") {
+      try {
+        const ciudadesRes = await axios.get(
+          `http://localhost:3000/api/ciudades/${value}`
+        );
+        setCiudades(ciudadesRes.data);
+        setFiltros((prevFiltros) => ({
+          ...prevFiltros,
+          ciudad: "",
+          barrio: "",
+        }));
+        setBarrios([]);
+      } catch (error) {
+        console.error("Error fetching ciudades", error);
+      }
+    }
+
+    if (name === "ciudad") {
+      try {
+        const barriosRes = await axios.get(
+          `http://localhost:3000/api/barrios/${filtros.provincia}/${value}`
+        );
+        setBarrios(barriosRes.data);
+        setFiltros((prevFiltros) => ({ ...prevFiltros, barrio: "" }));
+      } catch (error) {
+        console.error("Error fetching barrios", error);
+      }
     }
   };
 
-  const handleBuscarClick = () => {
-    let filtered = solicitudes;
-
-    if (filtros.tipo) {
-      filtered = filtered.filter(
-        (solicitud) =>
-          solicitud.Subtipo.TipoSolicitud.descripcion === filtros.tipo
+  const handleBuscarClick = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/api/filtrosSolicitudes",
+        {
+          params: filtros,
+        }
       );
+      setFilteredSolicitudes(response.data);
+      setCurrentPage(1); // Reinicia a la primera página cuando se hace una nueva búsqueda
+    } catch (error) {
+      console.error("Error fetching filtered data", error);
     }
-    if (filtros.subtipo) {
-      filtered = filtered.filter(
-        (solicitud) => solicitud.Subtipo.descripcion === filtros.subtipo
-      );
-    }
-
-    setFilteredSolicitudes(filtered);
   };
 
   const handleLimpiarFiltroClick = () => {
     setFiltros({
       tipo: "",
       subtipo: "",
+      estado: "",
+      provincia: "",
+      ciudad: "",
+      barrio: "",
+      fechaInicio: "",
+      fechaFin: "",
     });
-    setTipos([]);
     setSubtipos([]);
+    setCiudades([]);
+    setBarrios([]);
     setFilteredSolicitudes(solicitudes);
-  };
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 10;
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+    setCurrentPage(1); // Reinicia a la primera página cuando se limpian los filtros
   };
 
   const indexOfLastRecord = currentPage * recordsPerPage;
@@ -85,6 +138,10 @@ const ConsultaSolicitudes = () => {
     indexOfFirstRecord,
     indexOfLastRecord
   );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="container mx-auto px-3 py-8">
@@ -100,7 +157,7 @@ const ConsultaSolicitudes = () => {
           >
             <option value="">Tipo</option>
             {tipos.map((tipo) => (
-              <option key={tipo.id_tipo} value={tipo.descripcion}>
+              <option key={tipo.id_tipo} value={tipo.id_tipo}>
                 {tipo.descripcion}
               </option>
             ))}
@@ -114,11 +171,79 @@ const ConsultaSolicitudes = () => {
           >
             <option value="">Subtipo</option>
             {subtipos.map((subtipo) => (
-              <option key={subtipo.id_subtipo} value={subtipo.descripcion}>
+              <option key={subtipo.id_subtipo} value={subtipo.id_subtipo}>
                 {subtipo.descripcion}
               </option>
             ))}
           </select>
+          <select
+            name="estado"
+            value={filtros.estado}
+            onChange={handleFiltroChange}
+            className="border p-2 rounded"
+          >
+            <option value="">Estado</option>
+            {estados.map((estado) => (
+              <option key={estado.id_estado} value={estado.id_estado}>
+                {estado.descripcion}
+              </option>
+            ))}
+          </select>
+          <select
+            name="provincia"
+            value={filtros.provincia}
+            onChange={handleFiltroChange}
+            className="border p-2 rounded"
+          >
+            <option value="">Provincia</option>
+            {provincias.map((provincia) => (
+              <option key={provincia.provincia} value={provincia.provincia}>
+                {provincia.provincia}
+              </option>
+            ))}
+          </select>
+          <select
+            name="ciudad"
+            value={filtros.ciudad}
+            onChange={handleFiltroChange}
+            className="border p-2 rounded"
+            disabled={!filtros.provincia}
+          >
+            <option value="">Ciudad</option>
+            {ciudades.map((ciudad) => (
+              <option key={ciudad.ciudad} value={ciudad.ciudad}>
+                {ciudad.ciudad}
+              </option>
+            ))}
+          </select>
+          <select
+            name="barrio"
+            value={filtros.barrio}
+            onChange={handleFiltroChange}
+            className="border p-2 rounded"
+            disabled={!filtros.ciudad}
+          >
+            <option value="">Barrio</option>
+            {barrios.map((barrio) => (
+              <option key={barrio.barrio} value={barrio.barrio}>
+                {barrio.barrio}
+              </option>
+            ))}
+          </select>
+          <input
+            type="date"
+            name="fechaInicio"
+            value={filtros.fechaInicio}
+            onChange={handleFiltroChange}
+            className="border p-2 rounded"
+          />
+          <input
+            type="date"
+            name="fechaFin"
+            value={filtros.fechaFin}
+            onChange={handleFiltroChange}
+            className="border p-2 rounded"
+          />
           <button
             className="bg-green-500 text-white px-4 py-2 rounded"
             onClick={handleBuscarClick}
@@ -145,6 +270,10 @@ const ConsultaSolicitudes = () => {
                 <th className="border-b p-2">Fecha de Creación</th>
                 <th className="border-b p-2">PuntoGPS</th>
                 <th className="border-b p-2">Dirección</th>
+                <th className="border-b p-2">Provincia</th>
+                <th className="border-b p-2">Ciudad</th>
+                <th className="border-b p-2">Barrio</th>
+                <th className="border-b p-2">Policía Asignado</th>
               </tr>
             </thead>
             <tbody>
@@ -165,6 +294,25 @@ const ConsultaSolicitudes = () => {
                   </td>
                   <td className="border-b p-2">{solicitud.puntoGPS}</td>
                   <td className="border-b p-2">{solicitud.direccion}</td>
+                  <td className="border-b p-2">
+                    {solicitud.Circuito.provincia}
+                  </td>
+                  <td className="border-b p-2">{solicitud.Circuito.ciudad}</td>
+                  <td className="border-b p-2">{solicitud.Circuito.barrio}</td>
+                  <td className="border-b p-2">
+                    {solicitud.SolicitudEventoPersonas &&
+                    solicitud.SolicitudEventoPersonas.some(
+                      (evento) => evento.Persona
+                    )
+                      ? solicitud.SolicitudEventoPersonas.map((evento) =>
+                          evento.Persona
+                            ? `${evento.Persona.nombres} ${evento.Persona.apellidos}`
+                            : null
+                        )
+                          .filter(Boolean)
+                          .join(", ")
+                      : "Por asignar"}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -191,25 +339,6 @@ const ConsultaSolicitudes = () => {
         </div>
       </div>
     </div>
-  );
-};
-
-const Button = ({ text, number, onClick, icon }) => {
-  return (
-    <button
-      className="flex items-center justify-between bg-white text-gray-800 p-4 rounded-lg shadow-md hover:bg-black hover:text-white transition duration-300 w-full"
-      onClick={onClick}
-    >
-      <div className="flex items-center space-x-4">
-        <div>{icon}</div>
-        <div>
-          <span className="block text-lg font-bold">{text}</span>
-          {number !== null && (
-            <span className="block text-lg font-bold">{number}</span>
-          )}
-        </div>
-      </div>
-    </button>
   );
 };
 

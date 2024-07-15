@@ -41,7 +41,7 @@ const Denunciar = () => {
           );
           setSubtipos(response.data);
         } catch (error) {
-          Alert.alert("Error", "Hubo un problema al obtener los subtiposs");
+          Alert.alert("Error", "Hubo un problema al obtener los subtipos");
         }
       }
     };
@@ -61,10 +61,12 @@ const Denunciar = () => {
 
     try {
       await axios.post(`http://localhost:3000/api/solicitud`, data);
+      console.log(data);
       Alert.alert("Éxito", "Denuncia registrada con éxito");
     } catch (error) {
       if (error.response) {
-        // El servidor respondió con un código de estado fuera del rango 2xxss
+        console.log(data);
+        // El servidor respondió con un código de estado fuera del rango 2xx
         Alert.alert(
           "Error",
           `Error del servidor: ${error.response.data.error}`
@@ -108,6 +110,7 @@ const Denunciar = () => {
         selectedValue={selectedSubtipo}
         onValueChange={(itemValue, itemIndex) => setSelectedSubtipo(itemValue)}
         style={styles.picker}
+        enabled={!!selectedTipo}
       >
         <Picker.Item label="Seleccione un subtipo" value="" />
         {subtipos.map((subtipo) => (

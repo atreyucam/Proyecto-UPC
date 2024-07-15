@@ -1,37 +1,56 @@
-const { Solicitud, SolicitudEventoPersona, NotificacionPersona, Evento, Estado, Subtipo, Persona, TipoSolicitud, Circuito } = require('../models/db_models');
+const { Solicitud, SolicitudEventoPersona, NotificacionPersona, Evento, Estado, Subtipo, Persona, TipoSolicitud, Circuito, Rol, sequelize} = require('../models/db_models');
+const { Op } = require('sequelize');
 
-// crear una nueva solicitud
-exports.createSolicitud = async (req,res) => {
-    const { id_persona, id_estado, id_subtipo, puntoGPS, direccion, observacion } = req.body;
+// Crear una nueva solicitud
+exports.createSolicitud = async (req, res) => {
+  const { id_persona, id_estado, id_subtipo, puntoGPS, direccion, observacion } = req.body;
+  const transaction = await sequelize.transaction();
+
   try {
-    const nuevaSolicitud = await Solicitud.create({
-      id_estado,
-      id_subtipo,
-      puntoGPS,
-      direccion,
-      observacion
-    });
+    // Obtener el circuito de la persona que crea la solicitud
+    const persona = await Persona.findByPk(id_persona);
+    if (!persona) {
+      return res.status(404).json({ error: 'Persona no encontrada' });
+    }
+    const id_circuito = persona.id_circuito;
+
+    const nuevaSolicitud = await Solicitud.create(
+      {
+        id_estado,
+        id_subtipo,
+        puntoGPS,
+        direccion,
+        observacion,
+        id_circuito, // Añadimos el id_circuito a la solicitud
+      },
+      { transaction }
+    );
 
     // Obtener el tipo de evento basado en el subtipo
     const subtipo = await Subtipo.findByPk(id_subtipo, { include: 'TipoSolicitud' });
     let id_evento = null;
 
     if (subtipo.id_tipo === 1) {
-      id_evento = 1;  // El usuario ha presionado el botón de seguridad
+      id_evento = 1; // El usuario ha presionado el botón de seguridad
     } else if (subtipo.id_tipo === 2) {
-      id_evento = 2;  // El ciudadano ha registrado una denuncia ciudadana
+      id_evento = 2; // El ciudadano ha registrado una denuncia ciudadana
     } else if (subtipo.id_tipo === 3) {
-      id_evento = 3;  // El ciudadano ha registrado un servicio comunitario
+      id_evento = 3; // El ciudadano ha registrado un servicio comunitario
     }
 
-    await SolicitudEventoPersona.create({
-      id_solicitud: nuevaSolicitud.id_solicitud,
-      id_evento,
-      id_persona
-    });
+    await SolicitudEventoPersona.create(
+      {
+        id_solicitud: nuevaSolicitud.id_solicitud,
+        id_evento,
+        id_persona,
+      },
+      { transaction }
+    );
 
+    await transaction.commit();
     res.status(201).json(nuevaSolicitud);
   } catch (error) {
+    await transaction.rollback();
     res.status(500).json({ error: error.message });
   }
 };
@@ -282,6 +301,32 @@ exports.getSolicitudFullInfo = async (req, res) => {
   }
 };
 
+// // Traer toda la info de solicitudes
+// exports.getAllSolicitudesFullInfo = async (req, res) => {
+//   try {
+//     const solicitudes = await Solicitud.findAll({
+//       include: [
+//         {
+//           model: Estado,
+//           attributes: ['descripcion']
+//         },
+//         {
+//           model: Subtipo,
+//           attributes: ['descripcion'],
+//           include: {
+//             model: TipoSolicitud,
+//             attributes: ['descripcion']
+//           }
+//         }
+//       ]
+//     });
+//     res.status(200).json(solicitudes);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
 // Traer toda la info de solicitudes
 exports.getAllSolicitudesFullInfo = async (req, res) => {
   try {
@@ -298,9 +343,145 @@ exports.getAllSolicitudesFullInfo = async (req, res) => {
             model: TipoSolicitud,
             attributes: ['descripcion']
           }
+        },
+        {
+          model: Circuito,
+          attributes: ['provincia', 'ciudad', 'barrio']
+        },
+        {
+          model: SolicitudEventoPersona,
+          include: [
+            {
+              model: Persona,
+              attributes: ['nombres', 'apellidos'],
+              include: [
+                {
+                  model: Rol,
+                  where: { descripcion: 'Policia' },
+                  attributes: []
+                }
+              ]
+            },
+            {
+              model: Evento,
+              attributes: ['evento']
+            }
+          ],
+          where: { id_evento: [2, 3, 4] } // Solo incluir eventos de asignación y resolución
         }
       ]
     });
+    res.status(200).json(solicitudes);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// Obtener todos los estados
+exports.getAllEstados = async (req, res) => {
+  try {
+    const estados = await Estado.findAll();
+    res.status(200).json(estados);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+exports.getFilteredSolicitudes = async (req, res) => {
+  const { tipo, subtipo, estado, provincia, ciudad, barrio, fechaInicio, fechaFin } = req.query;
+
+  const whereClause = {};
+  const includeClause = [
+    {
+      model: Estado,
+      attributes: ['descripcion'],
+    },
+    {
+      model: Subtipo,
+      attributes: ['descripcion'],
+      include: {
+        model: TipoSolicitud,
+        attributes: ['descripcion'],
+      },
+    },
+    {
+      model: Circuito,
+      attributes: ['provincia', 'ciudad', 'barrio']
+    },
+    {
+      model: SolicitudEventoPersona,
+      include: [
+        {
+          model: Persona,
+          attributes: ['nombres', 'apellidos'],
+          include: [
+            {
+              model: Rol,
+              where: { descripcion: 'policia' },
+              attributes: []
+            }
+          ]
+        },
+        {
+          model: Evento,
+          attributes: ['evento']
+        }
+      ],
+      where: { id_evento: [2, 3, 4] }, // Solo incluir eventos de asignación y resolución
+      required: false
+    }
+  ];
+
+  if (tipo) {
+    includeClause[1].include.where = { id_tipo: tipo };
+  }
+
+  if (subtipo) {
+    includeClause[1].where = { id_subtipo: subtipo };
+  }
+
+  if (estado) {
+    includeClause[0].where = { id_estado: estado };
+  }
+
+  if (provincia) {
+    includeClause[2].where = { provincia };
+  }
+
+  if (ciudad) {
+    includeClause[2].where = { ...includeClause[2].where, ciudad };
+  }
+
+  if (barrio) {
+    includeClause[2].where = { ...includeClause[2].where, barrio };
+  }
+
+  // Convertir las fechas a UTC para compararlas correctamente en PostgreSQL
+  if (fechaInicio && fechaFin) {
+    whereClause.fecha_creacion = {
+      [Op.between]: [
+        new Date(`${fechaInicio}T00:00:00.000Z`),
+        new Date(`${fechaFin}T23:59:59.999Z`)
+      ]
+    };
+  } else if (fechaInicio) {
+    whereClause.fecha_creacion = {
+      [Op.gte]: new Date(`${fechaInicio}T00:00:00.000Z`)
+    };
+  } else if (fechaFin) {
+    whereClause.fecha_creacion = {
+      [Op.lte]: new Date(`${fechaFin}T23:59:59.999Z`)
+    };
+  }
+
+  try {
+    const solicitudes = await Solicitud.findAll({
+      where: whereClause,
+      include: includeClause
+    });
+
     res.status(200).json(solicitudes);
   } catch (error) {
     res.status(500).json({ error: error.message });

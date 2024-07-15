@@ -69,6 +69,8 @@ router.post('/solicitud/:id/resolve', solicitudController.resolveSolicitud);
 router.post('/solicitud/:id/event', solicitudController.registrarEvento);  // Nueva ruta para registrar eventos
 router.get('/solicitud/fullinfo/:id', solicitudController.getSolicitudFullInfo);
 router.get('/solicitudes', solicitudController.getAllSolicitudesFullInfo);
+router.get('/estadoSolicitudes', solicitudController.getAllEstados);
+router.get('/filtrosSolicitudes', solicitudController.getFilteredSolicitudes);
 
 // Nuevas rutas para uso del filtro de -> provincias, ciudades y barrios
 router.get('/provincias', circuitoController.getAllProvincias);

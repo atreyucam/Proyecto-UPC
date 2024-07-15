@@ -404,6 +404,10 @@ NotificacionPersona.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
 NotificacionPersona.belongsTo(Notificacion, { foreignKey: 'id_notificacion' });
 NotificacionPersona.belongsTo(Persona, { foreignKey: 'id_persona' });
 
+// Nueva relación entre Solicitud y Circuito
+Circuito.hasMany(Solicitud, { foreignKey: 'id_circuito' });
+Solicitud.belongsTo(Circuito, { foreignKey: 'id_circuito' });
+
 module.exports = {
   sequelize,
   Rol,
