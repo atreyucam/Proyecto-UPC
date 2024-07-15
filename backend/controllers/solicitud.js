@@ -419,7 +419,7 @@ exports.getFilteredSolicitudes = async (req, res) => {
           include: [
             {
               model: Rol,
-              where: { descripcion: 'policia' },
+              where: { descripcion: 'Policia' },
               attributes: []
             }
           ]
@@ -429,14 +429,17 @@ exports.getFilteredSolicitudes = async (req, res) => {
           attributes: ['evento']
         }
       ],
-      where: { id_evento: [2, 3, 4] }, // Solo incluir eventos de asignación y resolución
+      // where: { id_evento: [2, 3, 4] }, // Solo incluir eventos de asignación y resolución
       required: false
     }
   ];
 
   if (tipo) {
     includeClause[1].include.where = { id_tipo: tipo };
+    // Elimina la condición de subtipo cuando el tipo está presente
+    includeClause[1].where = { id_tipo: tipo };
   }
+  
 
   if (subtipo) {
     includeClause[1].where = { id_subtipo: subtipo };

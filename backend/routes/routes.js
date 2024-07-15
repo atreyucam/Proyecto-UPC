@@ -78,4 +78,9 @@ router.get('/provincias', circuitoController.getAllProvincias);
 router.get('/ciudades/:provincia', circuitoController.getCiudadesByProvincia);
 router.get('/barrios/:provincia/:ciudad', circuitoController.getBarriosByCiudad);
 
+
+
+// detalles de policia y soliciedes
+
+
 module.exports = router;
