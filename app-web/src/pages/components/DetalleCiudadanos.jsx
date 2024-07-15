@@ -144,10 +144,7 @@ const CiudadanoDetail = () => {
                 <td className="border-b p-2">
                   <button
                     className="bg-blue-500 text-white px-4 py-2 rounded"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleHistorialClick(entry.id_historial);
-                    }}
+                    onClick={() => navigate(`/ciudadano/${id}/historial/${entry.id_historial}`, { state: { historial: entry } })}
                   >
                     Ver
                   </button>
@@ -158,36 +155,7 @@ const CiudadanoDetail = () => {
         </table>
       </div>
 
-      {selectedHistorial && (
-        <div className="mt-4 bg-gray-100 p-4 rounded-lg shadow-md grid grid-cols-2 gap-4">
-          <h3 className="text-lg font-bold mb-2 col-span-2">Detalles del Historial</h3>
-          <div>
-            <p>
-              <strong>Nombre y Apellidos:</strong> {`${selectedHistorial.nombre} ${selectedHistorial.apellido}`}
-            </p>
-            <p>
-              <strong>Cédula:</strong> {ciudadano.cedula}
-            </p>
-            <p>
-              <strong>Teléfono:</strong> {ciudadano.telefono}
-            </p>
-            <p>
-              <strong>Tipo de Denuncia:</strong> {selectedHistorial.tipo}
-            </p>
-          </div>
-          <div>
-            <p>
-              <strong>Duración:</strong> {selectedHistorial.duracion}
-            </p>
-            <p>
-              <strong>Estado:</strong> {selectedHistorial.estado}
-            </p>
-            <p>
-              <strong>Descripción:</strong> {selectedHistorial.descripcion}
-            </p>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 };
