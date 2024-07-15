@@ -9,6 +9,7 @@ import ConsultaSolicitudes from "./pages/ConsultaSolicitudes";
 import ConsultaPolicias from "./pages/ConsultaPolicias";
 import ConsultaCiudadanos from "./pages/ConsultaCiudadanos";
 import DetallePolicia from "./pages/components/DetallePolicia";
+import HistorialPolicia from "./pages/components/HistorialPolicia";
 import DetalleCiudadano from "./pages/components/DetalleCiudadanos";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
 
@@ -28,6 +29,7 @@ function App() {
           />
           <Route path="/ConsultaCiudadanos" element={<ConsultaCiudadanos />} />
           <Route path="/policias/:id" element={<DetallePolicia />} />
+          <Route path="/policia/:id/historial/:idHistorial" element={<HistorialPolicia />} />
           <Route path="/ciudadanos/:id" element={<DetalleCiudadano />} />
         </Route>
         <Route path="/2" element={<Home2 />} />

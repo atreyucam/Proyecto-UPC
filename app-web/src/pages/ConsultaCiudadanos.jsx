@@ -384,7 +384,7 @@ const Button = ({ text, number, icon, onClick }) => {
           <p className="text-sm text-gray-600">{text}</p>
           <p className="text-lg font-bold text-gray-900">{number}</p>
         </div>
-      </div>
+      </div>bhy
     </div>
   );
 };
