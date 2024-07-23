@@ -1,5 +1,5 @@
-const { Solicitud, SolicitudEventoPersona, NotificacionPersona, Evento, Estado, Subtipo, Persona, TipoSolicitud, Circuito, Rol, sequelize} = require('../models/db_models');
-const { Op } = require('sequelize');
+const { Solicitud, SolicitudEventoPersona, NotificacionPersona, Evento, Estado, Subtipo, Persona, PersonaRol, TipoSolicitud, Circuito, Rol, sequelize} = require('../models/db_models');
+const { Op, Sequelize} = require('sequelize');
 
 // Crear una nueva solicitud
 exports.createSolicitud = async (req, res) => {
@@ -490,3 +490,168 @@ exports.getFilteredSolicitudes = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+//------------------------------------------------------------
+// Para estadisticas de solicitud
+// solicitudController.js
+
+exports.getEstadisticasSolicitudes = async (req, res) => {
+  try {
+      const total = await Solicitud.count();
+      const pendientes = await Solicitud.count({ where: { id_estado: 1 } });
+      const enProgreso = await Solicitud.count({ where: { id_estado: 2 } });
+      const resueltas = await Solicitud.count({ where: { id_estado: 3 } });
+
+      res.status(200).json({
+          total,
+          pendientes,
+          enProgreso,
+          resueltas
+      });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getEstadisticasPolicias = async (req, res) => {
+  try {
+    const total = await Persona.count({
+      include: [
+        {
+          model: PersonaRol,
+          include: [
+            {
+              model: Rol,
+              through: { attributes: [] }, 
+              where: { descripcion: 'Policia' }
+            }
+          ]
+        }
+      ]
+    });
+
+    const ocupados = await Persona.count({
+      include: [
+        {
+          model: PersonaRol,
+          include: [
+            {
+              model: Rol,
+              through: { attributes: [] }, 
+              where: { descripcion: 'Policia' }
+            }
+          ]
+        }
+      ],
+      where: { disponibilidad: 'Ocupado' }
+    });
+
+    const libres = await Persona.count({
+      include: [
+        {
+          model: PersonaRol,
+          include: [
+            {
+              model: Rol,
+              through: { attributes: [] }, 
+              where: { descripcion: 'Policia' }
+            }
+          ]
+        }
+      ],
+      where: { disponibilidad: 'Disponible' }
+    });
+
+    res.status(200).json({
+      total,
+      ocupados,
+      libres
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+exports.getSolicitudesPorTipo = async (req, res) => {
+  try {
+      const solicitudesPorTipo = await Solicitud.findAll({
+          attributes: [
+              [sequelize.fn('COUNT', sequelize.col('id_solicitud')), 'count'],
+              'id_tipo'
+          ],
+          include: [
+              {
+                  model: TipoSolicitud,
+                  attributes: ['descripcion']
+              }
+          ],
+          group: ['id_tipo', 'TipoSolicitud.descripcion']
+      });
+
+      res.status(200).json(solicitudesPorTipo);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getActividadesRecientes = async (req, res) => {
+  try {
+      const actividadesRecientes = await Solicitud.findAll({
+          include: [
+              {
+                  model: Persona,
+                  attributes: ['nombres', 'apellidos']
+              },
+              {
+                  model: Subtipo,
+                  attributes: ['descripcion'],
+                  include: {
+                      model: TipoSolicitud,
+                      attributes: ['descripcion']
+                  }
+              },
+              {
+                  model: Estado,
+                  attributes: ['descripcion']
+              },
+              {
+                  model: SolicitudEventoPersona,
+                  include: [
+                      {
+                          model: Persona,
+                          attributes: ['nombres', 'apellidos']
+                      }
+                  ]
+              }
+          ],
+          order: [['fecha_creacion', 'DESC']],
+          limit: 10
+      });
+
+      res.status(200).json(actividadesRecientes);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

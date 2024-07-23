@@ -1,54 +1,54 @@
 const { Persona, PersonaRol, Rol, sequelize, Circuito } = require('../models/db_models');
 
 // Crear una nueva persona --V
-exports.createPersona = async (req, res) => {
-  const {
-    cedula,
-    nombres,
-    apellidos,
-    telefono,
-    email,
-    password,
-    id_circuito,
-    roles,
-  } = req.body;
+// exports.createPersona = async (req, res) => {
+//   const {
+//     cedula,
+//     nombres,
+//     apellidos,
+//     telefono,
+//     email,
+//     password,
+//     id_circuito,
+//     roles,
+//   } = req.body;
 
-  const transaction = await sequelize.transaction();
+//   const transaction = await sequelize.transaction();
 
-  try {
-    // Crear nueva persona
-    const nuevaPersona = await Persona.create(
-      {
-        cedula,
-        nombres,
-        apellidos,
-        telefono,
-        email,
-        password,
-        id_circuito,
-        disponibilidad: roles.includes(2) ? 'Disponible' : null  // Si el rol es policía, disponible
-      },
-      { transaction }
-    );
+//   try {
+//     // Crear nueva persona
+//     const nuevaPersona = await Persona.create(
+//       {
+//         cedula,
+//         nombres,
+//         apellidos,
+//         telefono,
+//         email,
+//         password,
+//         id_circuito,
+//         disponibilidad: roles.includes(2) ? 'Disponible' : null  // Si el rol es policía, disponible
+//       },
+//       { transaction }
+//     );
 
-    // Asignar roles a la persona
-    for (const rol_id of roles) {
-      await PersonaRol.create(
-        {
-          id_persona: nuevaPersona.id_persona,
-          id_rol: rol_id,
-        },
-        { transaction }
-      );
-    }
+//     // Asignar roles a la persona
+//     for (const rol_id of roles) {
+//       await PersonaRol.create(
+//         {
+//           id_persona: nuevaPersona.id_persona,
+//           id_rol: rol_id,
+//         },
+//         { transaction }
+//       );
+//     }
 
-    await transaction.commit();
-    res.status(201).json(nuevaPersona);
-  } catch (error) {
-    await transaction.rollback();
-    res.status(500).json({ error: error.message });
-  }
-};
+//     await transaction.commit();
+//     res.status(201).json(nuevaPersona);
+//   } catch (error) {
+//     await transaction.rollback();
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 
 
 // Obtener una persona por ID --V
@@ -244,13 +244,25 @@ exports.getPolicias = async (req, res) => {
         {
           model: Circuito
         }
-      ],
+      ]
     });
-    res.status(200).json(policias);
+
+    const countPolicias = await Persona.count({
+      include: [
+        {
+          model: Rol,
+          where: { id_rol: 2 }
+        }
+      ]
+    });
+
+    res.status(200).json({ countPolicias, policias });
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // Obtener los detalles de un policía por ID
 exports.getPoliciaById = async (req, res) => {

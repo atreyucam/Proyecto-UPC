@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const roleController = require('../controllers/roles');
 const personaController = require('../controllers/persona');
-const circuitoController = require('../controllers/circuito');
+const circuitoController = require('../controllers/ctr_circuito');
 const tipoSolicitudController = require('../controllers/tipoSolicitud');
 const subtipoController = require('../controllers/subtipoSolicitud');
 const solicitudController = require('../controllers/solicitud');
@@ -81,6 +81,13 @@ router.get('/barrios/:provincia/:ciudad', circuitoController.getBarriosByCiudad)
 
 
 // detalles de policia y soliciedes
+
+
+// rutas para estadisticas de policia
+router.get('/solicitudes/estadisticas', solicitudController.getEstadisticasSolicitudes);
+router.get('/policias/estadisticas', solicitudController.getEstadisticasPolicias);
+router.get('/solicitudes/tipos', solicitudController.getSolicitudesPorTipo);
+router.get('/solicitudes/actividades', solicitudController.getActividadesRecientes);
 
 
 module.exports = router;

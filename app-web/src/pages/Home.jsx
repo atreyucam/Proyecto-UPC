@@ -127,33 +127,41 @@ const Home = () => {
       <div className="grid grid-cols-4 gap-2 mb-5">
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
-            text="Disponible"
-            subText="Online"
+            text="Total Solicitudes"
+            // TODO---------------------------
+            subText="Por definir" 
+            // TODO---------------------------
             icon={<FiUserCheck size={24} />}
             onClick={() => console.log('Botón Disponible presionado')}
           />
         </div>
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
-            text="Total Resueltos"
+            text="Solicitudes Resueltas"
+            // TODO---------------------------
             subText="Resuelto"
             number={100}
+            // TODO---------------------------
             icon={<FiCheckCircle size={24} />}
             onClick={() => console.log('Botón Estado presionado')}
           />
         </div>
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
-            text="Policías en línea"
+            text="Solicitudes pendientes"
+            // TODO---------------------------
             number={50}
+            // TODO---------------------------
             icon={<FiSmile size={24} />}
             onClick={() => console.log('Botón Amistad presionado')}
           />
         </div>
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
-            text="Seguridad"
+            text="Solicitudes en progreso"
+            // TODO---------------------------
             number={200}
+            // TODO---------------------------
             icon={<FiShield size={24} />}
             onClick={() => console.log('Botón Seguridad presionado')}
           />
