@@ -19,7 +19,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<ProtectedRoute />}>
-          <Route path="/home" element={<Home />} />
+          <Route path="/" element={<Home />} />
 
           <Route path="/3" element={<Home3 />} />
           <Route path="/4" element={<Home4 />} />

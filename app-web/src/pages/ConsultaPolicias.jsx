@@ -10,6 +10,7 @@ const ConsultaPolicias = () => {
     provincia: '',
     ciudad: '',
     barrio: '',
+    disponibilidad: '',
   });
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
@@ -94,7 +95,8 @@ const ConsultaPolicias = () => {
     const filtered = policias.filter(policia => 
       (filtros.provincia ? policia.Circuito.provincia === filtros.provincia : true) &&
       (filtros.ciudad ? policia.Circuito.ciudad === filtros.ciudad : true) &&
-      (filtros.barrio ? policia.Circuito.barrio === filtros.barrio : true)
+      (filtros.barrio ? policia.Circuito.barrio === filtros.barrio : true) &&
+      (filtros.disponibilidad ? policia.disponibilidad === filtros.disponibilidad : true)
     );
     setFilteredPolicias(filtered);
   };
@@ -104,6 +106,7 @@ const ConsultaPolicias = () => {
       provincia: '',
       ciudad: '',
       barrio: '',
+      disponibilidad: '',
     });
     setFilteredPolicias(policias);
     setCiudades([]);
@@ -216,6 +219,17 @@ const ConsultaPolicias = () => {
               </option>
             ))}
           </select>
+          <select
+            name="disponibilidad" // Add disponibilidad filter
+            value={filtros.disponibilidad}
+            onChange={handleFiltroChange}
+            className="border p-2 rounded"
+          >
+            <option value="">Disponibilidad</option>
+            <option value="Disponible">Disponible</option>
+            <option value="Ocupado">Ocupado</option>
+          </select>
+
           <div className="flex gap-4">
             <button
               className="bg-green-500 text-white px-4 py-2 rounded"
