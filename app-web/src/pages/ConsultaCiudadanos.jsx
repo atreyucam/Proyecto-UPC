@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { FiCheckCircle, FiEdit, FiSave, FiXCircle, FiTrash, FiEye } from "react-icons/fi";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ const ConsultaCircuito = () => {
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [barrios, setBarrios] = useState([]);
+  const [circuitos, setCircuitos] = useState([]);
   const [editingCiudadano, setEditingCiudadano] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [ciudadanoToDelete, setCiudadanoToDelete] = useState(null);
@@ -22,12 +23,19 @@ const ConsultaCircuito = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ciudadanosRes = await axios.get("http://localhost:3000/api/ciudadanos");
-        const provinciasRes = await axios.get("http://localhost:3000/api/provincias");
+        // * CiudadanoRes permite traer los datos de los ciudadanos.
+        const ciudadanosRes = await axios.get("http://localhost:3000/personas/ciudadanos");
+        // * CircuitoRes permite traer los datos de los circuitos para dar uso de los filtros.
+        const circuitosRes = await axios.get("http://localhost:3000/circuitos");
 
-        setCiudadanos(ciudadanosRes.data);
-        setFilteredCiudadanos(ciudadanosRes.data);
-        setProvincias(provinciasRes.data);
+        const uniqueProvincias = [
+          ...new Set(circuitosRes.data.map((circuito) => circuito.provincia)),
+        ];
+
+        setCiudadanos(ciudadanosRes.data.ciudadanos);
+        setFilteredCiudadanos(ciudadanosRes.data.ciudadanos);
+        setCircuitos(circuitosRes.data);
+        setProvincias(uniqueProvincias);
       } catch (error) {
         console.error("Error fetching data", error);
       }
@@ -36,27 +44,48 @@ const ConsultaCircuito = () => {
     fetchData();
   }, []);
 
-  const handleFiltroChange = async (e) => {
+  useEffect(() => {
+    if (filtros.provincia) {
+      const uniqueCiudades = [
+        ...new Set(
+          circuitos
+            .filter((circuito) => circuito.provincia === filtros.provincia)
+            .map((circuito) => circuito.ciudad)
+        ),
+      ];
+      setCiudades(uniqueCiudades);
+    } else {
+      setCiudades([]);
+    }
+
+    setFiltros((prevFiltros) => ({ ...prevFiltros, ciudad: "", barrio: "" }));
+    setBarrios([]);
+  }, [filtros.provincia, circuitos]);
+
+  useEffect(() => {
+    if (filtros.ciudad) {
+      const uniqueBarrios = [
+        ...new Set(
+          circuitos
+            .filter(
+              (circuito) =>
+                circuito.provincia === filtros.provincia &&
+                circuito.ciudad === filtros.ciudad
+            )
+            .map((circuito) => circuito.barrio)
+        ),
+      ];
+      setBarrios(uniqueBarrios);
+    } else {
+      setBarrios([]);
+    }
+
+    setFiltros((prevFiltros) => ({ ...prevFiltros, barrio: "" }));
+  }, [filtros.ciudad, circuitos]);
+
+  const handleFiltroChange = (e) => {
     const { name, value } = e.target;
     setFiltros((prevFiltros) => ({ ...prevFiltros, [name]: value }));
-
-    if (name === "provincia") {
-      const ciudadesRes = await axios.get(`http://localhost:3000/api/ciudades/${value}`);
-      setCiudades(ciudadesRes.data);
-      setBarrios([]);
-      setFiltros((prevFiltros) => ({
-        ...prevFiltros,
-        ciudad: "",
-        barrio: "",
-      }));
-    } else if (name === "ciudad") {
-      const barriosRes = await axios.get(`http://localhost:3000/api/barrios/${filtros.provincia}/${value}`);
-      setBarrios(barriosRes.data);
-      setFiltros((prevFiltros) => ({
-        ...prevFiltros,
-        barrio: "",
-      }));
-    }
   };
 
   const handleBuscarClick = () => {
@@ -81,18 +110,22 @@ const ConsultaCircuito = () => {
       ciudad: "",
       barrio: "",
     });
+    setFilteredCiudadanos(ciudadanos);
     setCiudades([]);
     setBarrios([]);
-    setFilteredCiudadanos(ciudadanos);
   };
 
   const handleEditClick = (ciudadano) => {
     setEditingCiudadano(ciudadano);
   };
 
+  /**
+    // * Metodo para la edicion de un ciudadano.
+    // * En funcionamiento
+   */
   const handleSaveClick = async (ciudadano) => {
     try {
-      await axios.put(`http://localhost:3000/api/personas/${ciudadano.id_persona}`, ciudadano);
+      await axios.put(`http://localhost:3000/personas/${ciudadano.id_persona}`, ciudadano);
       setCiudadanos((prevCiudadanos) =>
         prevCiudadanos.map((c) => (c.id_persona === ciudadano.id_persona ? ciudadano : c))
       );
@@ -105,14 +138,19 @@ const ConsultaCircuito = () => {
     }
   };
 
+
+  
+  /**
+    // * Metodo para la eliminacion de un ciudadano.
+    // * En funcionamiento
+   */
   const handleDeleteClick = (ciudadano) => {
     setShowDeleteModal(true);
     setCiudadanoToDelete(ciudadano);
   };
-
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:3000/api/personas/${ciudadanoToDelete.id_persona}`);
+      await axios.delete(`http://localhost:3000/personas/${ciudadanoToDelete.id_persona}`);
       setCiudadanos((prevCiudadanos) =>
         prevCiudadanos.filter((c) => c.id_persona !== ciudadanoToDelete.id_persona)
       );
@@ -162,8 +200,8 @@ const ConsultaCircuito = () => {
           >
             <option value="">Provincia</option>
             {provincias.map((provincia) => (
-              <option key={provincia.provincia} value={provincia.provincia}>
-                {provincia.provincia}
+              <option key={provincia} value={provincia}>
+                {provincia}
               </option>
             ))}
           </select>
@@ -176,8 +214,8 @@ const ConsultaCircuito = () => {
           >
             <option value="">Ciudad</option>
             {ciudades.map((ciudad) => (
-              <option key={ciudad.ciudad} value={ciudad.ciudad}>
-                {ciudad.ciudad}
+              <option key={ciudad} value={ciudad}>
+                {ciudad}
               </option>
             ))}
           </select>
@@ -190,8 +228,8 @@ const ConsultaCircuito = () => {
           >
             <option value="">Barrio</option>
             {barrios.map((barrio) => (
-              <option key={barrio.barrio} value={barrio.barrio}>
-                {barrio.barrio}
+              <option key={barrio} value={barrio}>
+                {barrio}
               </option>
             ))}
           </select>
@@ -212,155 +250,132 @@ const ConsultaCircuito = () => {
         </div>
 
         <h2 className="text-lg font-bold mb-4">Ciudadanos</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border-b p-2">Cédula</th>
-                <th className="border-b p-2">Nombres</th>
-                <th className="border-b p-2">Apellidos</th>
-                <th className="border-b p-2">Teléfono</th>
-                <th className="border-b p-2">Barrio</th>
-                <th className="border-b p-2">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCiudadanos.map((ciudadano) => (
-                <tr
-                  key={ciudadano.id_persona}
-                  className={`border-b ${
-                    editingCiudadano?.id_persona === ciudadano.id_persona ? "bg-yellow-100" : ""
-                  }`}
-                >
-                  <td className="border-b p-2">
-                    {editingCiudadano?.id_persona === ciudadano.id_persona ? (
-                      <input
-                        type="text"
-                        value={editingCiudadano.cedula}
-                        onChange={(e) =>
-                          setEditingCiudadano((prevCiudadano) => ({
-                            ...prevCiudadano,
-                            cedula: e.target.value,
-                          }))
-                        }
-                        className="border rounded p-1 w-full"
-                      />
-                    ) : (
-                      ciudadano.cedula
-                    )}
-                  </td>
-                  <td className="border-b p-2">
-                    {editingCiudadano?.id_persona === ciudadano.id_persona ? (
-                      <input
-                        type="text"
-                        value={editingCiudadano.nombres}
-                        onChange={(e) =>
-                          setEditingCiudadano((prevCiudadano) => ({
-                            ...prevCiudadano,
-                            nombres: e.target.value,
-                          }))
-                        }
-                        className="border rounded p-1 w-full"
-                      />
-                    ) : (
-                      ciudadano.nombres
-                    )}
-                  </td>
-                  <td className="border-b p-2">
-                    {editingCiudadano?.id_persona === ciudadano.id_persona ? (
-                      <input
-                        type="text"
-                        value={editingCiudadano.apellidos}
-                        onChange={(e) =>
-                          setEditingCiudadano((prevCiudadano) => ({
-                            ...prevCiudadano,
-                            apellidos: e.target.value,
-                          }))
-                        }
-                        className="border rounded p-1 w-full"
-                      />
-                    ) : (
-                      ciudadano.apellidos
-                    )}
-                  </td>
-                  <td className="border-b p-2">
-                    {editingCiudadano?.id_persona === ciudadano.id_persona ? (
-                      <input
-                        type="text"
-                        value={editingCiudadano.telefono}
-                        onChange={(e) =>
-                          setEditingCiudadano((prevCiudadano) => ({
-                            ...prevCiudadano,
-                            telefono: e.target.value,
-                          }))
-                        }
-                        className="border rounded p-1 w-full"
-                      />
-                    ) : (
-                      ciudadano.telefono
-                    )}
-                  </td>
-                  <td className="border-b p-2">{ciudadano.Circuito.barrio}</td>
-                  <td className="border-b p-2 flex gap-2">
-                    {editingCiudadano?.id_persona === ciudadano.id_persona ? (
-                      <>
-                        <button
-                          className="bg-green-500 text-white px-4 py-1 rounded"
-                          onClick={() => handleSaveClick(editingCiudadano)}
-                        >
-                          <FiSave size={20} />
-                        </button>
-                        <button
-                          className="bg-red-500 text-white px-4 py-1 rounded"
-                          onClick={() => setEditingCiudadano(null)}
-                        >
-                          <FiXCircle size={20} />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          className="bg-blue-500 text-white px-4 py-1 rounded"
-                          onClick={() => handleEditClick(ciudadano)}
-                        >
-                          <FiEdit size={20} />
-                        </button>
-                        <button
-                          className="bg-red-500 text-white px-4 py-1 rounded"
-                          onClick={() => handleDeleteClick(ciudadano)}
-                        >
-                          <FiTrash size={20} />
-                        </button>
-                        <Link
-                          to={`/ciudadanos/${ciudadano.id_persona}`}
-                          className="bg-gray-500 text-white px-4 py-1 rounded"
-                        >
-                          <FiEye size={20} />
-                        </Link>
-                      </>
-                    )}
-                  </td>
+        {filteredCiudadanos.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
+              <thead>
+                <tr>
+                  <th className="border-b p-2">Cédula</th>
+                  <th className="border-b p-2">Nombres</th>
+                  <th className="border-b p-2">Apellidos</th>
+                  <th className="border-b p-2">Teléfono</th>
+                  <th className="border-b p-2">Barrio</th>
+                  <th className="border-b p-2">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredCiudadanos.map((ciudadano) => (
+                  <tr key={ciudadano.id_persona} className="hover:bg-gray-50">
+                    <td className="border-b p-2 text-center">{ciudadano.cedula}</td>
+                    <td className="border-b p-2 ">
+                      {editingCiudadano?.id_persona === ciudadano.id_persona ? (
+                        <input
+                          type="text"
+                          value={editingCiudadano.nombres}
+                          onChange={(e) =>
+                            setEditingCiudadano((prev) => ({
+                              ...prev,
+                              nombres: e.target.value,
+                            }))
+                          }
+                          className="border p-1 rounded"
+                        />
+                      ) : (
+                        ciudadano.nombres
+                      )}
+                    </td>
+                    <td className="border-b p-2">
+                      {editingCiudadano?.id_persona === ciudadano.id_persona ? (
+                        <input
+                          type="text"
+                          value={editingCiudadano.apellidos}
+                          onChange={(e) =>
+                            setEditingCiudadano((prev) => ({
+                              ...prev,
+                              apellidos: e.target.value,
+                            }))
+                          }
+                          className="border p-1 rounded"
+                        />
+                      ) : (
+                        ciudadano.apellidos
+                      )}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {editingCiudadano?.id_persona === ciudadano.id_persona ? (
+                        <input
+                          type="text"
+                          value={editingCiudadano.telefono}
+                          onChange={(e) =>
+                            setEditingCiudadano((prev) => ({
+                              ...prev,
+                              telefono: e.target.value,
+                            }))
+                          }
+                          className="border p-1 rounded"
+                        />
+                      ) : (
+                        ciudadano.telefono
+                      )}
+                    </td>
+                    <td className="border-b p-2 text-center">{ciudadano.Circuito.barrio}</td>
+                    <td className="border-b p-2 flex gap-2 justify-center">
+                      {editingCiudadano?.id_persona === ciudadano.id_persona ? (
+                        <button
+                          onClick={() => handleSaveClick(editingCiudadano)}
+                          className="bg-blue-500 text-white px-2 py-1 rounded"
+                        >
+                          <FiSave />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleEditClick(ciudadano)}
+                          className="bg-yellow-500 text-white px-2 py-1 rounded"
+                        >
+                          <FiEdit />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDeleteClick(ciudadano)}
+                        className="bg-red-500 text-white px-2 py-1 rounded"
+                      >
+                        <FiTrash />
+                      </button>
+                      <button
+                        onClick={() => handleRowClick(ciudadano)}
+                        className="bg-green-500 text-white px-2 py-1 rounded"
+                      >
+                        <FiEye />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p>No existen ciudadanos registrados en dicho barrio</p>
+        )}
       </div>
 
       {showDeleteModal && (
-        <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <p className="text-lg font-bold mb-4">¿Estás seguro de eliminar este ciudadano?</p>
-            <div className="flex justify-end gap-4">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h2 className="text-lg font-bold mb-4">Confirmar eliminación</h2>
+            <p>
+              ¿Está seguro de que desea eliminar a {ciudadanoToDelete?.nombres}{" "}
+              {ciudadanoToDelete?.apellidos}?
+            </p>
+            <div className="flex gap-4 mt-4">
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded"
                 onClick={confirmDelete}
+                className="bg-red-500 text-white px-4 py-2 rounded"
               >
-                Sí, eliminar
+                Confirmar
               </button>
               <button
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
                 onClick={cancelDelete}
+                className="bg-gray-500 text-white px-4 py-2 rounded"
               >
                 Cancelar
               </button>
@@ -372,21 +387,17 @@ const ConsultaCircuito = () => {
   );
 };
 
-const Button = ({ text, number, icon, onClick }) => {
-  return (
-    <div
-      onClick={onClick}
-      className="flex items-center justify-between bg-white p-4 rounded-lg shadow-md cursor-pointer"
-    >
-      <div className="flex items-center">
-        {icon && <div className="mr-3">{icon}</div>}
-        <div>
-          <p className="text-sm text-gray-600">{text}</p>
-          <p className="text-lg font-bold text-gray-900">{number}</p>
-        </div>
-      </div>bhy
+const Button = ({ text, number, icon, onClick }) => (
+  <button
+    className="bg-blue-500 text-white px-4 py-2 rounded flex items-center justify-between w-full"
+    onClick={onClick}
+  >
+    <div className="flex items-center gap-2">
+      {icon}
+      <span>{text}</span>
     </div>
-  );
-};
+    <span>{number}</span>
+  </button>
+);
 
 export default ConsultaCircuito;

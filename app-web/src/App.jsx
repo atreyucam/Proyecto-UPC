@@ -28,10 +28,12 @@ function App() {
             path="/ConsultaSolicitudes"
             element={<ConsultaSolicitudes />}
           />
+          {/* Rutas de ciudadanos */}
           <Route path="/ConsultaCiudadanos" element={<ConsultaCiudadanos />} />
+          <Route path="/ciudadanos/:id" element={<DetalleCiudadano />} />
+          {/* Rutas para policias */}
           <Route path="/policias/:id" element={<DetallePolicia />} />
           <Route path="/policia/:id/historial/:idHistorial" element={<HistorialPolicia />} />
-          <Route path="/ciudadanos/:id" element={<DetalleCiudadano />} />
           <Route path="/ciudadano/:id/historial/:idHistorial" element={<HistorialCiudadano />} />
         </Route>
         <Route path="/2" element={<Home2 />} />

@@ -13,8 +13,12 @@ const CiudadanoDetail = () => {
   useEffect(() => {
     const fetchCiudadano = async () => {
       try {
+        /**
+         * * Actualizacion del API para llamada por id - ciudadano
+         * * En funcionamiento
+         */
         const response = await axios.get(
-          `http://localhost:3000/api/ciudadanos/${id}`
+          `http://localhost:3000/personas/${id}`
         );
         setCiudadano(response.data);
       } catch (error) {
