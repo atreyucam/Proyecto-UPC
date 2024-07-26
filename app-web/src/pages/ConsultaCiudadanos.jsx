@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { FiCheckCircle, FiEdit, FiSave, FiXCircle, FiTrash, FiEye } from "react-icons/fi";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { FiCheckCircle, FiEdit, FiTrash, FiSave, FiEye } from 'react-icons/fi';
 import { Link, useNavigate } from "react-router-dom";
 
-const ConsultaCircuito = () => {
+const ConsultaCiudadanos = () => {
   const [ciudadanos, setCiudadanos] = useState([]);
   const [filteredCiudadanos, setFilteredCiudadanos] = useState([]);
   const [filtros, setFiltros] = useState({
@@ -183,7 +183,7 @@ const ConsultaCircuito = () => {
           <Button
             text="Ciudadanos registrados"
             number={filteredCiudadanos.length}
-            icon={<FiCheckCircle size={24} />}
+            icon={<FiCheckCircle size={28} />}
             onClick={() => console.log("Botón Ciudadanos presionado")}
           />
         </div>
@@ -354,7 +354,7 @@ const ConsultaCircuito = () => {
             </table>
           </div>
         ) : (
-          <p>No existen ciudadanos registrados en dicho barrio</p>
+          <p className="text-center mt-4">No existen ciudadanos registrados en dicho barrio</p>
         )}
       </div>
 
@@ -400,4 +400,4 @@ const Button = ({ text, number, icon, onClick }) => (
   </button>
 );
 
-export default ConsultaCircuito;
+export default ConsultaCiudadanos;

@@ -55,7 +55,7 @@ const Sidebar = () => {
               </NavLink>
             </li>
             <li>
-              <NavLink to="/" exact>
+              <NavLink to="/home" exact>
                 {({ isActive }) => (
                   <Button
                     className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${
@@ -121,7 +121,7 @@ const Sidebar = () => {
               </NavLink>
             </li>
             <li>
-              <NavLink to="/5" exact>
+              <NavLink to="/ConsultaPolicias" exact>
                 {({ isActive }) => (
                   <Button
                     className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${

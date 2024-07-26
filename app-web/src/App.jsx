@@ -19,20 +19,20 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
 
           <Route path="/3" element={<Home3 />} />
           <Route path="/4" element={<Home4 />} />
-          <Route path="/5" element={<ConsultaPolicias />} />
-          <Route
-            path="/ConsultaSolicitudes"
-            element={<ConsultaSolicitudes />}
-          />
+          <Route path="/ConsultaSolicitudes" element={<ConsultaSolicitudes />} />
           {/* Rutas de ciudadanos */}
           <Route path="/ConsultaCiudadanos" element={<ConsultaCiudadanos />} />
           <Route path="/ciudadanos/:id" element={<DetalleCiudadano />} />
           {/* Rutas para policias */}
+          <Route path="/ConsultaPolicias" element={<ConsultaPolicias />} />
           <Route path="/policias/:id" element={<DetallePolicia />} />
+
+
+          {/* ! por revisar */}
           <Route path="/policia/:id/historial/:idHistorial" element={<HistorialPolicia />} />
           <Route path="/ciudadano/:id/historial/:idHistorial" element={<HistorialCiudadano />} />
         </Route>
