@@ -8,10 +8,10 @@ const circuitoService = require('./services/srv_circuito');
 // * Modulo en funcionamiento
 exports.createCircuito = async (req, res) => {
   try {
-      const circuito = await circuitoService.createCircuito(req.body);
-      res.status(201).json(circuito);
+    const circuito = await circuitoService.createCircuito(req.body);
+    res.status(201).json(circuito);
   } catch (error) {
-      res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -22,13 +22,13 @@ exports.createCircuito = async (req, res) => {
 */
 // * Modulo en funcionamiento
 exports.getCircuitos = async (req, res) => {
-  try {
-      const filters = req.query; // Los filtros vienen como parámetros de consulta
-      const circuitos = await circuitoService.getCircuitos(filters);
-      res.status(200).json(circuitos);
-  } catch (error) {
-      res.status(500).json({ message: error.message });
-  }
+    try {
+        const filters = req.query; // Los filtros vienen como parámetros de consulta
+        const circuitos = await circuitoService.getCircuitos(filters);
+        res.status(200).json(circuitos);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 /**

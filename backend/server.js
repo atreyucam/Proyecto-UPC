@@ -7,9 +7,7 @@ const syncDatabase = require('./config/syncDatabase');
 // * Rutas en funcionamiento
 const circuitoRoutes = require('./routes/circuito');
 const personaRoutes = require('./routes/persona');
-
-// const rutas = require('./routes/routes');
-
+const subtipoRoutes = require('./routes/subtipo');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -23,8 +21,8 @@ syncDatabase();
 // * Rutas en funcionamiento
 app.use('/circuitos', circuitoRoutes);
 app.use('/personas', personaRoutes);
+app.use('/subtipo', subtipoRoutes);
 
-// app.use('/api',rutas);
 
 app.listen(port, '0.0.0.0', async () => {
   console.log(`Server is running on port ${port}`);
