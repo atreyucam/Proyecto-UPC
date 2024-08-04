@@ -160,6 +160,8 @@ exports.deleteSolicitud = async (req, res) => {
 exports.assignPolicia = async (req, res) => {
     const { id } = req.params;
     const { id_persona, id_evento } = req.body;
+    const transaction = await sequelize.transaction();
+    
     try {
       await Solicitud.update(
         { id_estado: 2 },  // En Camino

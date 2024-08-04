@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Persona, Rol, Circuito } = require('../../models/db_models');
+const { Persona, Rol, Circuito, sequelize } = require('../../models/db_models');
 
 // * CrearPersonas
 /** 
@@ -9,24 +9,42 @@ const { Persona, Rol, Circuito } = require('../../models/db_models');
  * * - Si el rol incluye [Policia], establecer disponibilidad a "Disponible" por defecto
  */
 // * Metodo en funcionamiento
-  exports.createPersona = async (personaData) => {
+exports.createPersona = async (personaData) => {
+  const transaction = await sequelize.transaction(); // Iniciar transacción
+
+  try {
+    // Ajustar disponibilidad si es necesario
     if (personaData.roles.includes('Policia')) {
       personaData.disponibilidad = 'Disponible';
     }
-  
-    const persona = await Persona.create(personaData);
+
+    // Crear la nueva persona
+    const persona = await Persona.create(personaData, { transaction });
+
+    // Encontrar los roles asociados
     const roles = await Rol.findAll({
       where: {
         descripcion: {
           [Op.in]: personaData.roles
         }
-      }
+      },
+      transaction
     });
-    await persona.addRols(roles);
-  
-    return persona;
-  };
 
+    // Asociar roles a la persona
+    await persona.addRols(roles, { transaction });
+
+    // Confirmar transacción
+    await transaction.commit();
+
+    return persona;
+  } catch (error) {
+    // Deshacer transacción en caso de error
+    await transaction.rollback();
+    console.log('Error al crear la persona: ', error);
+    throw error;
+  }
+};
 // * Obtener todas las personas
 // * El metodo regresa todos los usuarios registrados con informacion.
 // * Metodo en funcionamiento

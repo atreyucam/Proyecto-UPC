@@ -200,7 +200,8 @@ const Solicitud = sequelize.define('Solicitud', {
   },
   observacion: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
+    defaultValue: ' '
   },
 }, { tableName: 'Solicitud' });
 
@@ -377,6 +378,10 @@ const Observacion = sequelize.define('Observacion', {
     allowNull: false,
     defaultValue: DataTypes.NOW,
   },
+  id_persona: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  }
 }, { tableName: 'Observacion' });
 
 // Definir Relaciones
@@ -431,7 +436,9 @@ NotificacionPersona.belongsTo(Persona, { foreignKey: 'id_persona' });
 // 9. Relación entre Solicitud y Observación
 Solicitud.hasMany(Observacion, { foreignKey: 'id_solicitud' });
 Observacion.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
-
+// Relación entre Observación y Persona
+Persona.hasMany(Observacion, { foreignKey: 'id_persona' });
+Observacion.belongsTo(Persona, { foreignKey: 'id_persona' });
 // Nueva relación entre Solicitud y Circuito
 Circuito.hasMany(Solicitud, { foreignKey: 'id_circuito' });
 Solicitud.belongsTo(Circuito, { foreignKey: 'id_circuito' });

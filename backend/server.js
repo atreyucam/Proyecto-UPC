@@ -8,6 +8,7 @@ const syncDatabase = require('./config/syncDatabase');
 const circuitoRoutes = require('./routes/circuito');
 const personaRoutes = require('./routes/persona');
 const subtipoRoutes = require('./routes/subtipo');
+const solicitudRoutes = require('./routes/solicitud');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -22,6 +23,9 @@ syncDatabase();
 app.use('/circuitos', circuitoRoutes);
 app.use('/personas', personaRoutes);
 app.use('/subtipo', subtipoRoutes);
+
+// ! Rutas en desarrollo
+app.use('/solicitud', solicitudRoutes);
 
 
 app.listen(port, '0.0.0.0', async () => {
