@@ -203,6 +203,14 @@ const Solicitud = sequelize.define('Solicitud', {
     allowNull: true,
     defaultValue: ' '
   },
+  id_persona: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Persona,
+      key: 'id_persona'
+    },
+    allowNull: false
+  }
 }, { tableName: 'Solicitud' });
 
 // 9. Evento
@@ -246,7 +254,12 @@ const SolicitudEventoPersona = sequelize.define('SolicitudEventoPersona', {
     },
     allowNull: false,
     primaryKey: true
-  }
+  },
+  fecha_creacion: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
 }, { tableName: 'SolicitudEventoPersona' });
 
 // 11. TipoEvidencia
@@ -442,6 +455,10 @@ Observacion.belongsTo(Persona, { foreignKey: 'id_persona' });
 // Nueva relación entre Solicitud y Circuito
 Circuito.hasMany(Solicitud, { foreignKey: 'id_circuito' });
 Solicitud.belongsTo(Circuito, { foreignKey: 'id_circuito' });
+
+// Solicitud.js
+Solicitud.belongsTo(Persona, { foreignKey: 'id_persona', as: 'creador' });
+Persona.hasMany(Solicitud, { foreignKey: 'id_persona', as: 'solicitudes' });
 
 module.exports = {
   sequelize,

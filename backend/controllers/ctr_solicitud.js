@@ -1,3 +1,4 @@
+
 const solicitudService = require('./services/srv_solicitud');
 
 exports.crearBotonEmergencia = async (req, res) => {
@@ -23,6 +24,17 @@ exports.getSolicitudes = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   };
+
+exports.getSolicitudById = async (req, res) => {
+    try {
+        const solicitud = await solicitudService.getSolicitudById(req.params.id);
+        if (solicitud) {
+            res.status(200).json(solicitud);
+        }
+    } catch (error) {
+            res.status(404).json({message: 'Solicitud no encontrada'});
+    }
+}
 
 
 exports.asignarPoliciaSolicitud = async (req, res) => {

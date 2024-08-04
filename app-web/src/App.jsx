@@ -13,6 +13,7 @@ import HistorialPolicia from "./pages/components/HistorialPolicia";
 import DetalleCiudadano from "./pages/components/DetalleCiudadanos";
 import HistorialCiudadano from "./pages/components/HistorialCiudadano";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
+import DetalleSolicitud from "./pages/components/DetalleSolicitud";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/3" element={<Home3 />} />
           <Route path="/4" element={<Home4 />} />
           <Route path="/ConsultaSolicitudes" element={<ConsultaSolicitudes />} />
+          <Route path="/solicitudes/:id" element={<DetalleSolicitud />} />
           {/* Rutas de ciudadanos */}
           <Route path="/ConsultaCiudadanos" element={<ConsultaCiudadanos />} />
           <Route path="/ciudadanos/:id" element={<DetalleCiudadano />} />
