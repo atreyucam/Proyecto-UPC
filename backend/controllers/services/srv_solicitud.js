@@ -1,4 +1,4 @@
-const { Solicitud, SolicitudEventoPersona, Subtipo, Persona, sequelize, TipoSolicitud, Circuito, Observacion, Estado, Evento} = require('../../models/db_models');
+const { Solicitud, SolicitudEventoPersona, Subtipo, Persona, sequelize, TipoSolicitud, Circuito, Observacion, Estado, Evento, Rol} = require('../../models/db_models');
 
 // * Crear boton de emergencia
 /** 
@@ -10,301 +10,332 @@ const { Solicitud, SolicitudEventoPersona, Subtipo, Persona, sequelize, TipoSoli
  * * lo que 1 es = que el ciudadano ha presionado el boton de emergencia.
  */
 //  TODO:Metodo en revision
-exports.crearBotonEmergencia = async (persanaData) => {
-    const {id_persona, puntoGPS} = persanaData;
+exports.crearBotonEmergencia = async (personaData) => {
+    const { id_persona, puntoGPS } = personaData;
     const transaction = await sequelize.transaction();
+    
     try {
-        // obtener el circuito de la persona que crea el boton de emergencia
+        // Obtener el circuito de la persona que crea el botón de emergencia
         const persona = await Persona.findByPk(id_persona);
+        if (!persona) {
+            throw new Error('Persona no encontrada');
+        }
         const id_circuito = persona.id_circuito;
-        const id_subtipo = 1; // * boton de emergencia
-        const id_estado = 1; // * estado [Pendiente]
-        const id_evento = 1 // * El Ciudadano ha presionado el boton de emergencia
-        // const fecha_creacion = new Date(); // Fecha actual
+        
+        // Definir IDs para subtipo, estado y evento
+        const id_subtipo = 1; // Botón de emergencia
+        const id_estado = 1; // Estado [Pendiente]
+        const id_evento = 1; // El Ciudadano ha presionado el botón de emergencia
 
-        // Crear solicitud del llamado de auxilio
-        const nuevoBotonEmergencia = await Solicitud.create(
-            {id_estado, id_subtipo, puntoGPS, observacion: null, id_circuito, id_persona},
-            {transaction}
-        );
+        // Crear solicitud del botón de emergencia
+        const nuevoBotonEmergencia = await Solicitud.create({
+            id_estado,
+            id_subtipo,
+            fecha_creacion: new Date(),
+            puntoGPS,
+            direccion: null, // La dirección puede ser opcional si ya se tiene el puntoGPS
+            observacion: null,
+            id_circuito,
+            creado_por: id_persona
+        }, { transaction });
 
-        await SolicitudEventoPersona.create(
-            {
-                id_solicitud: nuevoBotonEmergencia.id_solicitud,
-                id_evento,
-                id_persona,
-                // fecha_creacion
-            },
-            {transaction}
-        );
+        // Crear la relación entre la solicitud y el evento
+        await SolicitudEventoPersona.create({
+            id_solicitud: nuevoBotonEmergencia.id_solicitud,
+            id_evento,
+            id_persona
+        }, { transaction });
         
         await transaction.commit();
         return nuevoBotonEmergencia;
 
     } catch (error) {
         await transaction.rollback();
+        console.error('Error al crear la solicitud de botón de emergencia:', error);
         throw error;
     }
-}
+};
 
-// * Obtiene todas las solicitudes creadas con toda la información de la solicitud, incluyendo los policías asignados.
-// TODO: motodo en revision
+
 exports.getSolicitudes = async () => {
-    // Buscar todas las solicitudes
-    const solicitudes = await Solicitud.findAll({
-        include: [
-            { model: Circuito },
-            { model: Subtipo, include: [{ model: TipoSolicitud }] },
-            { model: Estado },
-            {
-                model: SolicitudEventoPersona,
-                include: [{ model: Persona }, { model: Evento }],
-                required: false // Permite que las solicitudes sin eventos también sean incluidas
-            },
-            {
-                model: Observacion,
-                include: [{model: Persona}],
-                required: false
-            },
-            // Incluir Persona para obtener la información del creador
-            {
-                model: Persona,
-                as: 'creador', // Usa el alias definido en la relación
-                required: false
-            }
-        ]
-    });
-
-    // Estructurar la respuesta
-    return solicitudes.map(solicitud => {
-        // Filtrar eventos por tipo
-        const eventos = solicitud.SolicitudEventoPersonas;
-        // Filtrar solo los eventos de asignación de policía
-        const policiasAsignados = solicitud.SolicitudEventoPersonas.filter(evento => evento.id_evento === 4);
-
-        // Crear el objeto para la solicitud
-        return {
-            id_solicitud: solicitud.id_solicitud,
-            id_estado: solicitud.Estado.descripcion,
-            id_subtipo: solicitud.id_subtipo,
-            fecha_creacion: solicitud.fecha_creacion,
-            puntoGPS: solicitud.puntoGPS,
-            direccion: solicitud.direccion,
-            observacion: solicitud.observacion,
-            id_circuito: solicitud.id_circuito,
-            Circuito: solicitud.Circuito,
-            Subtipo: solicitud.Subtipo,
-            // Información del creador
-            creador: solicitud.creador ? {
-                id_persona: solicitud.creador.id_persona,
-                cedula: solicitud.creador.cedula,
-                nombres: solicitud.creador.nombres,
-                apellidos: solicitud.creador.apellidos,
-                telefono: solicitud.creador.telefono,
-                email: solicitud.creador.email,
-            } : null,
-            // Policía asignado
-            policia_asignado: policiasAsignados.length > 0 ? policiasAsignados.map(evento => ({
-                id_persona: evento.id_persona,
-                Persona: evento.Persona
-            })) : 'No hay policía asignado',
-            // Todos los eventos de la solicitud
-            eventos: eventos.map(evento => ({
-                id_evento: evento.id_evento,
-                evento: evento.Evento.evento,
-                id_persona: evento.id_persona,
-                fecha_creacion: evento.fecha_creacion,
-                Persona: {
-                    nombres: evento.Persona.nombres,
-                    apellidos: evento.Persona.apellidos
+    try {
+        // Obtener todas las solicitudes con información asociada
+        const solicitudes = await Solicitud.findAll({
+            include: [
+                {
+                    model: Persona,
+                    as: 'creador',
+                    attributes: ['nombres', 'apellidos']
+                },
+                {
+                    model: Persona,
+                    as: 'policia',
+                    attributes: ['nombres', 'apellidos']
+                },
+                {
+                    model: Subtipo,
+                    attributes: ['descripcion']
+                },
+                {
+                    model: Estado,
+                    attributes: ['descripcion']
+                },
+                {
+                    model: Circuito,
+                    attributes: ['provincia', 'ciudad', 'barrio', 'numero_circuito']
                 }
-            })),
-            /// Todas las observaciones de la solicitud
-            observaciones: solicitud.Observacions.map(obs => ({
-            id_observacion: obs.id_observacion,
-            id_persona: obs.id_persona,
-            Persona: {
-                nombres: obs.Persona.nombres,
-                apellidos: obs.Persona.apellidos
-            },
-            observacion: obs.observacion,
-            fecha: obs.fecha // Asegúrate de que la fecha esté incluida en el modelo Observacion
-        }))
-        };
-    });
-}
+            ]
+        });
 
+        // Mapear las solicitudes para estructurar la respuesta
+        const solicitudesEstructuradas = solicitudes.map(solicitud => ({
+            id_solicitud: solicitud.id_solicitud,
+            estado: solicitud.Estado.descripcion,
+            subtipo: solicitud.Subtipo.descripcion,
+            creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
+            policia_asignado: solicitud.policia ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}` : 'No asignado',
+            puntoGPS: solicitud.puntoGPS,
+            circuito: `${solicitud.Circuito.provincia}, ${solicitud.Circuito.ciudad}, ${solicitud.Circuito.barrio}, ${solicitud.Circuito.numero_circuito}`,
+            fecha_creacion: solicitud.fecha_creacion.toISOString() // Convertir la fecha a formato ISO 8601
+        }));
 
-
-
-exports.getSolicitudById = async (idSolicitud) => {
-    // Buscar la solicitud por id
-    const solicitud = await Solicitud.findByPk(idSolicitud, {
-        include: [
-            { model: Circuito },
-            { model: Subtipo, include: [{ model: TipoSolicitud }] },
-            { model: Estado },
-            {
-                model: SolicitudEventoPersona,
-                include: [{ model: Persona },{ model: Evento }],
-                required: false // Permite que las solicitudes sin eventos también sean incluidas
-            },
-            {
-                model: Observacion,
-                include: [{model: Persona}],
-                required: false
-            },
-            {
-                model: Persona,
-                as: 'creador', // Usa el alias definido en la relación
-                required: false
-            }
-        ]
-    });
-
-    // Verifica si la solicitud fue encontrada
-    if (!solicitud) {
-        throw new Error('Solicitud no encontrada');
-    }
-
-    // Filtra eventos y estructuración de datos
-    const eventos = solicitud.SolicitudEventoPersonas;
-    const policiasAsignados = solicitud.SolicitudEventoPersonas.filter(evento => evento.id_evento === 4);
-
-    return {
-        id_solicitud: solicitud.id_solicitud,
-        id_estado: solicitud.Estado.descripcion,
-        id_subtipo: solicitud.id_subtipo,
-        fecha_creacion: solicitud.fecha_creacion,
-        puntoGPS: solicitud.puntoGPS,
-        direccion: solicitud.direccion,
-        observacion: solicitud.observacion,
-        id_circuito: solicitud.id_circuito,
-        Circuito: solicitud.Circuito,
-        Subtipo: solicitud.Subtipo,
-        // Información del ciudadano
-        // Información del creador
-        creador: solicitud.creador ? {
-            id_persona: solicitud.creador.id_persona,
-            cedula: solicitud.creador.cedula,
-            nombres: solicitud.creador.nombres,
-            apellidos: solicitud.creador.apellidos,
-            telefono: solicitud.creador.telefono,
-            email: solicitud.creador.email,
-        } : null,
-        // Policia asignado
-        policia_asignado: policiasAsignados.length > 0 ? policiasAsignados.map(evento => ({
-            id_persona: evento.id_persona,
-            Persona: evento.Persona
-        })) : 'No hay policía asignado',
-        // Todos los eventos de la solicitud
-        eventos: eventos.map(evento => ({
-            id_evento: evento.id_evento,
-            evento: evento.Evento.evento,
-            id_persona: evento.id_persona,
-            fecha_creacion: evento.fecha_creacion,
-            Persona: {
-                nombres: evento.Persona.nombres,
-                apellidos: evento.Persona.apellidos
-            }
-        })),
-        // Todas las observaciones de la solicitud
-        observaciones: solicitud.Observacions.map(obs => ({
-            id_observacion: obs.id_observacion,
-            id_persona: obs.id_persona,
-            Persona: {
-                nombres: obs.Persona.nombres,
-                apellidos: obs.Persona.apellidos
-            },
-            observacion: obs.observacion,
-            fecha: obs.fecha // Asegúrate de que la fecha esté incluida en el modelo Observacion
-        }))
-    };
-}
-
-
-
-// * Asignar un policia a la solicitud
-// TODO: metodo en revision
-exports.asignarPoliciaSolicitud = async (policiaData) => {
-    const {id_solicitud, id_persona} = policiaData;
-    const id_evento = 4;
-    // const fecha_creacion = new Date(); // Fecha actual
-    const transaction = await sequelize.transaction();
-
-    try {
-        // * 1. Cambiamos el estado de la solicitud a "en progreso"
-        await Solicitud.update(
-            { id_estado: 2},
-            {where: {id_solicitud: id_solicitud}, transaction: transaction}
-        );
-
-        // *2. Registramos el evento
-        await SolicitudEventoPersona.create({
-            id_solicitud: id_solicitud,
-            id_evento,
-            id_persona: id_persona,
-            // fecha_creacion
-        },{transaction:transaction});
-
-        // * 3. Actualizamos la disponibilidad del policia
-        await Persona.update(
-            { disponibilidad: 'Ocupado'},
-            {where: {id_persona: id_persona}, transaction: transaction}
-        );
-
-        await transaction.commit();
+        return solicitudesEstructuradas;
     } catch (error) {
-        await transaction.rollback();
-        console.log('Error al asignar policia a la solicitdud: ', error);
-        throw error;
+        throw new Error('Error al obtener las solicitudes: ' + error.message);
     }
-}
+};
 
-// * Cerrar solicitud y actulizacion de la disponbilidad del policia
-// TODO: metodo en revision
-exports.cerrarSolicitud = async (cerrarData) => {
-    const {id_solicitud, id_persona, estado, observaciones} = cerrarData;
-    const id_evento = 6 // se ha cerrado la solicitud de emergencia
-    // const fecha_creacion = new Date(); // Fecha actual
+
+exports.asignarPoliciaASolicitud = async (solicitudData) => {
+    const { id_solicitud, id_persona_asignador, id_persona_policia } = solicitudData;
     const transaction = await sequelize.transaction();
-
+    
     try {
-        // * 1. Cambiamos el estado de la solicitud a "Resuelto o falso"
-        await Solicitud.update(
-            { id_estado: estado},
-            {where: {id_solicitud: id_solicitud}, transaction: transaction}
-        );
-
-        // *2. Registramos el evento
-        await SolicitudEventoPersona.create({
-            id_solicitud: id_solicitud,
-            id_evento,
-            id_persona: id_persona,
-            // fecha_creacion
-        },{transaction:transaction});
-
-        // * 3. Actualizamos la disponibilidad del policia
-        await Persona.update(
-            { disponibilidad: 'Disponible'},
-            {where: {id_persona: id_persona}, transaction: transaction}
-        );
-        // * 4. Registramos las observaciones
-        if (observaciones) {
-            await Observacion.create({
-                id_solicitud: id_solicitud,
-                observacion: observaciones,
-                id_persona: id_persona
-            }, { transaction: transaction });
+        // Verificar que la persona que asigna es un policía
+        const asignador = await Persona.findByPk(id_persona_asignador);
+        if (!asignador) {
+            throw new Error('La persona que realiza la asignación no existe.');
+        }
+        const rolesAsignador = await asignador.getRols();  // Obtener roles de la persona
+        if (!rolesAsignador.some(rol => rol.descripcion === 'Policia')) {
+            throw new Error('La persona que realiza la asignación no es un policía.');
         }
 
+        // Verificar que el policía a asignar existe y es un policía
+        const policia = await Persona.findByPk(id_persona_policia);
+        if (!policia) {
+            throw new Error('El policía especificado no existe.');
+        }
+        const rolesPolicia = await policia.getRols();  // Obtener roles del policía
+        if (!rolesPolicia.some(rol => rol.descripcion === 'Policia')) {
+            throw new Error('La persona a asignar no es un policía.');
+        }
+
+        // Verificar que la solicitud existe
+        const solicitud = await Solicitud.findByPk(id_solicitud);
+        if (!solicitud) {
+            throw new Error('La solicitud especificada no existe.');
+        }
+
+        // Asignar el policía a la solicitud y actualizar el estado de la solicitud
+        await Solicitud.update(
+            { policia_asignado: id_persona_policia, id_estado: 2 },  // Actualizar a 'En progreso'
+            { where: { id_solicitud }, transaction }
+        );
+
+        // Actualizar la disponibilidad del policía a 'Ocupado'
+        await Persona.update(
+            { disponibilidad: 'Ocupado' },
+            { where: { id_persona: id_persona_policia }, transaction }
+        );
+
         await transaction.commit();
+        return { message: 'Policía asignado a la solicitud correctamente.' };
+
     } catch (error) {
         await transaction.rollback();
-        console.log('Error al cerrar solicitud: ', error);
         throw error;
     }
-}
+};
+
+
+exports.getSolicitudById = async (id_solicitud) => {
+    try {
+        // Obtener la solicitud con toda la información asociada
+        const solicitud = await Solicitud.findByPk(id_solicitud, {
+            include: [
+                {
+                    model: Persona,
+                    as: 'creador',
+                    attributes: ['id_persona', 'nombres', 'apellidos']
+                },
+                {
+                    model: Persona,
+                    as: 'policia',
+                    attributes: ['id_persona', 'nombres', 'apellidos']
+                },
+                {
+                    model: Subtipo,
+                    attributes: ['descripcion']
+                },
+                {
+                    model: Estado,
+                    attributes: ['descripcion']
+                },
+                {
+                    model: Circuito,
+                    attributes: ['provincia', 'ciudad', 'barrio', 'numero_circuito']
+                },
+                {
+                    model: SolicitudEventoPersona,
+                    include: [
+                        {
+                            model: Evento,
+                            attributes: ['evento']
+                        },
+                        {
+                            model: Persona,
+                            attributes: ['id_persona', 'nombres', 'apellidos']
+                        }
+                    ],
+                    attributes: ['id_evento', 'id_persona', 'fecha_creacion']
+                },
+                {
+                    model: Observacion,
+                    include: [
+                        {
+                            model: Persona,
+                            attributes: ['id_persona', 'nombres', 'apellidos']
+                        }
+                    ],
+                    attributes: ['observacion', 'fecha']
+                }
+            ]
+        });
+
+        if (!solicitud) {
+            throw new Error('La solicitud especificada no existe.');
+        }
+
+        return solicitud;
+
+    } catch (error) {
+        throw new Error('Error al obtener la solicitud: ' + error.message);
+    }
+};
+
+exports.cerrarSolicitud = async (cerrarData) => {
+    const { id_solicitud, observacion } = cerrarData;
+    const transaction = await sequelize.transaction();
+    try {
+        // Verificar que la solicitud existe
+        const solicitud = await Solicitud.findByPk(id_solicitud);
+        if (!solicitud) {
+            throw new Error('La solicitud especificada no existe.');
+        }
+
+        const id_persona_policia = solicitud.policia_asignado;
+
+        // Verificar que el policía asignado existe
+        const policia = await Persona.findByPk(id_persona_policia);
+        if (!policia) {
+            throw new Error('El policía asignado no existe.');
+        }
+
+        // Actualizar el estado de la solicitud a "Resuelto"
+        const estadoResuelto = 3; // ID del estado "Resuelto"
+        await Solicitud.update(
+            { id_estado: estadoResuelto },
+            { where: { id_solicitud }, transaction }
+        );
+
+        // Actualizar la disponibilidad del policía a "Disponible"
+        await Persona.update(
+            { disponibilidad: 'Disponible' },
+            { where: { id_persona: id_persona_policia }, transaction }
+        );
+
+        // Crear la observación
+        await Observacion.create(
+            {
+                id_solicitud,
+                observacion,
+                id_persona: id_persona_policia, // El mismo policía asignado hace la observación
+            },
+            { transaction }
+        );
+
+        await transaction.commit();
+        return { message: 'Solicitud cerrada correctamente.' };
+
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // *Agregar una nueva observacion a la solicitud
 exports.agregarObservacion = async (observacionData) => {
@@ -326,3 +357,11 @@ exports.agregarObservacion = async (observacionData) => {
         throw error;
     }
 }
+
+
+
+
+
+
+
+

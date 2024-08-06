@@ -10,12 +10,6 @@ exports.crearBotonEmergencia = async (req, res) => {
     }
 }
 
-/**
- * * Controlador para obtener todas las personas.
- * @param {Object} req - Objeto de solicitud HTTP.
- * @param {Object} res - Objeto de respuesta HTTP.
- */
-// TODO: Metodo en revision
 exports.getSolicitudes = async (req, res) => {
     try {
       const solicitudes = await solicitudService.getSolicitudes();
@@ -24,6 +18,17 @@ exports.getSolicitudes = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   };
+
+
+  exports.asignarPolicia = async (req, res) => {
+    try {
+        const resultado = await solicitudService.asignarPoliciaASolicitud(req.body);
+        res.status(200).json(resultado);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
 
 exports.getSolicitudById = async (req, res) => {
     try {
@@ -37,14 +42,14 @@ exports.getSolicitudById = async (req, res) => {
 }
 
 
-exports.asignarPoliciaSolicitud = async (req, res) => {
-    try {
-        await solicitudService.asignarPoliciaSolicitud(req.body);
-        res.status(200).json({ message: `Policía asignado correctamente a la solicitud ${req.body.id_solicitud}` });
-    } catch (error) {
-        res.status(500).json({ message: `Error al asignar el policía a la solicitud: ${error.message}` });
-    }
-}
+
+
+
+
+
+
+
+
 
 exports.cerrarSolicitud = async (req, res) => {
     try {

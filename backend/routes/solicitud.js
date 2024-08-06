@@ -6,8 +6,11 @@ const solicitudController = require('../controllers/ctr_solicitud');
 // ! Rutas inestables
 router.post('/nuevoBotonEmergencia', solicitudController.crearBotonEmergencia);
 router.get('/', solicitudController.getSolicitudes);
+
+
+
 router.get('/:id', solicitudController.getSolicitudById);
-router.post('/asignarPolicia', solicitudController.asignarPoliciaSolicitud);
+router.post('/asignarPolicia', solicitudController.asignarPolicia);
 router.post('/cerrarSolicitud', solicitudController.cerrarSolicitud);
 router.post('/agregarObservacion', solicitudController.agregarObservacion);
 

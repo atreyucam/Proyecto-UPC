@@ -121,31 +121,25 @@ exports.getPolicias = async (req, res) => {
 };
 
 
-/**
- * Controlador para filtrar policías por circuito o disponibilidad.
- * @param {Object} req - Objeto de solicitud HTTP.
- * @param {Object} res - Objeto de respuesta HTTP.
- */
-exports.getPoliciasByCircuitoOrDisponibilidad = async (req, res) => {
+
+// ---------------------------------------------------------
+// * Para listar a un ciudadano con sus solicitudes
+exports.getCiudadanoConSolicitudes = async (req, res) => {
+  const { id } = req.params;
   try {
-    const filters = req.query;
-    const { policias, count } = await personaService.getPoliciasByCircuitoOrDisponibilidad(filters);
-    res.status(200).json({ policias, count });
+      const ciudadano = await personaService.getCiudadanoConSolicitudes(id);
+      res.status(200).json(ciudadano);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.message });
   }
 };
 
-/**
- * Controlador para filtrar admin y superadmin.
- * @param {Object} req - Objeto de solicitud HTTP.
- * @param {Object} res - Objeto de respuesta HTTP.
- */
-exports.getAdmins = async (req, res) => {
+exports.getPoliciaConSolicitudes = async (req, res) => {
+  const { id } = req.params;
   try {
-    const { admins, count } = await personaService.getAdmins();
-    res.status(200).json({ admins, count });
+      const policia = await personaService.getPoliciaConSolicitudes(id);
+      res.status(200).json(policia);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.message });
   }
 };

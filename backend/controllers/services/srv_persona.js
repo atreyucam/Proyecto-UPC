@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Persona, Rol, Circuito, sequelize } = require('../../models/db_models');
+const { Persona, Rol, Circuito, sequelize, Solicitud } = require('../../models/db_models');
 
 // * CrearPersonas
 /** 
@@ -45,6 +45,8 @@ exports.createPersona = async (personaData) => {
     throw error;
   }
 };
+
+
 // * Obtener todas las personas
 // * El metodo regresa todos los usuarios registrados con informacion.
 // * Metodo en funcionamiento
@@ -62,6 +64,7 @@ exports.getPersonas = async () => {
     });
   };
   
+
 // * Obtener persona por ID
 // * El Metodo regresa la informacion completa de un usuario por su id.
 // * Metodo en funcionamiento
@@ -212,3 +215,51 @@ exports.getPolicias = async () => {
   }
 };
 
+
+// ! Por revisar
+
+exports.getCiudadanoConSolicitudes = async (id_persona) => {
+  try {
+      // Obtener la información del ciudadano y sus solicitudes asociadas
+      const ciudadano = await Persona.findByPk(id_persona, {
+          include: [{
+              model: Solicitud,
+              attributes: ['id_solicitud', 'id_estado', 'id_subtipo', 'fecha_creacion', 'puntoGPS', 'observacion'],
+              as: 'solicitudes_creadas'
+          }]
+      });
+
+      if (!ciudadano) {
+          throw new Error('El ciudadano especificado no existe.');
+      }
+
+      return ciudadano;
+  } catch (error) {
+      throw new Error('Error al obtener la información del ciudadano: ' + error.message);
+  }
+};
+
+
+exports.getPoliciaConSolicitudes = async (id_persona) => {
+  try {
+      // Obtener la información del policía y las solicitudes a las que ha sido asignado
+      const policia = await Persona.findByPk(id_persona, {
+          include: [{
+              model: Solicitud,
+              attributes: ['id_solicitud', 'id_estado', 'id_subtipo', 'fecha_creacion', 'puntoGPS', 'observacion'],
+              as: 'solicitudes_asignadas',
+              where: {
+                  policia_asignado: id_persona
+              }
+          }]
+      });
+
+      if (!policia) {
+          throw new Error('El policía especificado no existe.');
+      }
+
+      return policia;
+  } catch (error) {
+      throw new Error('Error al obtener la información del policía: ' + error.message);
+  }
+};

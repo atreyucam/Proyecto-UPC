@@ -203,13 +203,29 @@ const Solicitud = sequelize.define('Solicitud', {
     allowNull: true,
     defaultValue: ' '
   },
-  id_persona: {
+  id_circuito: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Circuito,
+      key: 'id_circuito'
+    },
+    allowNull: true // Puede ser nulo si no se asigna a un circuito
+  },
+  creado_por: { // Nuevo campo
     type: DataTypes.INTEGER,
     references: {
       model: Persona,
       key: 'id_persona'
     },
     allowNull: false
+  },
+  policia_asignado: { // Nuevo campo
+    type: DataTypes.INTEGER,
+    references: {
+      model: Persona,
+      key: 'id_persona'
+    },
+    allowNull: true // Puede ser nulo si aún no se ha asignado un policía
   }
 }, { tableName: 'Solicitud' });
 
@@ -456,9 +472,14 @@ Observacion.belongsTo(Persona, { foreignKey: 'id_persona' });
 Circuito.hasMany(Solicitud, { foreignKey: 'id_circuito' });
 Solicitud.belongsTo(Circuito, { foreignKey: 'id_circuito' });
 
-// Solicitud.js
-Solicitud.belongsTo(Persona, { foreignKey: 'id_persona', as: 'creador' });
-Persona.hasMany(Solicitud, { foreignKey: 'id_persona', as: 'solicitudes' });
+// Relación entre Solicitud y Persona (creador)
+Solicitud.belongsTo(Persona, { foreignKey: 'creado_por', as: 'creador' });
+Persona.hasMany(Solicitud, { foreignKey: 'creado_por', as: 'solicitudes_creadas' });
+
+// Relación entre Solicitud y Persona (policía asignado)
+Solicitud.belongsTo(Persona, { foreignKey: 'policia_asignado', as: 'policia' });
+Persona.hasMany(Solicitud, { foreignKey: 'policia_asignado', as: 'solicitudes_asignadas' });
+
 
 module.exports = {
   sequelize,
