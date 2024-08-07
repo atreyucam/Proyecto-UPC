@@ -59,7 +59,7 @@ exports.crearBotonEmergencia = async (personaData) => {
 
 exports.getSolicitudes = async () => {
     try {
-        // Obtener todas las solicitudes con información asociada
+        // Obtener todas las solicitudes con información asociada, ordenadas por fecha de creación ascendente
         const solicitudes = await Solicitud.findAll({
             include: [
                 {
@@ -74,6 +74,12 @@ exports.getSolicitudes = async () => {
                 },
                 {
                     model: Subtipo,
+                    include: [
+                        {
+                            model: TipoSolicitud,
+                            attributes: ['descripcion'] // Asegúrate de incluir la descripción del tipo de solicitud
+                        }
+                    ],
                     attributes: ['descripcion']
                 },
                 {
@@ -84,18 +90,25 @@ exports.getSolicitudes = async () => {
                     model: Circuito,
                     attributes: ['provincia', 'ciudad', 'barrio', 'numero_circuito']
                 }
-            ]
+            ],
+            order: [['fecha_creacion', 'DESC']] // Ordenar por fecha_creacion ascendente
         });
 
         // Mapear las solicitudes para estructurar la respuesta
         const solicitudesEstructuradas = solicitudes.map(solicitud => ({
             id_solicitud: solicitud.id_solicitud,
             estado: solicitud.Estado.descripcion,
-            subtipo: solicitud.Subtipo.descripcion,
+            tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
+            subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
             creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
             policia_asignado: solicitud.policia ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}` : 'No asignado',
             puntoGPS: solicitud.puntoGPS,
-            circuito: `${solicitud.Circuito.provincia}, ${solicitud.Circuito.ciudad}, ${solicitud.Circuito.barrio}, ${solicitud.Circuito.numero_circuito}`,
+            circuito: {
+                provincia: solicitud.Circuito.provincia,
+                ciudad: solicitud.Circuito.ciudad,
+                barrio: solicitud.Circuito.barrio,
+                numero_circuito: solicitud.Circuito.numero_circuito
+            },
             fecha_creacion: solicitud.fecha_creacion.toISOString() // Convertir la fecha a formato ISO 8601
         }));
 
@@ -104,6 +117,7 @@ exports.getSolicitudes = async () => {
         throw new Error('Error al obtener las solicitudes: ' + error.message);
     }
 };
+
 
 
 exports.asignarPoliciaASolicitud = async (solicitudData) => {
@@ -158,7 +172,6 @@ exports.asignarPoliciaASolicitud = async (solicitudData) => {
     }
 };
 
-
 exports.getSolicitudById = async (id_solicitud) => {
     try {
         // Obtener la solicitud con toda la información asociada
@@ -176,6 +189,12 @@ exports.getSolicitudById = async (id_solicitud) => {
                 },
                 {
                     model: Subtipo,
+                    include: [
+                        {
+                            model: TipoSolicitud,
+                            attributes: ['descripcion'] // Asegúrate de incluir la descripción del tipo de solicitud
+                        }
+                    ],
                     attributes: ['descripcion']
                 },
                 {
@@ -191,14 +210,15 @@ exports.getSolicitudById = async (id_solicitud) => {
                     include: [
                         {
                             model: Evento,
-                            attributes: ['evento']
+                            attributes: ['evento'] // Solo la descripción del evento
                         },
                         {
                             model: Persona,
                             attributes: ['id_persona', 'nombres', 'apellidos']
                         }
                     ],
-                    attributes: ['id_evento', 'id_persona', 'fecha_creacion']
+                    attributes: ['fecha_creacion'],
+                    order: [['fecha_creacion', 'ASC']]
                 },
                 {
                     model: Observacion,
@@ -208,7 +228,8 @@ exports.getSolicitudById = async (id_solicitud) => {
                             attributes: ['id_persona', 'nombres', 'apellidos']
                         }
                     ],
-                    attributes: ['observacion', 'fecha']
+                    attributes: ['observacion', 'fecha'],
+                    order: [['fecha', 'ASC']]
                 }
             ]
         });
@@ -217,12 +238,37 @@ exports.getSolicitudById = async (id_solicitud) => {
             throw new Error('La solicitud especificada no existe.');
         }
 
-        return solicitud;
+        // Mapear la solicitud para reemplazar el id_estado y el id_subtipo por sus descripciones
+        const formattedSolicitud = {
+            id_solicitud: solicitud.id_solicitud,
+            estado: solicitud.Estado.descripcion, // Reemplazar id_estado por descripcion
+            tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
+            subtipo: solicitud.Subtipo.descripcion, // Reemplazar id_subtipo por descripcion
+            fecha_creacion: solicitud.fecha_creacion,
+            puntoGPS: solicitud.puntoGPS,
+            direccion: solicitud.direccion,
+            circuito: solicitud.Circuito,
+            creado_por: solicitud.creador,
+            policia_asignado: solicitud.policia,
+            SolicitudEventoPersonas: solicitud.SolicitudEventoPersonas.map(sep => ({
+                id_evento: sep.Evento.evento, // Solo mostrar la descripción del evento
+                fecha_creacion: sep.fecha_creacion,
+                persona: sep.Persona
+            })),
+            Observacions: solicitud.Observacions.map(obs => ({
+                observacion: obs.observacion,
+                fecha: obs.fecha,
+                persona: obs.Persona
+            }))
+        };
+
+        return formattedSolicitud;
 
     } catch (error) {
         throw new Error('Error al obtener la solicitud: ' + error.message);
     }
 };
+
 
 exports.cerrarSolicitud = async (cerrarData) => {
     const { id_solicitud, observacion } = cerrarData;

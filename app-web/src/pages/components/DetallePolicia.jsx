@@ -11,7 +11,7 @@ const PoliciaDetail = () => {
     const fetchPolicia = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/personas/${id}`
+          `http://localhost:3000/personas/policia/${id}`
         );
         setPolicia(response.data);
       } catch (error) {
@@ -22,30 +22,14 @@ const PoliciaDetail = () => {
     fetchPolicia();
   }, [id]);
 
+  const handleVerSolicitud = (idSolicitud) => {
+    const selected = policia.solicitudes_asignadas.find((sol) => sol.id_solicitud === idSolicitud);
+    navigate(`/solicitudes/${idSolicitud}`, { state: { solicitud: selected } });
+  };
+
   if (!policia) {
     return <div>Cargando...</div>;
   }
-
-  const fakeHistorial = [
-    {
-      id_historial: 1,
-      nombre: "Juan",
-      apellido: "Pérez",
-      tipo: "Robo",
-      duracion: "2 semanas",
-      estado: "Abierto",
-      descripcion: "Robo de un vehículo.",
-    },
-    {
-      id_historial: 2,
-      nombre: "Carlos",
-      apellido: "García",
-      tipo: "Asalto",
-      duracion: "1 mes",
-      estado: "Cerrado",
-      descripcion: "Asalto a mano armada.",
-    },
-  ];
 
   return (
     <div className="container mx-auto px-3 py-8">
@@ -61,7 +45,7 @@ const PoliciaDetail = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Detalles del Policía</h1>
       </div>
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6 grid grid-cols-2 gap-4">
+      <div className="bg-white p-4 rounded-lg shadow-sm mb-6 grid grid-cols-2  border border-gray-200">
         <div>
           <p>
             <strong>Cédula:</strong> {policia.cedula}
@@ -81,51 +65,54 @@ const PoliciaDetail = () => {
             <strong>Email:</strong> {policia.email}
           </p>
           <p>
-            <strong>Provincia:</strong> {policia.Circuito.provincia}
+            <strong>Disponibilidad:</strong> {policia.disponibilidad}
           </p>
           <p>
-            <strong>Ciudad:</strong> {policia.Circuito.ciudad}
-          </p>
-          <p>
-            <strong>Barrio:</strong> {policia.Circuito.barrio}
+            <strong>ID Circuito:</strong> {policia.id_circuito}
           </p>
         </div>
       </div>
 
-      <h3 className="text-lg font-bold mb-2 mt-4">Historial</h3>
-      <div className="overflow-x-auto bg-white p-4 rounded-lg shadow-md mb-6">
-        <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border-b p-2">Nombre y Apellidos</th>
-              <th className="border-b p-2">Tipo de Denuncia</th>
-              <th className="border-b p-2">Duración</th>
-              <th className="border-b p-2">Estado</th>
-              <th className="border-b p-2">Descripción</th>
-              <th className="border-b p-2">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {fakeHistorial.map((entry, index) => (
-              <tr key={index} className="text-center cursor-pointer hover:bg-gray-200">
-                <td className="border-b p-2">{`${entry.nombre} ${entry.apellido}`}</td>
-                <td className="border-b p-2">{entry.tipo}</td>
-                <td className="border-b p-2">{entry.duracion}</td>
-                <td className="border-b p-2">{entry.estado}</td>
-                <td className="border-b p-2">{entry.descripcion}</td>
-                <td className="border-b p-2">
-                  <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
-                    onClick={() => navigate(`/policia/${id}/historial/${entry.id_historial}`, { state: { historial: entry } })}
-                  >
-                    Ver
-                  </button>
-                </td>
+      <h3 className="text-lg font-bold mb-4">Solicitudes Asignadas</h3>
+      {policia.solicitudes_asignadas.length > 0 ? (
+        <div className="overflow-x-auto shadow-sm">
+          <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
+            <thead>
+              <tr>
+                <th className="border-b p-2 text-center">ID Solicitud</th>
+                <th className="border-b p-2 text-center">Estado</th>
+                <th className="border-b p-2 text-center">Subtipo</th>
+                <th className="border-b p-2 text-center">Tipo de Solicitud</th>
+                <th className="border-b p-2 text-center">Fecha de Creación</th>
+                <th className="border-b p-2 text-center">Punto GPS</th>
+                <th className="border-b p-2 text-center">Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {policia.solicitudes_asignadas.map((solicitud) => (
+                <tr key={solicitud.id_solicitud} className="hover:bg-gray-50">
+                  <td className="border-b p-2 text-center">{solicitud.id_solicitud}</td>
+                  <td className="border-b p-2 text-center">{solicitud.estado}</td>
+                  <td className="border-b p-2 text-center">{solicitud.subtipo}</td>
+                  <td className="border-b p-2 text-center">{solicitud.tipo_solicitud}</td>
+                  <td className="border-b p-2 text-center">{new Date(solicitud.fecha_creacion).toLocaleString()}</td>
+                  <td className="border-b p-2 text-center">{solicitud.puntoGPS}</td>
+                  <td className="border-b p-2 text-center">
+                    <button
+                      className="bg-blue-500 text-white px-2 py-1 rounded"
+                      onClick={() => handleVerSolicitud(solicitud.id_solicitud)}
+                    >
+                      Ver
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="text-center mt-4">No se encontraron solicitudes asignadas.</p>
+      )}
     </div>
   );
 };

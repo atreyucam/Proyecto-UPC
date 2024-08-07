@@ -6,57 +6,44 @@ const CiudadanoDetail = () => {
   const { id } = useParams();
   const [ciudadano, setCiudadano] = useState({ Circuito: {} });
   const [historial, setHistorial] = useState([]);
-  const [selectedHistorial, setSelectedHistorial] = useState(null);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCiudadano = async () => {
       try {
-        /**
-         * * Actualizacion del API para llamada por id - ciudadano
-         * * En funcionamiento
-         */
+        // Llamada a la API para obtener los detalles del ciudadano
         const response = await axios.get(
-          `http://localhost:3000/personas/${id}`
+          `http://localhost:3000/personas/ciudadano/${id}`
         );
         setCiudadano(response.data);
+
+        // Extraer y ordenar las solicitudes por fecha de creación
+        const solicitudesOrdenadas = response.data.solicitudes_creadas
+          .map(solicitud => ({
+            id_solicitud: solicitud.id_solicitud,
+            estado: solicitud.estado, // Utilizar la descripción del estado
+            subtipo: solicitud.subtipo, // Utilizar la descripción del subtipo
+            tipo_solicitud: solicitud.tipo_solicitud, // Incluir la descripción del tipo de solicitud
+            fecha_creacion: new Date(solicitud.fecha_creacion),
+            puntoGPS: solicitud.puntoGPS,
+            observacion: solicitud.observacion
+          }))
+          .sort((a, b) => b.fecha_creacion - a.fecha_creacion); // Ordenar por fecha de creación
+
+        setHistorial(solicitudesOrdenadas);
       } catch (error) {
         console.error("Error fetching ciudadano details", error);
         setError("No se encontraron datos para el ciudadano solicitado.");
       }
     };
 
-    // Datos ficticios para el historial
-    const fakeHistorial = [
-      {
-        id_historial: 1,
-        nombre: "Ana",
-        apellido: "López",
-        tipo: "Robo",
-        duracion: "2 semanas",
-        estado: "Abierto",
-        descripcion: "Robo de una bicicleta.",
-      },
-      {
-        id_historial: 2,
-        nombre: "Pedro",
-        apellido: "Martínez",
-        tipo: "Asalto",
-        duracion: "1 mes",
-        estado: "Cerrado",
-        descripcion: "Asalto a mano armada.",
-      },
-    ];
-
-    setHistorial(fakeHistorial);
-
     fetchCiudadano();
   }, [id]);
 
-  const handleHistorialClick = (idHistorial) => {
-    const selected = historial.find((hist) => hist.id_historial === idHistorial);
-    setSelectedHistorial(selected);
+  const handleHistorialClick = (idSolicitud) => {
+    const selected = historial.find((sol) => sol.id_solicitud === idSolicitud);
+    navigate(`/solicitudes/${idSolicitud}`, { state: { solicitud: selected } });
   };
 
   if (error) {
@@ -89,7 +76,7 @@ const CiudadanoDetail = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Detalles del Ciudadano</h1>
       </div>
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6 grid grid-cols-2 gap-4">
+      <div className="bg-white p-4 rounded-lg shadow-sm mb-6 grid grid-cols-2  border border-gray-200">
         <div>
           <p>
             <strong>Cédula:</strong> {ciudadano.cedula}
@@ -117,38 +104,43 @@ const CiudadanoDetail = () => {
           <p>
             <strong>Barrio:</strong> {ciudadano.Circuito.barrio}
           </p>
+          <p>
+            <strong>Número de Circuito:</strong> {ciudadano.Circuito.numero_circuito}
+          </p>
         </div>
       </div>
 
-      <h3 className="text-lg font-bold mb-2 mt-4">Historial</h3>
-      <div className="overflow-x-auto bg-white p-4 rounded-lg shadow-md mb-6">
+      <h3 className="text-lg font-bold mb-2 mt-4">Historial de Solicitudes</h3>
+      <div className="overflow-x-auto shadow-sm">
         <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
           <thead>
             <tr className="bg-gray-100">
-              <th className="border-b p-2">Nombre y Apellidos</th>
-              <th className="border-b p-2">Tipo de Denuncia</th>
-              <th className="border-b p-2">Duración</th>
+              <th className="border-b p-2">ID Solicitud</th>
               <th className="border-b p-2">Estado</th>
-              <th className="border-b p-2">Descripción</th>
+              <th className="border-b p-2">Subtipo</th>
+              <th className="border-b p-2">Tipo de Solicitud</th>
+              <th className="border-b p-2">Fecha de Creación</th>
+              <th className="border-b p-2">Punto GPS</th>
               <th className="border-b p-2">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {historial.map((entry, index) => (
+            {historial.map((solicitud) => (
               <tr
-                key={index}
+                key={solicitud.id_solicitud}
                 className="text-center cursor-pointer hover:bg-gray-200"
-                onClick={() => handleHistorialClick(entry.id_historial)}
+                onClick={() => handleHistorialClick(solicitud.id_solicitud)}
               >
-                <td className="border-b p-2">{`${entry.nombre} ${entry.apellido}`}</td>
-                <td className="border-b p-2">{entry.tipo}</td>
-                <td className="border-b p-2">{entry.duracion}</td>
-                <td className="border-b p-2">{entry.estado}</td>
-                <td className="border-b p-2">{entry.descripcion}</td>
+                <td className="border-b p-2">{solicitud.id_solicitud}</td>
+                <td className="border-b p-2">{solicitud.estado}</td>
+                <td className="border-b p-2">{solicitud.subtipo}</td>
+                <td className="border-b p-2">{solicitud.tipo_solicitud}</td>
+                <td className="border-b p-2">{solicitud.fecha_creacion.toLocaleString()}</td>
+                <td className="border-b p-2">{solicitud.puntoGPS}</td>
                 <td className="border-b p-2">
                   <button
                     className="bg-blue-500 text-white px-4 py-2 rounded"
-                    onClick={() => navigate(`/ciudadano/${id}/historial/${entry.id_historial}`, { state: { historial: entry } })}
+                    onClick={() => navigate(`/solicitud/${solicitud.id_solicitud}`, { state: { solicitud } })}
                   >
                     Ver
                   </button>
@@ -158,8 +150,6 @@ const CiudadanoDetail = () => {
           </tbody>
         </table>
       </div>
-
-      
     </div>
   );
 };

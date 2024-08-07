@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Persona, Rol, Circuito, sequelize, Solicitud } = require('../../models/db_models');
+const { Persona, Rol, Circuito, sequelize, Solicitud, Estado, Subtipo, TipoSolicitud } = require('../../models/db_models');
 
 // * CrearPersonas
 /** 
@@ -218,48 +218,138 @@ exports.getPolicias = async () => {
 
 // ! Por revisar
 
+
 exports.getCiudadanoConSolicitudes = async (id_persona) => {
   try {
-      // Obtener la información del ciudadano y sus solicitudes asociadas
-      const ciudadano = await Persona.findByPk(id_persona, {
-          include: [{
-              model: Solicitud,
-              attributes: ['id_solicitud', 'id_estado', 'id_subtipo', 'fecha_creacion', 'puntoGPS', 'observacion'],
-              as: 'solicitudes_creadas'
-          }]
-      });
+    // Obtener la información del ciudadano con sus solicitudes asociadas
+    const ciudadano = await Persona.findByPk(id_persona, {
+      include: [
+        {
+          model: Solicitud,
+          as: 'solicitudes_creadas',
+          include: [
+            {
+              model: Estado,
+              attributes: ['descripcion'], // Incluir la descripción del estado
+              as: 'Estado'
+            },
+            {
+              model: Subtipo,
+              attributes: ['descripcion'], // Incluir la descripción del subtipo
+              include: [
+                {
+                  model: TipoSolicitud,
+                  attributes: ['descripcion'], // Incluir la descripción del tipo de solicitud
+                  as: 'TipoSolicitud'
+                }
+              ],
+              as: 'Subtipo'
+            }
+          ],
+          attributes: ['id_solicitud', 'fecha_creacion', 'puntoGPS', 'observacion']
+        },
+        {
+          model: Circuito,
+          attributes: ['provincia', 'ciudad', 'barrio', 'numero_circuito'], // Incluir la información del circuito
+          as: 'Circuito'
+        }
+      ]
+    });
 
-      if (!ciudadano) {
-          throw new Error('El ciudadano especificado no existe.');
-      }
+    if (!ciudadano) {
+      throw new Error('El ciudadano especificado no existe.');
+    }
 
-      return ciudadano;
+    // Mapear la respuesta para que tenga la estructura deseada y ordenar las solicitudes por fecha de creación descendente
+    const formattedCiudadano = {
+      id_persona: ciudadano.id_persona,
+      cedula: ciudadano.cedula,
+      nombres: ciudadano.nombres,
+      apellidos: ciudadano.apellidos,
+      telefono: ciudadano.telefono,
+      email: ciudadano.email,
+      Circuito: ciudadano.Circuito, // Información del circuito del ciudadano
+      solicitudes_creadas: ciudadano.solicitudes_creadas
+        .map(solicitud => ({
+          id_solicitud: solicitud.id_solicitud,
+          estado: solicitud.Estado.descripcion, // Reemplazar id_estado por descripcion
+          subtipo: solicitud.Subtipo.descripcion, // Reemplazar id_subtipo por descripcion
+          tipo_solicitud: solicitud.Subtipo.TipoSolicitud.descripcion, // Incluir la descripción del tipo de solicitud
+          fecha_creacion: solicitud.fecha_creacion,
+          puntoGPS: solicitud.puntoGPS,
+        }))
+
+    };
+
+    return formattedCiudadano;
   } catch (error) {
-      throw new Error('Error al obtener la información del ciudadano: ' + error.message);
+    throw new Error('Error al obtener la información del ciudadano: ' + error.message);
   }
 };
 
 
+
 exports.getPoliciaConSolicitudes = async (id_persona) => {
   try {
-      // Obtener la información del policía y las solicitudes a las que ha sido asignado
-      const policia = await Persona.findByPk(id_persona, {
-          include: [{
-              model: Solicitud,
-              attributes: ['id_solicitud', 'id_estado', 'id_subtipo', 'fecha_creacion', 'puntoGPS', 'observacion'],
-              as: 'solicitudes_asignadas',
-              where: {
-                  policia_asignado: id_persona
-              }
-          }]
-      });
+    // Obtener la información del policía con las solicitudes asignadas
+    const policia = await Persona.findByPk(id_persona, {
+      include: [
+        {
+          model: Solicitud,
+          as: 'solicitudes_asignadas',
+          include: [
+            {
+              model: Estado,
+              attributes: ['descripcion'], // Incluir la descripción del estado
+              as: 'Estado'
+            },
+            {
+              model: Subtipo,
+              attributes: ['descripcion'], // Incluir la descripción del subtipo
+              include: [
+                {
+                  model: TipoSolicitud,
+                  attributes: ['descripcion'], // Incluir la descripción del tipo de solicitud
+                  as: 'TipoSolicitud'
+                }
+              ],
+              as: 'Subtipo'
+            }
+          ],
+          attributes: ['id_solicitud', 'fecha_creacion', 'puntoGPS', 'observacion']
+        }
+      ]
+    });
 
-      if (!policia) {
-          throw new Error('El policía especificado no existe.');
-      }
+    if (!policia) {
+      throw new Error('El policía especificado no existe.');
+    }
 
-      return policia;
+    // Mapear la respuesta para que tenga la estructura deseada y ordenar las solicitudes por fecha de creación descendente
+    const formattedPolicia = {
+      id_persona: policia.id_persona,
+      cedula: policia.cedula,
+      nombres: policia.nombres,
+      apellidos: policia.apellidos,
+      telefono: policia.telefono,
+      email: policia.email,
+      disponibilidad: policia.disponibilidad,
+      id_circuito: policia.id_circuito,
+      solicitudes_asignadas: policia.solicitudes_asignadas
+        .map(solicitud => ({
+          id_solicitud: solicitud.id_solicitud,
+          estado: solicitud.Estado.descripcion, // Reemplazar id_estado por descripcion
+          subtipo: solicitud.Subtipo.descripcion, // Reemplazar id_subtipo por descripcion
+          tipo_solicitud: solicitud.Subtipo.TipoSolicitud.descripcion, // Incluir la descripción del tipo de solicitud
+          fecha_creacion: solicitud.fecha_creacion,
+          puntoGPS: solicitud.puntoGPS,
+          observacion: solicitud.observacion || "N/A" // Añadir un valor por defecto si observacion es null
+        }))
+        .sort((a, b) => b.fecha_creacion - a.fecha_creacion) // Ordenar por fecha de creación en orden descendente
+    };
+
+    return formattedPolicia;
   } catch (error) {
-      throw new Error('Error al obtener la información del policía: ' + error.message);
+    throw new Error('Error al obtener la información del policía: ' + error.message);
   }
 };

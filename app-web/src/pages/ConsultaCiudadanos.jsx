@@ -259,6 +259,7 @@ const ConsultaCiudadanos = () => {
                   <th className="border-b p-2">Nombres</th>
                   <th className="border-b p-2">Apellidos</th>
                   <th className="border-b p-2">Teléfono</th>
+                  <th className="border-b p-2">Ciudad</th>
                   <th className="border-b p-2">Barrio</th>
                   <th className="border-b p-2">Acciones</th>
                 </tr>
@@ -318,6 +319,7 @@ const ConsultaCiudadanos = () => {
                         ciudadano.telefono
                       )}
                     </td>
+                    <td className="border-b p-2 text-center">{ciudadano.Circuito.ciudad}</td>
                     <td className="border-b p-2 text-center">{ciudadano.Circuito.barrio}</td>
                     <td className="border-b p-2 flex gap-2 justify-center">
                       {editingCiudadano?.id_persona === ciudadano.id_persona ? (

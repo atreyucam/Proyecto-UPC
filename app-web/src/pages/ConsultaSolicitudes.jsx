@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FiCheckCircle, FiEdit, FiTrash, FiSave, FiEye } from 'react-icons/fi';
+import { FiCheckCircle, FiTrash, FiEye } from 'react-icons/fi';
 import { useNavigate } from "react-router-dom";
 
 const ConsultaSolicitudes = () => {
@@ -74,9 +74,12 @@ const ConsultaSolicitudes = () => {
                 <tr>
                   <th className="border-b p-2">ID Solicitud</th>
                   <th className="border-b p-2">Estado</th>
+                  <th className="border-b p-2">Tipo</th>
                   <th className="border-b p-2">Subtipo</th>
                   <th className="border-b p-2">Fecha de Creación</th>
                   <th className="border-b p-2">Policía Asignado</th>
+                  <th className="border-b p-2">Ciudad</th>
+                  <th className="border-b p-2">Barrio</th>
                   <th className="border-b p-2">Acciones</th>
                 </tr>
               </thead>
@@ -84,14 +87,13 @@ const ConsultaSolicitudes = () => {
                 {solicitudes.map((solicitud) => (
                   <tr key={solicitud.id_solicitud} className="hover:bg-gray-50">
                     <td className="border-b p-2 text-center">{solicitud.id_solicitud}</td>
-                    <td className="border-b p-2 text-center">{solicitud.id_estado}</td>
-                    <td className="border-b p-2 text-center">{solicitud.Subtipo.descripcion}</td>
+                    <td className="border-b p-2 text-center">{solicitud.estado}</td>
+                    <td className="border-b p-2 text-center">{solicitud.tipo}</td>
+                    <td className="border-b p-2 text-center">{solicitud.subtipo}</td>
                     <td className="border-b p-2 text-center">{new Date(solicitud.fecha_creacion).toLocaleString()}</td>
-                    <td className="border-b p-2 text-center">
-                      {Array.isArray(solicitud.policia_asignado) && solicitud.policia_asignado.length > 0 
-                        ? `${solicitud.policia_asignado[0].Persona.nombres} ${solicitud.policia_asignado[0].Persona.apellidos}` 
-                        : (typeof solicitud.policia_asignado === 'string' ? solicitud.policia_asignado : 'No asignado')}
-                    </td>
+                    <td className="border-b p-2 text-center">{solicitud.policia_asignado}</td>
+                    <td className="border-b p-2 text-center">{solicitud.circuito.ciudad}</td>
+                    <td className="border-b p-2 text-center">{solicitud.circuito.barrio}</td>
                     <td className="border-b p-2 flex gap-2 justify-center">
                       <button
                         onClick={() => handleDeleteClick(solicitud)}
