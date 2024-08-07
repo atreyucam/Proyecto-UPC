@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import 'leaflet/dist/leaflet.css';
 
 const DetalleSolicitud = () => {
   const { id } = useParams();
@@ -38,6 +40,9 @@ const DetalleSolicitud = () => {
     );
   }
 
+  // Convertir puntoGPS a array si es necesario
+  const puntoGPS = solicitud ? solicitud.puntoGPS.split(',').map(Number) : [0, 0];
+  
   return (
     <div className="container mx-auto px-3 py-8">
       <button
@@ -81,6 +86,26 @@ const DetalleSolicitud = () => {
               <p><strong>Nombres:</strong> {solicitud.policia_asignado.nombres}</p>
               <p><strong>Apellidos:</strong> {solicitud.policia_asignado.apellidos}</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mapa */}
+      {solicitud && puntoGPS && (
+        <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
+          <h3 className="text-lg font-bold mb-2">Ubicación en el Mapa</h3>
+          <div style={{ height: "400px", width: "100%" }}>
+            <MapContainer center={puntoGPS} zoom={18} style={{ height: "100%", width: "100%" }}>
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+              <Marker position={puntoGPS}>
+                <Popup>
+                  {`Ubicación: ${puntoGPS}`}
+                </Popup>
+              </Marker>
+            </MapContainer>
           </div>
         </div>
       )}
