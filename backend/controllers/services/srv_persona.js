@@ -356,3 +356,40 @@ exports.getPoliciaConSolicitudes = async (id_persona) => {
 
 
 
+exports.getPoliciasDisponibles = async () => {
+  try {
+    // Obtener los policías con disponibilidad "Disponible"
+    const policias = await Persona.findAll({
+      include: [
+        {
+          model: Rol,
+          where: { descripcion: 'Policia' }
+        },
+        {
+          model: Circuito
+        }
+      ],
+      where: {
+        disponibilidad: 'Disponible' // Añadir el filtro para disponibilidad
+      }
+    });
+
+    // Contar el número de policías con disponibilidad "Disponible"
+    const countPolicias = await Persona.count({
+      include: [
+        {
+          model: Rol,
+          where: { descripcion: 'Policia' }
+        }
+      ],
+      where: {
+        disponibilidad: 'Disponible' // Añadir el filtro para disponibilidad
+      }
+    });
+
+    return { countPolicias, policias };
+  } catch (error) {
+    console.error('Error al obtener los policías:', error.message);
+    throw new Error(error.message);
+  }
+};

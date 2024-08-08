@@ -411,3 +411,70 @@ exports.crearSolicitud = async (personaData) => {
 };
 
 
+
+
+exports.getSolicitudesPendientes = async () => {
+    try {
+        // Obtener las solicitudes con estado "Pendiente", con información asociada, ordenadas por fecha de creación descendente
+        const solicitudesPendientes = await Solicitud.findAll({
+            where: {
+                '$Estado.descripcion$': 'Pendiente' // Filtrar por estado "Pendiente"
+            },
+            include: [
+                {
+                    model: Persona,
+                    as: 'creador',
+                    attributes: ['nombres', 'apellidos']
+                },
+                {
+                    model: Persona,
+                    as: 'policia',
+                    attributes: ['nombres', 'apellidos']
+                },
+                {
+                    model: Subtipo,
+                    include: [
+                        {
+                            model: TipoSolicitud,
+                            attributes: ['descripcion'] // Incluir la descripción del tipo de solicitud
+                        }
+                    ],
+                    attributes: ['descripcion']
+                },
+                {
+                    model: Estado,
+                    attributes: ['descripcion']
+                },
+                {
+                    model: Circuito,
+                    attributes: ['provincia', 'ciudad', 'barrio', 'numero_circuito']
+                }
+            ],
+            order: [['fecha_creacion', 'DESC']] // Ordenar por fecha_creacion descendente
+        });
+
+        // Mapear las solicitudes para estructurar la respuesta
+        const solicitudesEstructuradas = solicitudesPendientes.map(solicitud => ({
+            id_solicitud: solicitud.id_solicitud,
+            estado: solicitud.Estado.descripcion,
+            tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
+            subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
+            creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
+            policia_asignado: solicitud.policia ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}` : 'No asignado',
+            // puntoGPS: solicitud.puntoGPS,
+            circuito: {
+                provincia: solicitud.Circuito.provincia,
+                ciudad: solicitud.Circuito.ciudad,
+                barrio: solicitud.Circuito.barrio,
+                numero_circuito: solicitud.Circuito.numero_circuito
+            },
+            fecha_creacion: solicitud.fecha_creacion.toISOString() // Convertir la fecha a formato ISO 8601
+        }));
+
+        return solicitudesEstructuradas;
+    } catch (error) {
+        throw new Error('Error al obtener las solicitudes pendientes: ' + error.message);
+    }
+};
+
+

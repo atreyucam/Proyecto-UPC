@@ -70,3 +70,13 @@ exports.crearSolicitud = async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 };
+
+
+exports.getSolicitudesPendientes = async (req, res) => {
+    try {
+      const solicitudes = await solicitudService.getSolicitudesPendientes();
+      res.status(200).json(solicitudes);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };

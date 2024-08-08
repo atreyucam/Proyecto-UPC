@@ -143,3 +143,14 @@ exports.getPoliciaConSolicitudes = async (req, res) => {
       res.status(500).json({ message: error.message });
   }
 };
+
+
+exports.getPoliciasDisponibles = async (req, res) => {
+  try {
+    const { countPolicias, policias } = await personaService.getPoliciasDisponibles();
+    res.status(200).json({ countPolicias, policias });
+  } catch (error) {
+    console.log('entra?');
+    res.status(500).json({ error: error.message });
+  }
+};

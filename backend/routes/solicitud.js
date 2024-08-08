@@ -8,6 +8,7 @@ router.post('/nuevoBotonEmergencia', solicitudController.crearBotonEmergencia);
 router.get('/', solicitudController.getSolicitudes);
 
 router.post('/nuevaSolicitud', solicitudController.crearSolicitud);
+router.get('/solicitudesPendientes', solicitudController.getSolicitudesPendientes);
 
 
 

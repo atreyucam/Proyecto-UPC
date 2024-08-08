@@ -1,288 +1,208 @@
-import React, { useState } from "react";
-import { FiUserCheck, FiCheckCircle, FiSmile } from "react-icons/fi";
+
+import React, { useState, useEffect } from "react";
+import { FiUserCheck, FiCheckCircle, FiSmile,FiEye } from "react-icons/fi";
 import ApexCharts from "react-apexcharts";
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 const Home4 = () => {
-  const combinedSeries = [
-    {
-      name: "Policias no activos",
-      type: "column",
-      data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30],
-    },
-    {
-      name: "Policias activos",
-      type: "area",
-      data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43],
-    },
-    {
-      name: "No asignados",
-      type: "line",
-      data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39],
-    },
-  ];
-
-  const combinedOptions = {
-    series: combinedSeries,
-    chart: {
-      height: 350,
-      type: "line",
-      stacked: false,
-    },
-    stroke: {
-      width: [0, 2, 5],
-      curve: "smooth",
-    },
-    plotOptions: {
-      bar: {
-        columnWidth: "50%",
-      },
-    },
-    fill: {
-      opacity: [0.85, 0.25, 1],
-      gradient: {
-        inverseColors: false,
-        shade: "light",
-        type: "vertical",
-        opacityFrom: 0.85,
-        opacityTo: 0.55,
-        stops: [0, 100, 100, 100],
-      },
-    },
-    labels: [
-      "01/01/2003",
-      "02/01/2003",
-      "03/01/2003",
-      "04/01/2003",
-      "05/01/2003",
-      "06/01/2003",
-      "07/01/2003",
-      "08/01/2003",
-      "09/01/2003",
-      "10/01/2003",
-      "11/01/2003",
-    ],
-    markers: {
-      size: 0,
-    },
-    xaxis: {
-      type: "datetime",
-    },
-    yaxis: {
-      title: {
-        text: "Datos",
-      },
-      min: 0,
-    },
-    tooltip: {
-      shared: true,
-      intersect: false,
-      y: {
-        formatter: function (y) {
-          if (typeof y !== "undefined") {
-            return y.toFixed(0) + " points";
-          }
-          return y;
-        },
-      },
-    },
-  };
-
-  const initialPoliceData = [
-    {
-      id: 1,
-      firstName: "John",
-      lastName: "Doe",
-      rank: "Sargento",
-      circuit: "Circuito 1",
-      status: "Activo",
-    },
-    {
-      id: 2,
-      firstName: "Jane",
-      lastName: "Smith",
-      rank: "Oficial",
-      circuit: "Circuito 2",
-      status: "No activo",
-    },
-    {
-      id: 3,
-      firstName: "Michael",
-      lastName: "Johnson",
-      rank: "Capitán",
-      circuit: "Circuito 3",
-      status: "Activo",
-    },
-    {
-      id: 4,
-      firstName: "Emily",
-      lastName: "Davis",
-      rank: "Sargento",
-      circuit: "Circuito 4",
-      status: "No activo",
-    },
-    {
-      id: 5,
-      firstName: "Daniel",
-      lastName: "Wilson",
-      rank: "Oficial",
-      circuit: "Circuito 5",
-      status: "Activo",
-    },
-    {
-      id: 6,
-      firstName: "Sarah",
-      lastName: "Brown",
-      rank: "Sargento",
-      circuit: "Circuito 6",
-      status: "No activo",
-    },
-    {
-      id: 7,
-      firstName: "Emma",
-      lastName: "Lee",
-      rank: "Oficial",
-      circuit: "Circuito 7",
-      status: "Activo",
-    },
-    {
-      id: 8,
-      firstName: "James",
-      lastName: "Miller",
-      rank: "Sargento",
-      circuit: "Circuito 8",
-      status: "No activo",
-    },
-    {
-      id: 9,
-      firstName: "Olivia",
-      lastName: "White",
-      rank: "Capitán",
-      circuit: "Circuito 9",
-      status: "Activo",
-    },
-    {
-      id: 10,
-      firstName: "Noah",
-      lastName: "Davis",
-      rank: "Oficial",
-      circuit: "Circuito 10",
-      status: "No activo",
-    },
-  ];
-
-  const [policeData, setPoliceData] = useState(initialPoliceData);
+  const [policeStats, setPoliceStats] = useState({ total: 0, disponibles: 0, ocupados: 0 });
+  const [solicitudesTotales, setSolicitudesTotales] = useState({});
+  const [solicitudesPendientes, setSolicitudesPendientes] = useState([]);
+  const [policeData, setPoliceData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false); // Estado para el modal de asignación
   const [selectedPolice, setSelectedPolice] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
-  const [reports, setReports] = useState([
-    {
-      id: 1,
-      type: "Robo",
-      address: "Calle 123",
-      phone: "555-1234",
-      reference: "Cerca del parque",
-      description: "Sustracción de objetos de valor.",
-      denunciante: "Juan Pérez",
-    },
-    {
-      id: 2,
-      type: "Atraco",
-      address: "Avenida Principal",
-      phone: "555-5678",
-      reference: "Frente al banco",
-      description: "Violencia en intento de robo.",
-      denunciante: "María González",
-    },
-    {
-      id: 3,
-      type: "Incendio",
-      address: "Calle 456",
-      phone: "555-7890",
-      reference: "Zona industrial",
-      description: "Fuego en fábrica abandonada.",
-      denunciante: "Pedro Rodríguez",
-    },
-  ]);
+  const [notification, setNotification] = useState('');
+  const [reports, setReports] = useState([]);
+  const navigate = useNavigate();
+
   const recordsPerPage = 4;
+
+  useEffect(() => {
+    // Fetch police stats
+    axios.get('http://localhost:3000/estadisticas/contadorePolicias')
+      .then(response => setPoliceStats(response.data))
+      .catch(error => console.error('Error fetching police stats:', error));
+    
+    // Fetch solicitudes totales
+    axios.get('http://localhost:3000/estadisticas/contadorSolicitudesTotales')
+      .then(response => setSolicitudesTotales(response.data))
+      .catch(error => console.error('Error fetching solicitudes totales:', error));
+    
+    // Fetch solicitudes pendientes
+    axios.get('http://localhost:3000/solicitud/solicitudesPendientes')
+      .then(response => setSolicitudesPendientes(response.data))
+      .catch(error => console.error('Error fetching solicitudes pendientes:', error));
+    
+    // Fetch police data (mock or actual API call)
+    axios.get('http://localhost:3000/personas/policiasDisponibles')
+      .then(response => setPoliceData(response.data.policias))
+      .catch(error => console.error('Error fetching police data:', error));
+    
+    // Fetch reports
+    axios.get('http://localhost:3000/reports')
+      .then(response => setReports(response.data))
+      .catch(error => console.error('Error fetching reports:', error));
+  }, []);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  const handleAssignClick = (police) => {
-    setSelectedPolice(police);
-    setIsModalOpen(true);
+  const handleAssignClick = (solicitud) => {
+    setSelectedReport(solicitud);
+    setIsAssignModalOpen(true);
   };
 
-  const handleConfirmAssign = () => {
+  const handleConfirmAssign = async () => {
     if (selectedPolice && selectedReport) {
-      // Actualizar el estado de policeData con el nuevo estado 'En Progreso'
-      setPoliceData((prevData) =>
-        prevData.map((police) =>
-          police.id === selectedPolice.id
-            ? { ...police, status: "En Progreso" }
-            : police
-        )
-      );
+      try {
+        // Enviar solicitud POST para asignar el policía
+        await axios.post('http://localhost:3000/solicitud/asignarPolicia', {
+          id_solicitud: selectedReport.id_solicitud,
+          id_persona_asignador: 1, // Asumiendo que el ID del asignador es 1
+          id_persona_policia: selectedPolice.id_persona
+        });
+  
+   // Actualizar el estado del policía y eliminar el policía ocupado de la lista
+   setPoliceData(prevData => {
+    // Actualizar la disponibilidad del policía seleccionado
+    const updatedPoliceData = prevData.map(police =>
+      police.id_persona === selectedPolice.id_persona
+        ? { ...police, disponibilidad: 'Ocupado' }
+        : police
+    );
 
-      // Filtrar los reportes para quitar el reporte asignado
-      const updatedReports = reports.filter(
-        (report) => report.id !== selectedReport.id
-      );
-      setReports(updatedReports);
+    // Filtrar los policías ocupados de la lista (suponiendo que no quieres mostrar policías ocupados)
+    return updatedPoliceData.filter(police => police.disponibilidad !== 'Ocupado');
+  });
+        
+  
+        // Eliminar la solicitud asignada de la lista
+        setSolicitudesPendientes(prevRequests =>
+          prevRequests.filter(request => request.id_solicitud !== selectedReport.id_solicitud)
+        );
+  
+        setNotification('Policía asignado satisfactoriamente');
+  
+        setTimeout(() => {
+          setNotification('');
+        }, 3000); // Hide notification after 3 seconds
+  
+        setIsAssignModalOpen(false);
+        setSelectedPolice(null);
+        setSelectedReport(null);
+      } catch (error) {
+        console.error('Error al asignar el policía:', error);
+        setNotification('Error al asignar el policía. Inténtalo nuevamente.');
+        setTimeout(() => {
+          setNotification('');
+        }, 3000);
+      }
     }
-    setIsModalOpen(false);
-    setSelectedPolice(null);
-    setSelectedReport(null);
   };
+  
 
   const handleCancelAssign = () => {
-    setIsModalOpen(false);
+    setIsAssignModalOpen(false);
     setSelectedPolice(null);
     setSelectedReport(null);
   };
 
-  const handleSelectReport = (report) => {
-    setSelectedReport(report);
+  const handleSelectPolice = (police) => {
+    setSelectedPolice(police);
   };
 
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = policeData.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
-  );
+  const currentRecords = policeData.slice(indexOfFirstRecord, indexOfLastRecord);
+
+  // Define chart options and series data
+  const combinedOptions = {
+    chart: {
+      id: 'line-chart',
+      toolbar: {
+        show: true
+      }
+    },
+    xaxis: {
+      categories: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio']
+    },
+    yaxis: {
+      title: {
+        text: 'Número de Solicitudes'
+      }
+    },
+    title: {
+      text: 'Solicitudes Pendientes'
+    }
+  };
+
+  const combinedSeries = [
+    {
+      name: 'Solicitudes Pendientes',
+      data: [10, 20, 15, 30, 25, 40]
+    }
+  ];
+
+  const handleRowClick = (solicitud) => {
+    navigate(`/solicitudes/${solicitud.id_solicitud}`);
+  };
+
 
   return (
     <div className="container mx-auto px-3 py-8">
       <div className="grid grid-cols-2 gap-5">
         <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-5">
           <div className="bg-gray-100 rounded-lg">
             <Button
-              text="Policias disponibles"
-              number={100}
-              icon={<FiUserCheck size={24} />}
-              onClick={() => console.log("Botón Disponible presionado")}
-            />
-          </div>
-          <div className="bg-gray-100 rounded-lg">
-            <Button
-              text="Total Resueltos"
-              number={100}
-              icon={<FiCheckCircle size={24} />}
-              onClick={() => console.log("Botón Estado presionado")}
-            />
-          </div>
-          <div className="bg-gray-100 rounded-lg">
-            <Button
-              text="Disponibles"
-              number={50}
-              icon={<FiSmile size={24} />}
-              onClick={() => console.log("Botón Amistad presionado")}
+              text="Policias registrados"
+              number={policeStats.total}
+              icon={<FiCheckCircle size={28} />}
             />
           </div>
         </div>
+        <div className="grid grid-cols-2 gap-5">
+          <div className="bg-gray-100 rounded-lg">
+            <Button
+              text="Policias disponibles"
+              number={policeStats.disponibles}
+              icon={<FiCheckCircle size={28} />}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-5">
+          <div className="bg-gray-100 rounded-lg">
+            <Button
+              text="Policias ocupados"
+              number={policeStats.ocupados}
+              icon={<FiCheckCircle size={28} />}
+            />
+          </div>
+        </div>
+
+
+          <div className="bg-gray-100 rounded-lg p-4">
+            <h2 className="text-lg font-bold mb-2">Total Solicitudes por Tipo</h2>
+            <ul>
+              {solicitudesTotales.byType?.map((tipo) => (
+                <li key={tipo.id_tipo}>
+                  Tipo {tipo.id_tipo}: {tipo.count}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        
+
+
+
+
+
 
         <div className="bg-white rounded-lg p-4 shadow-md">
           <h2 className="text-lg font-bold mb-4">Disponibilidad</h2>
@@ -296,41 +216,52 @@ const Home4 = () => {
       </div>
 
       <div className="mt-8">
-        <h2 className="text-lg font-bold mb-4">Policías Recientes</h2>
+        <h2 className="text-lg font-bold mb-4">Solicitudes Pendientes</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
             <thead>
-              <tr className="bg-gray-100">
-                <th className="border-b p-2">Nombre</th>
-                <th className="border-b p-2">Apellido</th>
-                <th className="border-b p-2">Rango</th>
-                <th className="border-b p-2">Circuito</th>
+              <tr className="bg-gray-50">
+                <th className="border-b p-2">ID Solicitud</th>
                 <th className="border-b p-2">Estado</th>
-                <th className="border-b p-2">Asignación</th>
+                <th className="border-b p-2">Tipo</th>
+                <th className="border-b p-2">Subtipo</th>
+                <th className="border-b p-2">Creado por</th>
+                <th className="border-b p-2">Circuito</th>
+                <th className="border-b p-2">Fecha Creación</th>
+                <th className="border-b p-2">Asignar</th>
               </tr>
             </thead>
             <tbody>
-              {currentRecords.map((police) => (
-                <tr key={police.id} className="text-center">
-                  <td className="border-b p-2">{police.firstName}</td>
-                  <td className="border-b p-2">{police.lastName}</td>
-                  <td className="border-b p-2">{police.rank}</td>
-                  <td className="border-b p-2">{police.circuit}</td>
-                  <td className="border-b p-2">{police.status}</td>
+              {solicitudesPendientes.map((solicitud) => (
+                <tr key={solicitud.id_solicitud} className="text-center">
+                  <td className="border-b p-2">{solicitud.id_solicitud}</td>
+                  <td className="border-b p-2">{solicitud.estado}</td>
+                  <td className="border-b p-2">{solicitud.tipo}</td>
+                  <td className="border-b p-2">{solicitud.subtipo}</td>
+                  <td className="border-b p-2">{solicitud.creado_por}</td>
                   <td className="border-b p-2">
-                    <button
-                      className={`px-4 py-2 rounded ${
-                        police.status === "Activo"
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-300 cursor-not-allowed"
-                      }`}
-                      onClick={() =>
-                        police.status === "Activo" && handleAssignClick(police)
-                      }
-                      disabled={police.status !== "Activo"}
-                    >
-                      Asignar
-                    </button>
+                    {`${solicitud.circuito.ciudad}, ${solicitud.circuito.barrio}`}
+                  </td>
+                  {/* <td className="border-b p-2">
+                    {`${solicitud.circuito.provincia}, ${solicitud.circuito.ciudad}, ${solicitud.circuito.barrio}`}
+                  </td> */}
+                  <td className="border-b p-2">{new Date(solicitud.fecha_creacion).toLocaleString()}</td>
+                  <td className="border-b p-2 flex gap-2 justify-center">
+                      <button
+                        className=" bg-green-500 text-white px-3 py-1 rounded"
+                        onClick={() => handleAssignClick(solicitud)}
+                      >
+                      Asignar Policía
+                      </button>
+                      <button
+                        onClick={() => handleRowClick(solicitud)}
+                        className="bg-green-500 text-white px-2 py-1 rounded"
+                      >
+                        <FiEye />
+                      </button>
+                    </td>
+                  <td className="border-b p-2">
+                    
                   </td>
                 </tr>
               ))}
@@ -358,51 +289,44 @@ const Home4 = () => {
         </div>
       </div>
 
-      {isModalOpen && (
+      {isAssignModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-4 rounded-lg">
-            <h2 className="text-lg font-bold mb-4">Confirmar Asignación</h2>
-            <p>
-              ¿Desea asignar al oficial {selectedPolice.firstName}{" "}
-              {selectedPolice.lastName}?
-            </p>
-
-            <h3 className="text-md font-bold mt-4">Seleccionar Reporte</h3>
+          <div className="bg-white p-4 rounded-lg max-w-5xl w-full">
+            <h2 className="text-lg font-bold mb-4">Seleccionar Policía</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
                 <thead>
                   <tr className="bg-gray-100">
-                    <th className="border-b p-2">Tipo de Denuncia</th>
-                    <th className="border-b p-2">Dirección</th>
-                    <th className="border-b p-2">Teléfono</th>
-                    <th className="border-b p-2">Referencia</th>
-                    <th className="border-b p-2">Descripción</th>
-                    <th className="border-b p-2">Denunciante</th>
-                    <th className="border-b p-2">Seleccionar</th>
+                    <th className="border-b p-2">ID Policía</th>
+                    <th className="border-b p-2">Nombres</th>
+                    <th className="border-b p-2">Apellidos</th>
+                    <th className="border-b p-2">Telefono</th>
+                    <th className="border-b p-2">Barrio</th>
+                    <th className="border-b p-2">Disponibilidad</th>
+                    <th className="border-b p-2">Asignar</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {reports.map((report) => (
-                    <tr key={report.id} className="text-center">
-                      <td className="border-b p-2">{report.type}</td>
-                      <td className="border-b p-2">{report.address}</td>
-                      <td className="border-b p-2">{report.phone}</td>
-                      <td className="border-b p-2">{report.reference}</td>
-                      <td className="border-b p-2">{report.description}</td>
-                      <td className="border-b p-2">{report.denunciante}</td>
+                  {policeData.map((police) => (
+                    <tr key={police.id_persona} className="text-center">
+                      <td className="border-b p-2">{police.id_persona}</td>
+                      <td className="border-b p-2">{police.nombres}</td>
+                      <td className="border-b p-2">{police.apellidos}</td>
+                      <td className="border-b p-2">{police.telefono}</td>
+                      <td className="border-b p-2">{police.Circuito.barrio}</td>
+                      <td className="border-b p-2">{police.disponibilidad}</td>
                       <td className="border-b p-2">
                         <button
-                          className={`px-4 py-2 rounded ${
-                            selectedReport && selectedReport.id === report.id
+                          className={`px-3 py-1 rounded ${
+                            selectedPolice?.id_persona === police.id_persona
                               ? "bg-blue-500 text-white"
-                              : "bg-gray-300 cursor-not-allowed"
+                              : "bg-gray-300"
                           }`}
-                          onClick={() => handleSelectReport(report)}
-                          disabled={
-                            selectedReport && selectedReport.id === report.id
-                          }
+                          onClick={() => handleSelectPolice(police)}
                         >
-                          Seleccionar
+                          {selectedPolice?.id_persona === police.id_persona
+                            ? "Seleccionado"
+                            : "Seleccionar"}
                         </button>
                       </td>
                     </tr>
@@ -410,49 +334,46 @@ const Home4 = () => {
                 </tbody>
               </table>
             </div>
-
             <div className="flex justify-end mt-4">
               <button
-                className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
+                className="px-4 py-2 bg-green-500 text-white rounded mr-2"
+                onClick={handleConfirmAssign}
+              >
+                Confirmar Asignación
+              </button>
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded"
                 onClick={handleCancelAssign}
               >
                 Cancelar
-              </button>
-              <button
-                className={`bg-blue-500 text-white px-4 py-2 rounded ${
-                  selectedReport ? "" : "cursor-not-allowed"
-                }`}
-                onClick={handleConfirmAssign}
-                disabled={!selectedReport}
-              >
-                Aceptar
               </button>
             </div>
           </div>
         </div>
       )}
+      {notification && (
+        <div className="fixed top-12 right-10 bg-green-500 text-white px-5 py-3 rounded">
+          {notification}
+        </div>
+      )}
+
     </div>
   );
 };
 
-const Button = ({ text, subText, number, onClick, icon }) => {
-  return (
-    <button
-      className="flex items-center justify-between bg-white text-gray-800 p-4 rounded-lg shadow-md hover:bg-black hover:text-white transition duration-300 w-full"
-      onClick={onClick}
-    >
-      <div className="flex items-center space-x-4">
-        <div>{icon}</div>
-        <div>
-          <span className="block text-lg font-bold">{text}</span>
-          {subText && <span className="block text-sm">{subText}</span>}
-          {number !== null && (
-            <span className="block text-lg font-bold">{number}</span>
-          )}
-        </div>
-      </div>
-    </button>
-  );
-};
+const Button = ({ text, number, icon }) => (
+  <button
+    className="bg-blue-500 text-white px-4 py-2 rounded flex items-center justify-between w-full"
+    // onClick={onClick}
+  >
+    <div className="flex items-center gap-2">
+      {icon}
+      <span>{text}</span>
+    </div>
+    <span>{number}</span>
+  </button>
+);
+
+
 
 export default Home4;
