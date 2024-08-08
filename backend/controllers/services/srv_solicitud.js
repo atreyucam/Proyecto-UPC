@@ -478,3 +478,64 @@ exports.getSolicitudesPendientes = async () => {
 };
 
 
+exports.top10SolicitudesRecientes = async () => {
+    try {
+        // Obtener las 10 solicitudes más recientes con información asociada
+        const solicitudes = await Solicitud.findAll({
+            include: [
+                {
+                    model: Persona,
+                    as: 'creador',
+                    attributes: ['nombres', 'apellidos']
+                },
+                {
+                    model: Persona,
+                    as: 'policia',
+                    attributes: ['nombres', 'apellidos']
+                },
+                {
+                    model: Subtipo,
+                    include: [
+                        {
+                            model: TipoSolicitud,
+                            attributes: ['descripcion'] // Incluir la descripción del tipo de solicitud
+                        }
+                    ],
+                    attributes: ['descripcion']
+                },
+                {
+                    model: Estado,
+                    attributes: ['descripcion']
+                },
+                {
+                    model: Circuito,
+                    attributes: ['provincia', 'ciudad', 'barrio', 'numero_circuito']
+                }
+            ],
+            order: [['fecha_creacion', 'DESC']], // Ordenar por fecha_creacion descendente
+            limit: 5 // Limitar los resultados a los 10 más recientes
+        });
+
+        // Mapear las solicitudes para estructurar la respuesta
+        const solicitudesEstructuradas = solicitudes.map(solicitud => ({
+            id_solicitud: solicitud.id_solicitud,
+            estado: solicitud.Estado.descripcion,
+            tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
+            subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
+            creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
+            policia_asignado: solicitud.policia ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}` : 'No asignado',
+            puntoGPS: solicitud.puntoGPS,
+            circuito: {
+                provincia: solicitud.Circuito.provincia,
+                ciudad: solicitud.Circuito.ciudad,
+                barrio: solicitud.Circuito.barrio,
+                numero_circuito: solicitud.Circuito.numero_circuito
+            },
+            fecha_creacion: solicitud.fecha_creacion.toISOString() // Convertir la fecha a formato ISO 8601
+        }));
+
+        return solicitudesEstructuradas;
+    } catch (error) {
+        throw new Error('Error al obtener las solicitudes recientes: ' + error.message);
+    }
+};

@@ -80,3 +80,14 @@ exports.getSolicitudesPendientes = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   };
+
+
+
+  exports.top10SolicitudesRecientes = async (req, res) => {
+    try {
+      const solicitudes = await solicitudService.top10SolicitudesRecientes();
+      res.status(200).json(solicitudes);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };

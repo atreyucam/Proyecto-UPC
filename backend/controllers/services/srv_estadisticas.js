@@ -60,32 +60,83 @@ exports.getPoliciaCounts = async () => {
 
 
 
+
   exports.getContadorSolicitudesTotal = async () => {
     try {
         // Contar el total de solicitudes
         const totalSolicitudes = await Solicitud.count();
 
         // Contar el número de solicitudes por tipo
-        const counts = await Solicitud.findAll({
-          attributes: [
-            [sequelize.col('Subtipo.id_tipo'), 'id_tipo'],
-            [sequelize.fn('COUNT', sequelize.col('Solicitud.id_solicitud')), 'count']
-          ],
-          include: [{
-            model: Subtipo,
-            attributes: []
-          }],
-          group: ['Subtipo.id_tipo'],
-          raw: true
+        const countsByType = await Solicitud.findAll({
+            attributes: [
+                [sequelize.col('Subtipo.id_tipo'), 'id_tipo'],
+                [sequelize.fn('COUNT', sequelize.col('Solicitud.id_solicitud')), 'count'],
+                [sequelize.col('Subtipo->TipoSolicitud.descripcion'), 'tipo_descripcion'] // Incluir descripción del tipo
+            ],
+            include: [
+                {
+                    model: Subtipo,
+                    attributes: [],
+                    include: [
+                        {
+                            model: TipoSolicitud,
+                            attributes: []
+                        }
+                    ]
+                }
+            ],
+            group: ['Subtipo.id_tipo', 'Subtipo->TipoSolicitud.descripcion'], // Agrupar por tipo de solicitud y su descripción
+            raw: true
         });
+
+        // Mapear los resultados para incluir la descripción del tipo
+        const countsWithDescriptions = countsByType.map(count => ({
+            id_tipo: count.id_tipo,
+            tipo_descripcion: count.tipo_descripcion,
+            count: parseInt(count.count, 10) // Convertir el conteo a número
+        }));
+
+        // Contar el número de solicitudes por estado
+        const countsByStatus = await Solicitud.findAll({
+            attributes: [
+                [sequelize.col('Estado.descripcion'), 'estado_descripcion'],
+                [sequelize.fn('COUNT', sequelize.col('Solicitud.id_solicitud')), 'count']
+            ],
+            include: [
+                {
+                    model: Estado,
+                    attributes: []
+                }
+            ],
+            group: ['Estado.descripcion'], // Agrupar por descripción del estado
+            raw: true
+        });
+
+        // Mapear los resultados para incluir la descripción del estado
+        const countsByStatusMap = countsByStatus.reduce((acc, status) => {
+            acc[status.estado_descripcion] = parseInt(status.count, 10); // Convertir el conteo a número
+            return acc;
+        }, {});
 
         // Combinar los resultados
         return {
-            total: totalSolicitudes,
-            byType: counts
+            total: {
+                label: "Solicitudes registradas",
+                count: totalSolicitudes
+            },
+            byStatus: {
+                title: "Por tipos de solicitud",
+                counts: {
+                    'Solicitudes pendientes': countsByStatusMap['Pendiente'] || 0,
+                    'Solicitudes en Progreso': countsByStatusMap['En progreso'] || 0,
+                    'Solicitudes resueltas': countsByStatusMap['Resuelto'] || 0,
+                    'Solicitudes falsas': countsByStatusMap['Falso'] || 0
+                }
+            },
+            porTipoSolicitud: countsWithDescriptions,
         };
     } catch (error) {
         console.error('Error al obtener el conteo por tipo de solicitud:', error);
         throw error;
-    } 
+    }
 };

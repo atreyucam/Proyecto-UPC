@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ApexCharts from 'react-apexcharts';
 import PropTypes from 'prop-types';
-import { FiAlertCircle, FiCheckCircle, FiUserCheck, FiShield, FiSmile, FiFlag } from 'react-icons/fi';
+import { FiAlertCircle, FiCheckCircle, FiUserCheck, FiShield, FiSmile, FiFlag,FiEye } from 'react-icons/fi';
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+
+
 const Button = ({ text, subText, number, onClick, icon }) => {
   return (
     <button
@@ -19,6 +23,7 @@ const Button = ({ text, subText, number, onClick, icon }) => {
     </button>
   );
 };
+
 Button.propTypes = {
   text: PropTypes.string.isRequired,
   subText: PropTypes.string,
@@ -26,24 +31,53 @@ Button.propTypes = {
   onClick: PropTypes.func.isRequired,
   icon: PropTypes.element.isRequired,
 };
+
 Button.defaultProps = {
   subText: '',
   number: null,
 };
+
 const Home = () => {
+  const [stats, setStats] = useState({});
+  const [topSolicitudes, setTopSolicitudes] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/estadisticas/contadorSolicitudesTotales');
+        setStats(response.data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    const fetchTopSolicitudes = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/solicitud/top10solicitudes');
+        setTopSolicitudes(response.data);
+      } catch (error) {
+        console.error('Error fetching top solicitudes:', error);
+      }
+    };
+
+    fetchStats();
+    fetchTopSolicitudes();
+  }, []);
+
   // Datos y opciones del gráfico de pastel
-  const pieChartData = [150, 30];
+  const pieChartData = [stats.byStatus?.counts?.['Solicitudes falsas'] || 0, stats.byStatus?.counts?.['Solicitudes en Progreso'] || 0];
   const pieChartOptions = {
     chart: {
       type: 'pie',
-      width: '100%', // Ajustar el ancho del gráfico de pastel al 100%
-      height: '100%', // Ajustar el alto del gráfico de pastel al 100%
+      width: '100%',
+      height: '100%',
       toolbar: {
-        show: true, // Ocultar la barra de herramientas del gráfico
+        show: true,
       },
     },
-    labels: ['Robo', 'Estado Resuelto'],
-    colors: ['#007bff', '#28a745'],
+    labels: ['Solicitudes falsas', 'Solicitudes en Progreso'],
+    colors: ['#ff073a', '#007bff'],
   };
 
   // Datos y opciones del gráfico de líneas
@@ -80,128 +114,109 @@ const Home = () => {
     },
   };
 
-  // Datos para la tabla de policías
-  const initialPoliceData = [
-    { id: 1, name: 'John Doe', createdAt: '2024-06-15', rank: 'Sargento', address: '123 Main St', status: 'En Progreso' },
-    { id: 2, name: 'Jane Smith', createdAt: '2024-06-14', rank: 'Oficial', address: '456 Elm St', status: 'Por Asignar' },
-    { id: 3, name: 'Michael Johnson', createdAt: '2024-06-13', rank: 'Capitán', address: '789 Oak St', status: 'Resuelto' },
-    { id: 4, name: 'Emily Davis', createdAt: '2024-06-12', rank: 'Sargento', address: '246 Pine St', status: 'En Progreso' },
-    { id: 5, name: 'Daniel Wilson', createdAt: '2024-06-11', rank: 'Oficial', address: '135 Cedar St', status: 'Por Asignar' },
-    { id: 6, name: 'Sarah Brown', createdAt: '2024-06-10', rank: 'Sargento', address: '579 Maple St', status: 'En Progreso' },
-    { id: 7, name: 'Emma Lee', createdAt: '2024-06-09', rank: 'Oficial', address: '789 Elm St', status: 'Resuelto' },
-    { id: 8, name: 'James Miller', createdAt: '2024-06-08', rank: 'Sargento', address: '246 Oak St', status: 'Por Asignar' },
-    { id: 9, name: 'Olivia White', createdAt: '2024-06-07', rank: 'Capitán', address: '135 Pine St', status: 'En Progreso' },
-    { id: 10, name: 'Noah Davis', createdAt: '2024-06-06', rank: 'Oficial', address: '579 Cedar St', status: 'Resuelto' },
-  ];
-
-  // Estado para los datos de los policías y el estado de paginación
-  const [policeData, setPoliceData] = useState(initialPoliceData);
-  const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 4;
-
-  // Función para cambiar de página
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+  const handleRowClick = (solicitud) => {
+    navigate(`/solicitudes/${solicitud.id_solicitud}`);
   };
 
-  // Función para cambiar el estado de un policía
-  const handleStatusChange = (id, status) => {
-    const updatedPoliceData = policeData.map(police => {
-      if (police.id === id) {
-        return { ...police, status: status };
-      }
-      return police;
-    });
-    setPoliceData(updatedPoliceData);
-  };
-
-  // Calcular índices para los registros a mostrar en la página actual
-  const indexOfLastRecord = currentPage * recordsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = policeData.slice(indexOfFirstRecord, indexOfLastRecord);
 
   return (
-    
     <div className="container mx-auto px-3 py-8">
       {/* Botones con iconos */}
-      <div className="grid grid-cols-4 gap-2 mb-5">
+      <div className="grid grid-cols-5 gap-2 mb-5">
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
             text="Total Solicitudes"
-            // TODO---------------------------
-            subText="Por definir" 
-            // TODO---------------------------
+            subText={stats.total?.count || 0}
             icon={<FiUserCheck size={24} />}
-            onClick={() => console.log('Botón Disponible presionado')}
+            onClick={() => console.log('Botón Total Solicitudes presionado')}
           />
         </div>
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
             text="Solicitudes Resueltas"
-            // TODO---------------------------
-            subText="Resuelto"
-            number={100}
-            // TODO---------------------------
+            number={stats.byStatus?.counts?.['Solicitudes resueltas'] || 0}
             icon={<FiCheckCircle size={24} />}
-            onClick={() => console.log('Botón Estado presionado')}
+            onClick={() => console.log('Botón Solicitudes Resueltas presionado')}
           />
         </div>
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
-            text="Solicitudes pendientes"
-            // TODO---------------------------
-            number={50}
-            // TODO---------------------------
+            text="Solicitudes Pendientes"
+            number={stats.byStatus?.counts?.['Solicitudes pendientes'] || 0}
             icon={<FiSmile size={24} />}
-            onClick={() => console.log('Botón Amistad presionado')}
+            onClick={() => console.log('Botón Solicitudes Pendientes presionado')}
           />
         </div>
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
-            text="Solicitudes en progreso"
-            // TODO---------------------------
-            number={200}
-            // TODO---------------------------
+            text="Solicitudes en Progreso"
+            number={stats.byStatus?.counts?.['Solicitudes en Progreso'] || 0}
             icon={<FiShield size={24} />}
-            onClick={() => console.log('Botón Seguridad presionado')}
+            onClick={() => console.log('Botón Solicitudes en Progreso presionado')}
+          />
+        </div>
+        <div className="p-5 bg-gray-100 rounded-lg">
+          <Button
+            text="Solicitudes Falsas"
+            number={stats.byStatus?.counts?.['Solicitudes falsas'] || 0}
+            icon={<FiFlag size={24} />}
+            onClick={() => console.log('Botón Solicitudes Falsas presionado')}
           />
         </div>
       </div>
-       
-     {/* Gráficos */}
-     <div className="grid grid-cols-4 gap-4">
+
+      {/* Contadores por tipo de solicitud */}
+      <h2 className="text-lg font-bold mb-4">Registro por tipo de solicitud</h2>
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        {stats.porTipoSolicitud?.map((tipo) => (
+          <div key={tipo.id_tipo} className="bg-white p-4 rounded-lg shadow-md">
+            <div className="flex items-center">
+              <div className="mr-3">
+                <FiAlertCircle size={20} color="#007bff" />
+              </div>
+              <div>
+                <p className="text-base font-bold">{tipo.tipo_descripcion}</p>
+                <p className="text-sm">{tipo.count}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Gráficos */}
+      <div className="grid grid-cols-4 gap-4">
         <div className="col-span-3 bg-white p-4 rounded-lg shadow-md">
-        <h2 className="text-lg font-bold mb-4">Desempeños</h2>
+          <h2 className="text-lg font-bold mb-4">Desempeños</h2>
           <ApexCharts options={lineChartOptions} series={lineChartData} type="line" height={300} />
         </div>
 
         <div className="col-span-1 bg-white p-1 rounded-lg shadow-md flex flex-col justify-center items-center">
           {/* Cuadros de información */}
-      <div className="grid grid-cols-2 gap-5 mb-8">
-        <div className="bg-white rounded-lg p-4 shadow-md">
-          <div className="flex items-center">
-            <div className="mr-3">
-              <FiAlertCircle size={20} color="#007bff" />
+          <div className="grid grid-cols-2 gap-5 mb-8">
+            <div className="bg-white rounded-lg p-4 shadow-md">
+              <div className="flex items-center">
+                <div className="mr-3">
+                  <FiAlertCircle size={20} color="#007bff" />
+                </div>
+                <div>
+                  <p className="text-base font-bold">Robos</p>
+                  <p className="text-sm">{pieChartData[0]}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-base font-bold">Robos</p>
-              <p className="text-sm">150</p>
-            </div>
-          </div>
-        </div>
 
-        <div className="bg-white rounded-lg p-3 shadow-md">
-          <div className="flex items-center">
-            <div className="mr-3">
-              <FiCheckCircle size={20} color="#28a745" />
-            </div>
-            <div>
-              <p className="text-base font-bold">Resueltos</p>
-              <p className="text-sm">30</p>
+            <div className="bg-white rounded-lg p-3 shadow-md">
+              <div className="flex items-center">
+                <div className="mr-3">
+                  <FiCheckCircle size={20} color="#28a745" />
+                </div>
+                <div>
+                  <p className="text-base font-bold">Resueltos</p>
+                  <p className="text-sm">{pieChartData[1]}</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
           <h2 className="text-lg font-bold mb-14">Distribución de Casos</h2>
           <div className="w-full">
             <ApexCharts options={pieChartOptions} series={pieChartData} type="pie" />
@@ -209,45 +224,45 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Tabla de policías recientes */}
+      {/* Actividad reciente */}
       <div className="mt-8">
-        <h2 className="text-lg font-bold mb-4">Policías Recientes</h2>
+        <h2 className="text-lg font-bold mb-4">Actividad Reciente</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
             <thead>
-              <tr className="bg-gray-100">
-                <th className="border-b p-2">Nombre</th>
-                <th className="border-b p-2">Fecha de Creación</th>
-                <th className="border-b p-2">Rango</th>
-                <th className="border-b p-2">Dirección</th>
-                <th className="border-b p-2">Estado</th>
+              <tr className="border-b">
+                <th className="py-2 px-4 text-left">ID Solicitud</th>
+                <th className="py-2 px-4 text-left">Estado</th>
+                <th className="py-2 px-4 text-left">Subtipo</th>
+                <th className="py-2 px-4 text-left">Fecha</th>
+                <th className="border-b p-2">Policía Asignado</th>
+                <th className="border-b p-2">Ciudad</th>
+                <th className="border-b p-2">Barrio</th>
+                <th className="py-2 px-4 text-left">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {currentRecords.map(police => (
-                <tr key={police.id} className="text-center">
-                  <td className="border-b p-2">{police.name}</td>
-                  <td className="border-b p-2">{police.createdAt}</td>
-                  <td className="border-b p-2">{police.rank}</td>
-                  <td className="border-b p-2">{police.address}</td>
-                  <td className="border-b p-2">{police.status}</td>
-                  
+              {topSolicitudes.map((solicitud) => (
+                <tr key={solicitud.id_solicitud}>
+                  <td className="py-2 px-4">{solicitud.id_solicitud}</td>
+                  <td className="py-2 px-4">{solicitud.estado}</td>
+                  <td className="py-2 px-4">{solicitud.subtipo}</td>
+                  <td className="py-2 px-4">{new Date(solicitud.fecha_creacion).toLocaleString()}</td>
+                  <td className="border-b p-2 text-center">{solicitud.policia_asignado}</td>
+                  <td className="border-b p-2 text-center">{solicitud.circuito.ciudad}</td>
+                  <td className="border-b p-2 text-center">{solicitud.circuito.barrio}</td>
+                  <td className="border-b p-2 flex gap-2 justify-center">
+                      <button
+                        onClick={() => handleRowClick(solicitud)}
+                        className="bg-green-500 text-white px-2 py-1 rounded"
+                      >
+                        <FiEye />
+                      </button>
+                    </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {/* Paginación */}
-          <div className="flex justify-end mt-4">
-            <nav className="block">
-              <ul className="flex pl-0 list-none rounded my-2">
-                {[...Array(Math.ceil(policeData.length / recordsPerPage)).keys()].map(page => (
-                  <li key={page} className="relative block px-3 py-2 leading-tight bg-white border border-gray-200 text-blue-700 mr-2 cursor-pointer">
-                    <span onClick={() => handlePageChange(page + 1)}>{page + 1}</span>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
         </div>
       </div>
     </div>

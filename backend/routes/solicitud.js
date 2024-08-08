@@ -9,6 +9,7 @@ router.get('/', solicitudController.getSolicitudes);
 
 router.post('/nuevaSolicitud', solicitudController.crearSolicitud);
 router.get('/solicitudesPendientes', solicitudController.getSolicitudesPendientes);
+router.get('/top10solicitudes', solicitudController.top10SolicitudesRecientes);
 
 
 
