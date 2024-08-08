@@ -198,12 +198,6 @@ const Home4 = () => {
           </div>
         </div>
         
-
-
-
-
-
-
         <div className="bg-white rounded-lg p-4 shadow-md">
           <h2 className="text-lg font-bold mb-4">Disponibilidad</h2>
           <ApexCharts
@@ -232,21 +226,17 @@ const Home4 = () => {
               </tr>
             </thead>
             <tbody>
-              {solicitudesPendientes.map((solicitud) => (
-                <tr key={solicitud.id_solicitud} className="text-center">
-                  <td className="border-b p-2">{solicitud.id_solicitud}</td>
-                  <td className="border-b p-2">{solicitud.estado}</td>
-                  <td className="border-b p-2">{solicitud.tipo}</td>
-                  <td className="border-b p-2">{solicitud.subtipo}</td>
-                  <td className="border-b p-2">{solicitud.creado_por}</td>
-                  <td className="border-b p-2">
-                    {`${solicitud.circuito.ciudad}, ${solicitud.circuito.barrio}`}
-                  </td>
-                  {/* <td className="border-b p-2">
-                    {`${solicitud.circuito.provincia}, ${solicitud.circuito.ciudad}, ${solicitud.circuito.barrio}`}
-                  </td> */}
-                  <td className="border-b p-2">{new Date(solicitud.fecha_creacion).toLocaleString()}</td>
-                  <td className="border-b p-2 flex gap-2 justify-center">
+              {solicitudesPendientes.length > 0 ? (
+                solicitudesPendientes.map((solicitud) => (
+                  <tr key={solicitud.id_solicitud} className="text-center">
+                    <td className="border-b p-2">{solicitud.id_solicitud}</td>
+                    <td className="border-b p-2">{solicitud.estado}</td>
+                    <td className="border-b p-2">{solicitud.tipo}</td>
+                    <td className="border-b p-2">{solicitud.subtipo}</td>
+                    <td className="border-b p-2">{solicitud.creado_por}</td>
+                    <td className="border-b p-2">{solicitud.circuito.ciudad}</td>
+                    <td className="border-b p-2">{new Date(solicitud.fecha_creacion).toLocaleString()}</td>
+                    <td className="border-b p-2 flex gap-2 justify-center">
                       <button
                         className=" bg-green-500 text-white px-3 py-1 rounded"
                         onClick={() => handleAssignClick(solicitud)}
@@ -260,11 +250,15 @@ const Home4 = () => {
                         <FiEye />
                       </button>
                     </td>
-                  <td className="border-b p-2">
-                    
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="8" className="text-center p-4 text-gray-500">
+                    No hay solicitudes pendientes
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -307,7 +301,8 @@ const Home4 = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {policeData.map((police) => (
+                  {policeData.length > 0 ? (
+                    policeData.map((police) => (
                     <tr key={police.id_persona} className="text-center">
                       <td className="border-b p-2">{police.id_persona}</td>
                       <td className="border-b p-2">{police.nombres}</td>
@@ -330,7 +325,15 @@ const Home4 = () => {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  ))
+                )
+                  : (
+                    <tr>
+                      <td colSpan="7" className="text-center p-4 text-gray-500">
+                        No hay policías disponibles
+                      </td>
+                    </tr>
+                )}
                 </tbody>
               </table>
             </div>

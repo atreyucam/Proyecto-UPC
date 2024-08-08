@@ -33,7 +33,7 @@ const Sidebar = () => {
         <div className="m-4">
           <ul className="mb-4 flex flex-col gap-1">
             <li>
-              <NavLink to="/2" exact>
+              <NavLink to="/login" exact>
                 {({ isActive }) => (
                   <Button
                     variant={isActive ? "gradient" : "text"}
@@ -44,10 +44,7 @@ const Sidebar = () => {
                     }`}
                     fullWidth
                   >
-                    <Typography
-                      color="inherit"
-                      className="font-medium capitalize"
-                    >
+                    <Typography color="inherit" className="font-medium capitalize">
                       Login
                     </Typography>
                   </Button>
@@ -76,6 +73,7 @@ const Sidebar = () => {
                 )}
               </NavLink>
             </li>
+
             <li>
               <NavLink to="/3" exact>
                 {({ isActive }) => (
@@ -98,8 +96,9 @@ const Sidebar = () => {
                 )}
               </NavLink>
             </li>
+
             <li>
-              <NavLink to="/4" exact>
+              <NavLink to="/AsignarPolicias" exact>
                 {({ isActive }) => (
                   <Button
                     className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${
@@ -110,16 +109,14 @@ const Sidebar = () => {
                     variant={isActive ? "gradient" : "text"}
                     fullWidth
                   >
-                    <Typography
-                      color="inherit"
-                      className="font-medium capitalize"
-                    >
-                      Asignacion
+                    <Typography color="inherit" className="font-medium capitalize">
+                      Asignar Policias
                     </Typography>
                   </Button>
                 )}
               </NavLink>
             </li>
+
             <li>
               <NavLink to="/ConsultaPolicias" exact>
                 {({ isActive }) => (
@@ -132,16 +129,14 @@ const Sidebar = () => {
                     variant={isActive ? "gradient" : "text"}
                     fullWidth
                   >
-                    <Typography
-                      color="inherit"
-                      className="font-medium capitalize"
-                    >
+                    <Typography color="inherit" className="font-medium capitalize">
                       Consulta Policias
                     </Typography>
                   </Button>
                 )}
               </NavLink>
             </li>
+
             <li>
               <NavLink to="/ConsultaCiudadanos" exact>
                 {({ isActive }) => (
@@ -154,16 +149,14 @@ const Sidebar = () => {
                     variant={isActive ? "gradient" : "text"}
                     fullWidth
                   >
-                    <Typography
-                      color="inherit"
-                      className="font-medium capitalize"
-                    >
+                    <Typography color="inherit" className="font-medium capitalize">
                       Consulta ciudadanos
                     </Typography>
                   </Button>
                 )}
               </NavLink>
             </li>
+
             <li>
               <NavLink to="/ConsultaSolicitudes" exact>
                 {({ isActive }) => (
@@ -176,10 +169,7 @@ const Sidebar = () => {
                     variant={isActive ? "gradient" : "text"}
                     fullWidth
                   >
-                    <Typography
-                      color="inherit"
-                      className="font-medium capitalize"
-                    >
+                    <Typography color="inherit" className="font-medium capitalize">
                       Consulta Solicitudes
                     </Typography>
                   </Button>
