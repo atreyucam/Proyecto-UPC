@@ -79,12 +79,18 @@ const DetalleSolicitud = () => {
               <p><strong>Dirección:</strong> {solicitud.direccion || "No disponible"}</p>
             </div>
 
-            {/* Policía Asignado */}
-            <div className="bg-gray-100 p-4 rounded-lg">
+     {/* Policía Asignado */}
+     <div className="bg-gray-100 p-4 rounded-lg">
               <h3 className="text-lg font-bold mb-2">Policía Asignado</h3>
-              <p><strong>ID Policía:</strong> {solicitud.policia_asignado.id_persona}</p>
-              <p><strong>Nombres:</strong> {solicitud.policia_asignado.nombres}</p>
-              <p><strong>Apellidos:</strong> {solicitud.policia_asignado.apellidos}</p>
+              {solicitud.policia_asignado ? (
+                <>
+                  <p><strong>ID Policía:</strong> {solicitud.policia_asignado.id_persona}</p>
+                  <p><strong>Nombres:</strong> {solicitud.policia_asignado.nombres}</p>
+                  <p><strong>Apellidos:</strong> {solicitud.policia_asignado.apellidos}</p>
+                </>
+              ) : (
+                <p>No hay policía asignado</p>
+              )}
             </div>
           </div>
         </div>

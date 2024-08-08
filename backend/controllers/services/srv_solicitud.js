@@ -269,7 +269,6 @@ exports.getSolicitudById = async (id_solicitud) => {
     }
 };
 
-
 exports.cerrarSolicitud = async (cerrarData) => {
     const { id_solicitud, observacion } = cerrarData;
     const transaction = await sequelize.transaction();
@@ -325,64 +324,6 @@ exports.cerrarSolicitud = async (cerrarData) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // *Agregar una nueva observacion a la solicitud
 exports.agregarObservacion = async (observacionData) => {
     const { id_solicitud, observacion, id_persona } = observacionData;
@@ -409,5 +350,64 @@ exports.agregarObservacion = async (observacionData) => {
 
 
 
+exports.crearSolicitud = async (personaData) => {
+    const { id_persona, puntoGPS, direccion, id_subtipo } = personaData;
+    const transaction = await sequelize.transaction();
+
+    try {
+        // Obtener el circuito de la persona que crea la solicitud
+        const persona = await Persona.findByPk(id_persona);
+        if (!persona) {
+            throw new Error('Persona no encontrada');
+        }
+        const id_circuito = persona.id_circuito;
+
+        // Obtener el subtipo y verificar que sea válido
+        const subtipo = await Subtipo.findByPk(id_subtipo);
+        if (!subtipo) {
+            throw new Error('Subtipo no encontrado');
+        }
+
+        // Determinar el tipo de solicitud y el evento asociado
+        const id_tipo = subtipo.id_tipo;
+        let id_evento;
+        if (id_tipo === 2) {
+            id_evento = 2; // Denuncia ciudadana
+        } else if (id_tipo === 3) {
+            id_evento = 3; // Servicios comunitarios
+        } else {
+            throw new Error('Tipo de solicitud no válido');
+        }
+
+        // Definir ID para estado
+        const id_estado = 1; // Pendiente
+
+        // Crear solicitud
+        const nuevaSolicitud = await Solicitud.create({
+            id_estado,
+            id_subtipo,
+            fecha_creacion: new Date(),
+            puntoGPS,
+            direccion, // Incluir la dirección proporcionada
+            id_circuito,
+            creado_por: id_persona
+        }, { transaction });
+
+        // Crear la relación entre la solicitud y el evento
+        await SolicitudEventoPersona.create({
+            id_solicitud: nuevaSolicitud.id_solicitud,
+            id_evento,
+            id_persona
+        }, { transaction });
+
+        await transaction.commit();
+        return nuevaSolicitud;
+
+    } catch (error) {
+        await transaction.rollback();
+        console.error('Error al crear la solicitud:', error);
+        throw error;
+    }
+};
 
 

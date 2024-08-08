@@ -353,3 +353,6 @@ exports.getPoliciaConSolicitudes = async (id_persona) => {
     throw new Error('Error al obtener la información del policía: ' + error.message);
   }
 };
+
+
+

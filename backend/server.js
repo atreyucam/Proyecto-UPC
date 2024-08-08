@@ -9,6 +9,7 @@ const circuitoRoutes = require('./routes/circuito');
 const personaRoutes = require('./routes/persona');
 const subtipoRoutes = require('./routes/subtipo');
 const solicitudRoutes = require('./routes/solicitud');
+const estadisticasRoutes = require('./routes/estadisticas');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -26,6 +27,7 @@ app.use('/subtipo', subtipoRoutes);
 
 // ! Rutas en desarrollo
 app.use('/solicitud', solicitudRoutes);
+app.use('/estadisticas', estadisticasRoutes);
 
 
 app.listen(port, '0.0.0.0', async () => {

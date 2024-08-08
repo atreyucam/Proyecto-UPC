@@ -42,15 +42,6 @@ exports.getSolicitudById = async (req, res) => {
 }
 
 
-
-
-
-
-
-
-
-
-
 exports.cerrarSolicitud = async (req, res) => {
     try {
       await solicitudService.cerrarSolicitud(req.body);
@@ -66,5 +57,16 @@ exports.agregarObservacion = async (req, res) => {
         res.status(200).json({ message: 'Observación agregada exitosamente' });
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+
+exports.crearSolicitud = async (req, res) => {
+    try {
+        const personaData = req.body;
+        const nuevaSolicitud = await solicitudService.crearSolicitud(personaData);
+        res.status(201).json(nuevaSolicitud);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
 };
