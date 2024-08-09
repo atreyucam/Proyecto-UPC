@@ -5,6 +5,7 @@ const { sequelize } = require('./config/database');
 const syncDatabase = require('./config/syncDatabase');
 
 // * Rutas en funcionamiento
+const authRoutes = require('./routes/auth.js')
 const circuitoRoutes = require('./routes/circuito');
 const personaRoutes = require('./routes/persona');
 const subtipoRoutes = require('./routes/subtipo');
@@ -28,6 +29,7 @@ app.use('/subtipo', subtipoRoutes);
 // ! Rutas en desarrollo
 app.use('/solicitud', solicitudRoutes);
 app.use('/estadisticas', estadisticasRoutes);
+app.use('/upc',authRoutes);
 
 
 app.listen(port, '0.0.0.0', async () => {

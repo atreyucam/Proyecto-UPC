@@ -131,8 +131,8 @@ exports.asignarPoliciaASolicitud = async (solicitudData) => {
             throw new Error('La persona que realiza la asignación no existe.');
         }
         const rolesAsignador = await asignador.getRols();  // Obtener roles de la persona
-        if (!rolesAsignador.some(rol => rol.descripcion === 'Policia')) {
-            throw new Error('La persona que realiza la asignación no es un policía.');
+        if (!rolesAsignador.some(rol => rol.descripcion === 'Admin')) {
+            throw new Error('La persona que realiza la asignación no es administrador.');
         }
 
         // Verificar que el policía a asignar existe y es un policía

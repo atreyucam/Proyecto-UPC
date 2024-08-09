@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
@@ -50,7 +51,7 @@ const Persona = sequelize.define('Persona', {
     }
   },
   password: {
-    type: DataTypes.STRING(50),
+    type: DataTypes.STRING(100),
     allowNull: false
   },
   disponibilidad: {
@@ -67,8 +68,20 @@ const Persona = sequelize.define('Persona', {
       unique: true,
       fields: ['email']
     }
-  ]
- });
+  ],
+  hooks: {
+    beforeCreate: async (persona) => {
+      const salt = await bcrypt.genSalt(10);
+      persona.password = await bcrypt.hash(persona.password, salt);
+    },
+    beforeUpdate: async (persona) => {
+      if (persona.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        persona.password = await bcrypt.hash(persona.password, salt);
+      }
+    }
+  }
+});
 
 // 3. Tabla PersonaRol
 const PersonaRol = sequelize.define('PersonaRol', {

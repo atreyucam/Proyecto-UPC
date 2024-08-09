@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const solicitudController = require('../controllers/ctr_solicitud');
+const authenticateJWT = require('../middleware/authMiddleware');
 
 // TODO: En revision
 // ! Rutas inestables
@@ -14,7 +15,7 @@ router.get('/top10solicitudes', solicitudController.top10SolicitudesRecientes);
 
 
 router.get('/:id', solicitudController.getSolicitudById);
-router.post('/asignarPolicia', solicitudController.asignarPolicia);
+router.post('/asignarPolicia',authenticateJWT,solicitudController.asignarPolicia);
 router.post('/cerrarSolicitud', solicitudController.cerrarSolicitud);
 router.post('/agregarObservacion', solicitudController.agregarObservacion);
 
