@@ -4,6 +4,9 @@ import PropTypes from 'prop-types';
 import { FiAlertCircle, FiCheckCircle, FiUserCheck, FiShield, FiSmile, FiFlag,FiEye } from 'react-icons/fi';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import * as jwtDecode from 'jwt-decode';
+
 
 
 const Button = ({ text, subText, number, onClick, icon }) => {
@@ -41,6 +44,7 @@ const Home = () => {
   const [stats, setStats] = useState({});
   const [topSolicitudes, setTopSolicitudes] = useState([]);
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -64,6 +68,15 @@ const Home = () => {
     fetchStats();
     fetchTopSolicitudes();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+
+      console.log(`Bienvenido, ${user.email}.`);
+    }
+  }, [user]);
+
+
 
   // Datos y opciones del gráfico de pastel
   const pieChartData = [stats.byStatus?.counts?.['Solicitudes falsas'] || 0, stats.byStatus?.counts?.['Solicitudes en Progreso'] || 0];
