@@ -7,7 +7,6 @@ import MapView, { Marker } from "react-native-maps";
 import * as ImagePicker from "expo-image-picker";
 import Notificacion from "./components/Notificacion";
 import { useNavigate } from "react-router-native";
-import MenuOpcionNav from "./components/MenuOpcionNav";
 
 export default function DenunciaScreen() {
   const [imageSource, setImageSource] = useState(null);
@@ -15,12 +14,8 @@ export default function DenunciaScreen() {
   const [marker, setMarker] = useState(null);
   const navigate = useNavigate();
 
-  const [initialRegion, setInitialRegion] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.005, // Reduce para hacer zoom
-    longitudeDelta: 0.005, // Reduce para hacer zoom
-  });
+  const [initialRegion, setInitialRegion] = useState(null);
+  
   const [formData, setFormData] = useState({
     tipoDenuncia: "",
     descripcion: "",
@@ -29,8 +24,7 @@ export default function DenunciaScreen() {
   const handleSelectImage = async (option) => {
     let pickerResult;
     if (option === "gallery") {
-      let permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permissionResult.granted) {
         Alert.alert("Permiso necesario", "Se requiere acceso a la galería.");
@@ -75,15 +69,20 @@ export default function DenunciaScreen() {
         );
         return;
       }
-      let location = await Location.getCurrentPositionAsync({});
+      let location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Highest, // Alta precisión
+        maximumAge: 10000, // No más de 10 segundos en caché
+        timeout: 5000, // Tiempo de espera máximo de 5 segundos
+      });
       const { latitude, longitude } = location.coords;
       setUbicacion({ latitude, longitude });
       setMarker({ latitude, longitude });
-      setInitialRegion((prevRegion) => ({
-        ...prevRegion,
+      setInitialRegion({
         latitude,
         longitude,
-      }));
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      });
     } catch (error) {
       console.error("Error al obtener la ubicación:", error);
     }
@@ -113,13 +112,13 @@ export default function DenunciaScreen() {
     };
 
     console.log(denunciaData);
+    // Aquí puedes enviar denunciaData al backend según sea necesario
   };
 
   return (
     <View style={styles.container}>
       <Appbar.Header>
         <Appbar.Content title="DENUNCIAS" />
-        
         <IconButton
           icon="clipboard-list"
           color="white"
@@ -130,15 +129,17 @@ export default function DenunciaScreen() {
       </Appbar.Header>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.mapContainer}>
-          <MapView style={styles.map} region={initialRegion}>
-            {marker && (
-              <Marker
-                coordinate={marker}
-                title="Ubicación Actual"
-                description="Esta es tu ubicación actual"
-              />
-            )}
-          </MapView>
+          {initialRegion && (
+            <MapView style={styles.map} region={initialRegion}>
+              {marker && (
+                <Marker
+                  coordinate={marker}
+                  title="Ubicación Actual"
+                  description="Esta es tu ubicación actual"
+                />
+              )}
+            </MapView>
+          )}
         </View>
         <View style={styles.formContainer}>
           <View style={styles.pickerContainer}>

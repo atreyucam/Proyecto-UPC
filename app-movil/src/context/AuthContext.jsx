@@ -1,11 +1,11 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
-import { decode as atob } from 'base-64'; // Importa la función atob desde base-64
+import { decode as atob } from 'base-64';
 
 const AuthContext = createContext();
 
-const API_URL = "http://10.0.2.2:3000";
+const API_URL = "http://192.168.0.13:3000";
 
 const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
@@ -24,8 +24,8 @@ const AuthProvider = ({ children }) => {
         setAuthState({
           isAuthenticated: true,
           token,
-          role: decodedToken.role,
-          user: decodedToken.user,
+          role: decodedToken.roles,  // Asegúrate de que el rol sea guardado correctamente
+          user: decodedToken.id_persona,  // Guarda el id_persona
           errorLogin: null,
         });
       }
@@ -48,10 +48,10 @@ const AuthProvider = ({ children }) => {
 
       setAuthState({
         isAuthenticated: true,
-        user: response.data.user,
+        user: decodedToken.id_persona,  // Guarda el id_persona desde el token
         token: response.data.token,
         errorLogin: null,
-        role: decodedToken.role,  // Decodifica y guarda el rol
+        role: decodedToken.roles,  // Decodifica y guarda los roles
       });
       return true;
     } catch (error) {
@@ -71,7 +71,6 @@ const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    // Elimina el token de SecureStore
     await SecureStore.deleteItemAsync("userToken");
     setAuthState({
       isAuthenticated: false,
@@ -82,7 +81,6 @@ const AuthProvider = ({ children }) => {
     });
   };
 
-  // Función para decodificar manualmente el JWT
   function parseJwt(token) {
     try {
       var base64Url = token.split('.')[1];

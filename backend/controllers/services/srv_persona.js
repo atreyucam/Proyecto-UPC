@@ -41,8 +41,25 @@ exports.createPersona = async (personaData) => {
   } catch (error) {
     // Deshacer transacción en caso de error
     await transaction.rollback();
+
+    // Manejar errores de unicidad de Sequelize
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      // Determinar cuál campo causó la violación de la restricción de unicidad
+      const field = error.errors[0].path;
+      let message = 'Error al crear la persona.';
+
+      if (field === 'cedula') {
+        message = 'La cédula ya está registrada.';
+      } else if (field === 'email') {
+        message = 'El email ya está registrado.';
+      }
+
+      console.log('Error al crear la persona: ', message);
+      throw new Error(message); // Lanzar el mensaje específico para que se maneje en el controlador
+    }
+
     console.log('Error al crear la persona: ', error);
-    throw error;
+    throw error; // Lanzar otros errores
   }
 };
 

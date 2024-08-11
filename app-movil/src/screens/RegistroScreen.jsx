@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-native";
@@ -16,19 +16,59 @@ const RegistroScreen = () => {
     formState: { errors, isSubmitting },
     watch,
     setValue,
+    setError,
   } = useForm();
 
   const onSubmit = async (data) => {
-    if (await registroUsuario(data)) {
-      navigate("/login");
+    const userData = {
+      ...data,
+      roles: ["Ciudadano"], // Asegúrate de que el rol sea "Ciudadano"
+      id_circuito: 1, // Puedes ajustar esto según tu lógica
+    };
+
+    const registroExitoso = await registroUsuario(userData);
+
+    if (registroExitoso) {
+      Alert.alert(
+        "Registro Exitoso",
+        "Se ha registrado satisfactoriamente",
+        [
+          {
+            text: "OK",
+            onPress: () => navigate("/login"), // Navega al login cuando el usuario presione OK
+          },
+        ],
+        { cancelable: false }
+      );
+    } else if (userState.errorNewUser) {
+      // Maneja el error inmediatamente y muestra la alerta
+      if (userState.errorNewUser.includes("cedula")) {
+        setError("cedula", {
+          type: "manual",
+          message: "La cédula ya está registrada",
+        });
+      } else if (userState.errorNewUser.includes("email")) {
+        setError("email", {
+          type: "manual",
+          message: "El email ya está registrado",
+        });
+      }
+
+      Alert.alert(
+        "Error de Registro",
+        userState.errorNewUser, // Muestra el mensaje de error desde el estado del contexto
+        [
+          {
+            text: "OK",
+          },
+        ],
+        { cancelable: false }
+      );
     }
   };
 
   const handleLogin = () => {
     navigate("/login");
-  };
-  const handleForgotPassword = () => {
-    navigate("/recuperar-cuenta");
   };
 
   const password = watch("password", "");
@@ -53,11 +93,12 @@ const RegistroScreen = () => {
                 onChangeText={onChange}
                 value={value}
                 style={styles.input}
+                outlineColor={errors.nombres ? "red" : "#78288c"} // Cambiar color del borde si hay error
               />
             )}
           />
-          {errors.nombre && (
-            <Text style={styles.errorText}>{errors.nombre.message}</Text>
+          {errors.nombres && (
+            <Text style={styles.errorText}>{errors.nombres.message}</Text>
           )}
 
           <Controller
@@ -72,31 +113,33 @@ const RegistroScreen = () => {
                 onChangeText={onChange}
                 value={value}
                 style={styles.input}
+                outlineColor={errors.apellidos ? "red" : "#78288c"} // Cambiar color del borde si hay error
               />
             )}
           />
-          {errors.apellido && (
-            <Text style={styles.errorText}>{errors.apellido.message}</Text>
+          {errors.apellidos && (
+            <Text style={styles.errorText}>{errors.apellidos.message}</Text>
           )}
           <Controller
             control={control}
             name="cedula"
             rules={{
-              required: "La cedula es obligatorio",
+              required: "La cédula es obligatoria",
               pattern: {
                 value: /^\d{10}$/,
-                message: "Cedula inválida",
+                message: "Cédula inválida",
               },
             }}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                label="Cedula"
+                label="Cédula"
                 mode="outlined"
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
                 style={styles.input}
                 keyboardType="phone-pad"
+                outlineColor={errors.cedula ? "red" : "#78288c"} // Cambiar color del borde si hay error
               />
             )}
           />
@@ -123,6 +166,7 @@ const RegistroScreen = () => {
                 value={value}
                 style={styles.input}
                 keyboardType="phone-pad"
+                outlineColor={errors.telefono ? "red" : "#78288c"} // Cambiar color del borde si hay error
               />
             )}
           />
@@ -149,6 +193,7 @@ const RegistroScreen = () => {
                 value={value}
                 style={styles.input}
                 autoCapitalize="none"
+                outlineColor={errors.email ? "red" : "#78288c"} // Cambiar color del borde si hay error
               />
             )}
           />
@@ -168,9 +213,9 @@ const RegistroScreen = () => {
                   style={styles.picker}
                 >
                   <Picker.Item label="Seleccione su género" value="" />
-                  <Picker.Item label="Masculino" value="masculino" />
-                  <Picker.Item label="Femenino" value="femenino" />
-                  <Picker.Item label="Otro" value="otro" />
+                  <Picker.Item label="Masculino" value="Masculino" />
+                  <Picker.Item label="Femenino" value="Femenino" />
+                  <Picker.Item label="Otro" value="Otro" />
                 </Picker>
               </View>
             )}
@@ -203,6 +248,7 @@ const RegistroScreen = () => {
                 value={value}
                 secureTextEntry
                 style={styles.input}
+                outlineColor={errors.password ? "red" : "#78288c"} // Cambiar color del borde si hay error
               />
             )}
           />
@@ -227,6 +273,7 @@ const RegistroScreen = () => {
                 value={value}
                 secureTextEntry
                 style={styles.input}
+                outlineColor={errors.confirmPassword ? "red" : "#78288c"} // Cambiar color del borde si hay error
               />
             )}
           />

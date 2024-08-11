@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { Route, Routes, useNavigate } from "react-router-native";
+import { Route, Routes, useNavigate, useLocation } from "react-router-native";
 import LoginScreen from "../screens/LoginScreen";
 import RegistroScreen from "../screens/RegistroScreen";
 import RecuperarCuenta from "../screens/RecuperarCuenta";
@@ -15,14 +15,15 @@ import { AuthContext } from "../context/AuthContext";
 const AppNavigator = () => {
   const { authState } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (!authState.isAuthenticated) {
+    // Solo redirige al login si el usuario no está autenticado y no está en las páginas de login, registro o recuperación de contraseña
+    const unauthenticatedPaths = ["/login", "/registro", "/recuperar-cuenta"];
+    if (!authState.isAuthenticated && !unauthenticatedPaths.includes(location.pathname)) {
       navigate("/login"); // Redirigir a la pantalla de inicio de sesión si no está autenticado
-    } else {
-      navigate("/"); // Redirigir a la pantalla principal si está autenticado
     }
-  }, [authState.isAuthenticated, navigate]);
+  }, [authState.isAuthenticated, navigate, location.pathname]);
 
   return (
     <Routes>

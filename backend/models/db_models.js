@@ -57,7 +57,12 @@ const Persona = sequelize.define('Persona', {
   disponibilidad: {
     type: DataTypes.ENUM('Disponible', 'Ocupado'),
     allowNull: true, // Permitimos nulo para otros roles
+  },
+  genero: {
+    type: DataTypes.ENUM('Masculino', 'Femenino', 'Otro'), // O puedes usar DataTypes.STRING si prefieres no restringirlo
+    allowNull: true, // Puede ser nulo si no se proporciona
   }
+
 }, { tableName: 'Persona',
   indexes: [
     {

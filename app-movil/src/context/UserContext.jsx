@@ -2,8 +2,9 @@ import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 
 const UserContext = createContext();
-const API_URL = "http://192.168.43.177:5000/api";
-//const API_URL = "http://localhost:5000/api";
+// const API_URL = "http://10.0.2.2:3000";
+const API_URL = "http://192.168.0.13:3000";
+
 
 const UserProvider = ({ children }) => {
   const [userState, setUserState] = useState({
@@ -13,7 +14,7 @@ const UserProvider = ({ children }) => {
 
   const registroUsuario = async (userData) => {
     try {
-      const response = await axios.post(`${API_URL}/personas`, userData);
+      const response = await axios.post(`${API_URL}/personas/nuevoUsuario`, userData);
       setUserState({
         errorNewUser: null,
         isRegistered: true,

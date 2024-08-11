@@ -41,7 +41,7 @@ const DenunciaItemScreen = () => {
           size={24}
           onPress={() => navigate("/misDenuncias")} // Navegar a la pantalla "Mis Denuncias"
         />
-        <Appbar.Content title="Volver" />
+        <Appbar.Content title="Volvers" />
         <IconButton
           icon="home"
           color="white"

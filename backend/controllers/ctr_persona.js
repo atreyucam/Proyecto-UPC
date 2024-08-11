@@ -11,9 +11,16 @@ exports.createPersona = async (req, res) => {
     const persona = await personaService.createPersona(req.body);
     res.status(201).json(persona);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Verifica si el error es de unicidad
+    if (error.message === 'La cédula ya está registrada.' || error.message === 'El email ya está registrado.') {
+      return res.status(409).json({ message: error.message });
+    }
+    
+    // Otros errores
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
+
 
 /**
  * * Controlador para obtener todas las personas.
