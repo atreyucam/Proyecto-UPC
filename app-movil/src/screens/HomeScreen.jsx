@@ -24,7 +24,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Appbar.Header>
-        <Appbar.Content title="UPC DIGITAL" />
+        <Appbar.Content title="UPC - Digital" />
         <Notificacion />
       </Appbar.Header>
       <View style={styles.cardsContainer}>
@@ -37,13 +37,13 @@ export default function HomeScreen() {
             }}
           >
             <Card.Content>
-              <Title>Denuncias</Title>
+              <Title>Mis denuncias</Title>
               <Image
                 source={require("../../assets/escudo_home.png")}
                 style={styles.image}
                 resizeMode="contain"
               />
-              <Paragraph>Denunicia ciudadana</Paragraph>
+              <Paragraph>Denuncias realizadas</Paragraph>
             </Card.Content>
           </Card>
           <Card
@@ -59,7 +59,7 @@ export default function HomeScreen() {
                 style={styles.image}
                 resizeMode="contain"
               />
-              <Paragraph>Servicios Comunitarios</Paragraph>
+              <Paragraph>Servicios comunitarios</Paragraph>
             </Card.Content>
           </Card>
         </View>

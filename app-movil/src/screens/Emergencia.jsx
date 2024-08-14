@@ -12,12 +12,12 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import Notificacion from "./components/Notificacion";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext";  // Importa tu contexto de autenticación
+import { AuthContext } from "../context/AuthContext"; // Importa tu contexto de autenticación
 
-const API_URL = "http://192.168.0.13:3000";
+const API_URL = "http://192.168.0.11:3000";
 
 export default function EmergenciaScreen() {
-  const { authState } = useContext(AuthContext);  // Obtén la información del usuario desde el contexto
+  const { authState } = useContext(AuthContext); // Obtén la información del usuario desde el contexto
   const [ubicacion, setUbicacion] = useState(null);
   const [marker, setMarker] = useState(null);
   const [initialRegion, setInitialRegion] = useState(null);
@@ -50,7 +50,6 @@ export default function EmergenciaScreen() {
       });
 
       console.log("Ubicación obtenida:", { latitude, longitude }); // Loguear ubicación obtenida
-
     } catch (error) {
       console.error("Error al obtener la ubicación:", error);
       Alert.alert(
@@ -97,7 +96,6 @@ export default function EmergenciaScreen() {
       Alert.alert("Error", "No se pudo enviar la alerta de emergencia.");
     }
   };
-  
 
   return (
     <View style={styles.container}>
