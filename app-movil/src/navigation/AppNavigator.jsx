@@ -10,6 +10,8 @@ import InformacionScreen from "../screens/InformacionScreen";
 import MiPerfilScreen from "../screens/MiPerfilScreen";
 import DevsScreen from "../screens/DevsScreen";
 import DenunciaItemScreen from "../screens/DenunciaItemScreen";
+import HomeScreenPolicia from "../screens/policia/PoliceHomeScreen";
+import PoliceNavigation from "./PoliceNavigation"; // Importa el nuevo PoliceNavigation
 import { AuthContext } from "../context/AuthContext";
 
 const AppNavigator = () => {
@@ -18,10 +20,12 @@ const AppNavigator = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Solo redirige al login si el usuario no está autenticado y no está en las páginas de login, registro o recuperación de contraseña
     const unauthenticatedPaths = ["/login", "/registro", "/recuperar-cuenta"];
-    if (!authState.isAuthenticated && !unauthenticatedPaths.includes(location.pathname)) {
-      navigate("/login"); // Redirigir a la pantalla de inicio de sesión si no está autenticado
+    if (
+      !authState.isAuthenticated &&
+      !unauthenticatedPaths.includes(location.pathname)
+    ) {
+      navigate("/login");
     }
   }, [authState.isAuthenticated, navigate, location.pathname]);
 
@@ -29,21 +33,34 @@ const AppNavigator = () => {
     <Routes>
       {authState.isAuthenticated ? (
         <>
-          <Route path="/" element={<HomeNavigation />} />
-          <Route path="/misDenuncias" element={<MisDenunciasScreen />} />
-          <Route path="/misServicios" element={<MisServiciosScreen />} />
-          <Route path="/informacion" element={<InformacionScreen />} />
-          <Route path="/miPerfil" element={<MiPerfilScreen />} />
-          <Route path="/devs" element={<DevsScreen />} />
-          <Route path="/denuncia/:denunciaId" element={<DenunciaItemScreen />} />
-          <Route path="*" element={<HomeNavigation />} /> {/* Ruta por defecto */}
+          {authState.role.includes(4) && (
+            <>
+              <Route path="/" element={<HomeNavigation />} />
+              <Route path="/misDenuncias" element={<MisDenunciasScreen />} />
+              <Route path="/misServicios" element={<MisServiciosScreen />} />
+              <Route path="/informacion" element={<InformacionScreen />} />
+              <Route path="/miPerfil" element={<MiPerfilScreen />} />
+              <Route path="/devs" element={<DevsScreen />} />
+              <Route
+                path="/denuncia/:denunciaId"
+                element={<DenunciaItemScreen />}
+              />
+              <Route path="*" element={<HomeNavigation />} />
+            </>
+          )}
+          {authState.role.includes(3) && (
+            <>
+              <Route path="/" element={<PoliceNavigation />} />
+              <Route path="*" element={<PoliceNavigation />} />
+            </>
+          )}
         </>
       ) : (
         <>
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/registro" element={<RegistroScreen />} />
           <Route path="/recuperar-cuenta" element={<RecuperarCuenta />} />
-          <Route path="*" element={<LoginScreen />} /> {/* Ruta por defecto */}
+          <Route path="*" element={<LoginScreen />} />
         </>
       )}
     </Routes>

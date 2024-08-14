@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
-import * as SecureStore from 'expo-secure-store';
-import { decode as atob } from 'base-64';
+import * as SecureStore from "expo-secure-store";
+import { decode as atob } from "base-64";
 
 const AuthContext = createContext();
 
@@ -13,7 +13,7 @@ const AuthProvider = ({ children }) => {
     user: null,
     token: null,
     errorLogin: null,
-    role: null, 
+    role: null,
   });
 
   useEffect(() => {
@@ -21,13 +21,25 @@ const AuthProvider = ({ children }) => {
       const token = await SecureStore.getItemAsync("userToken");
       if (token) {
         const decodedToken = parseJwt(token);
-        setAuthState({
-          isAuthenticated: true,
-          token,
-          role: decodedToken.roles,  // Asegúrate de que el rol sea guardado correctamente
-          user: decodedToken.id_persona,  // Guarda el id_persona
-          errorLogin: null,
-        });
+        if (decodedToken.roles.includes(2) || decodedToken.roles.includes(3)) {
+          setAuthState({
+            isAuthenticated: true,
+            token,
+            role: decodedToken.roles,
+            user: decodedToken.id_persona,
+            errorLogin: null,
+          });
+        } else {
+          // Si el rol no es "Policía" o "Ciudadano", borra el token y marca como no autenticado
+          await SecureStore.deleteItemAsync("userToken");
+          setAuthState({
+            isAuthenticated: false,
+            user: null,
+            token: null,
+            errorLogin: "Acceso no autorizado",
+            role: null,
+          });
+        }
       }
     };
 
@@ -37,27 +49,37 @@ const AuthProvider = ({ children }) => {
   const login = async (userData) => {
     try {
       const response = await axios.post(`${API_URL}/upc/login`, userData);
-      console.log("Response data:", response.data);
 
-      // Decodifica manualmente el token JWT
       const decodedToken = parseJwt(response.data.token);
-      console.log("Decoded Token:", decodedToken);
 
-      // Guarda el token en SecureStore
-      await SecureStore.setItemAsync("userToken", response.data.token);
+      if (decodedToken.roles.includes(3) || decodedToken.roles.includes(4)) {
+        await SecureStore.setItemAsync("userToken", response.data.token);
 
-      setAuthState({
-        isAuthenticated: true,
-        user: decodedToken.id_persona,  // Guarda el id_persona desde el token
-        token: response.data.token,
-        errorLogin: null,
-        role: decodedToken.roles,  // Decodifica y guarda los roles
-      });
-      return true;
+        setAuthState({
+          isAuthenticated: true,
+          user: decodedToken.id_persona,
+          token: response.data.token,
+          errorLogin: null,
+          role: decodedToken.roles,
+        });
+        return true;
+      } else {
+        setAuthState({
+          isAuthenticated: false,
+          user: null,
+          token: null,
+          errorLogin: "Acceso no autorizado",
+          role: null,
+        });
+        return false;
+      }
     } catch (error) {
-      console.error("Error al intentar iniciar sesión:", error);
       let errorMessage = "Error al iniciar sesión";
-      if (error.response && error.response.data && error.response.data.message) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         errorMessage = error.response.data.message;
       }
       setAuthState({
@@ -65,6 +87,7 @@ const AuthProvider = ({ children }) => {
         user: null,
         token: null,
         errorLogin: errorMessage,
+        role: null,
       });
       return false;
     }
@@ -83,11 +106,16 @@ const AuthProvider = ({ children }) => {
 
   function parseJwt(token) {
     try {
-      var base64Url = token.split('.')[1];
-      var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
+      var base64Url = token.split(".")[1];
+      var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      var jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
 
       return JSON.parse(jsonPayload);
     } catch (e) {
