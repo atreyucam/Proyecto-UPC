@@ -50,8 +50,10 @@ export const loadUser = () => async (dispatch) => {
 
   try {
     const res = await axios.get("http://localhost:3000/upc/auth");
+    console.log("Usuario cargado:", res.data);
     dispatch(userLoaded(res.data));
   } catch (err) {
+    console.error("Error al cargar el usuario:", err);
     dispatch(authError());
   }
 };
@@ -67,19 +69,29 @@ export const login = (email, password) => async (dispatch) => {
 
   try {
     const res = await axios.post("http://localhost:3000/upc/login", body, config);
+    console.log("Respuesta de login:", res.data);
+
+    // Verificar si el usuario tiene el rol de Admin (ID de rol = 2)
+    if (res.data.user.roles && !res.data.user.roles.includes(2)) {
+      window.location.href = "/unauthorized";
+      return;
+    }
+
     localStorage.setItem("token", res.data.token);
     dispatch(loginSuccess(res.data.token));
+    console.log("Login exitoso");
     dispatch(loadUser());
   } catch (err) {
+    console.error("Error en login:", err); 
     if (err.response && err.response.status === 401) {
-      // Si la respuesta es 401, redirigir a la página de "No Autorizado"
-      console.log("Usuario no autorizado, redirigiendo a la pantalla de no autorizado");
-      window.location.href = "/unauthorized"; // Redirige a la pantalla de "No Autorizado"
+      // Muestra el mensaje de contraseña incorrecta
+      alert("Contraseña incorrecta. Inténtalo de nuevo.");
     } else {
       dispatch(authError());
     }
   }
 };
+
 
 export const logoutUser = () => (dispatch) => {
   localStorage.removeItem("token");

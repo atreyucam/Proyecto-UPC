@@ -14,7 +14,8 @@ const ProtectedRoute = () => {
     return <Navigate to="/login" />;
   }
 
-  if (user && user.roles && !user.roles.includes(2)) {  // Asegúrate de que `roles` esté definido antes de usar `includes`
+  if (user && user.rols && !user.rols.includes(2)) {
+    // Asegúrate de que `roles` esté definido antes de usar `includes`
     return <Navigate to="/unauthorized" />;
   }
 
