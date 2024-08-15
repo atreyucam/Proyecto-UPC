@@ -16,10 +16,21 @@ import {
   Bars3Icon,
 } from "@heroicons/react/24/solid";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
+import { useDispatch } from "react-redux";
+import { logoutUser } from "../../context/redux/authSlide"; // Asegúrate de ajustar la ruta según sea necesario
+import { useNavigate } from "react-router-dom"; // Para redirigir después de logout
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { fixedNavbar, openSidenav } = controller;
+  const reduxDispatch = useDispatch(); // Hook de Redux para disparar acciones
+  const navigate = useNavigate(); // Hook de React Router para redirigir
+
+  const handleLogout = () => {
+    reduxDispatch(logoutUser()); // Disparar la acción de logout
+    navigate("/login"); // Redirigir al usuario a la página de login
+  };
+
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
@@ -93,7 +104,7 @@ export function DashboardNavbar() {
               </IconButton>
             </MenuHandler>
             <MenuList className="w-max border-0">
-              <MenuItem className="flex items-center gap-3">
+              <MenuItem className="flex items-center gap-3" onClick={handleLogout}>
                 <Typography
                   variant="small"
                   color="blue-gray"

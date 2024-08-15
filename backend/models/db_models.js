@@ -1,5 +1,6 @@
+const bcrypt = require('bcryptjs');
 const { DataTypes } = require('sequelize');
-const {sequelize} = require('../config/database');
+const { sequelize } = require('../config/database');
 
 // 1. Tabla roles
 const Rol = sequelize.define('Rol', {
@@ -50,13 +51,18 @@ const Persona = sequelize.define('Persona', {
     }
   },
   password: {
-    type: DataTypes.STRING(50),
+    type: DataTypes.STRING(100),
     allowNull: false
   },
   disponibilidad: {
-    type: DataTypes.STRING(50),
+    type: DataTypes.ENUM('Disponible', 'Ocupado'),
     allowNull: true, // Permitimos nulo para otros roles
+  },
+  genero: {
+    type: DataTypes.ENUM('Masculino', 'Femenino', 'Otro'), // O puedes usar DataTypes.STRING si prefieres no restringirlo
+    allowNull: true, // Puede ser nulo si no se proporciona
   }
+
 }, { tableName: 'Persona',
   indexes: [
     {
@@ -67,8 +73,20 @@ const Persona = sequelize.define('Persona', {
       unique: true,
       fields: ['email']
     }
-  ]
- });
+  ],
+  hooks: {
+    beforeCreate: async (persona) => {
+      const salt = await bcrypt.genSalt(10);
+      persona.password = await bcrypt.hash(persona.password, salt);
+    },
+    beforeUpdate: async (persona) => {
+      if (persona.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        persona.password = await bcrypt.hash(persona.password, salt);
+      }
+    }
+  }
+});
 
 // 3. Tabla PersonaRol
 const PersonaRol = sequelize.define('PersonaRol', {
@@ -107,7 +125,7 @@ const Circuito = sequelize.define('Circuito', {
   },
   barrio: {
     type: DataTypes.STRING(50),
-    allowNull: false
+    allowNull: false, // Permitimos nulo para casos donde no se puede determinar el barrio
   },
   numero_circuito: {
     type: DataTypes.INTEGER,
@@ -196,12 +214,37 @@ const Solicitud = sequelize.define('Solicitud', {
   },
   direccion: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true, // permitir nulo si el puntoGPS es suficiente
   },
   observacion: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
+    defaultValue: ' '
   },
+  id_circuito: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Circuito,
+      key: 'id_circuito'
+    },
+    allowNull: true // Puede ser nulo si no se asigna a un circuito
+  },
+  creado_por: { // Nuevo campo
+    type: DataTypes.INTEGER,
+    references: {
+      model: Persona,
+      key: 'id_persona'
+    },
+    allowNull: false
+  },
+  policia_asignado: { // Nuevo campo
+    type: DataTypes.INTEGER,
+    references: {
+      model: Persona,
+      key: 'id_persona'
+    },
+    allowNull: true // Puede ser nulo si aún no se ha asignado un policía
+  }
 }, { tableName: 'Solicitud' });
 
 // 9. Evento
@@ -229,7 +272,7 @@ const SolicitudEventoPersona = sequelize.define('SolicitudEventoPersona', {
     primaryKey: true
   },
   id_evento: {
-    type: DataTypes.INTEGER,
+    type  : DataTypes.INTEGER,
     references: {
       model: Evento,
       key: 'id_evento',
@@ -245,9 +288,13 @@ const SolicitudEventoPersona = sequelize.define('SolicitudEventoPersona', {
     },
     allowNull: false,
     primaryKey: true
-  }
+  },
+  fecha_creacion: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
 }, { tableName: 'SolicitudEventoPersona' });
-
 
 // 11. TipoEvidencia
 const TipoEvidencia = sequelize.define('TipoEvidencia', {
@@ -354,6 +401,35 @@ const NotificacionPersona = sequelize.define('NotificacionPersona', {
   },
 }, { tableName: 'NotificacionPersona' });
 
+// 16. Observacion
+const Observacion = sequelize.define('Observacion', {
+  id_observacion: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  id_solicitud: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Solicitud,
+      key: 'id_solicitud',
+    },
+    allowNull: false,
+  },
+  observacion: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  fecha: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
+  id_persona: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  }
+}, { tableName: 'Observacion' });
 
 // Definir Relaciones
 // 1. Relacion de personas y roles
@@ -384,25 +460,44 @@ SolicitudEventoPersona.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
 SolicitudEventoPersona.belongsTo(Evento, { foreignKey: 'id_evento' });
 SolicitudEventoPersona.belongsTo(Persona, { foreignKey: 'id_persona' });
 
-// 7. Relación entre Solicitud y Evidencia
+// 6. Relación entre Solicitud y Evidencia
 Solicitud.hasMany(SolicitudEvidencia, { foreignKey: 'id_solicitud' });
 TipoEvidencia.hasMany(SolicitudEvidencia, { foreignKey: 'id_evidencia' });
 SolicitudEvidencia.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
 SolicitudEvidencia.belongsTo(TipoEvidencia, { foreignKey: 'id_evidencia' });
 
-// 8. Relación entre Solicitud y Notificación
+// 7. Relación entre Solicitud y Notificación
 Solicitud.hasMany(SolicitudNotificacion, { foreignKey: 'id_solicitud' });
 Notificacion.hasMany(SolicitudNotificacion, { foreignKey: 'id_notificacion' });
 SolicitudNotificacion.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
 SolicitudNotificacion.belongsTo(Notificacion, { foreignKey: 'id_notificacion' });
 
-// 9. Relación entre Notificación y Persona
+// 8. Relación entre Notificación y Persona
 Solicitud.hasMany(NotificacionPersona, { foreignKey: 'id_solicitud' });
 Notificacion.hasMany(NotificacionPersona, { foreignKey: 'id_notificacion' });
 Persona.hasMany(NotificacionPersona, { foreignKey: 'id_persona' });
 NotificacionPersona.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
 NotificacionPersona.belongsTo(Notificacion, { foreignKey: 'id_notificacion' });
 NotificacionPersona.belongsTo(Persona, { foreignKey: 'id_persona' });
+
+// 9. Relación entre Solicitud y Observación
+Solicitud.hasMany(Observacion, { foreignKey: 'id_solicitud' });
+Observacion.belongsTo(Solicitud, { foreignKey: 'id_solicitud' });
+// Relación entre Observación y Persona
+Persona.hasMany(Observacion, { foreignKey: 'id_persona' });
+Observacion.belongsTo(Persona, { foreignKey: 'id_persona' });
+// Nueva relación entre Solicitud y Circuito
+Circuito.hasMany(Solicitud, { foreignKey: 'id_circuito' });
+Solicitud.belongsTo(Circuito, { foreignKey: 'id_circuito' });
+
+// Relación entre Solicitud y Persona (creador)
+Solicitud.belongsTo(Persona, { foreignKey: 'creado_por', as: 'creador' });
+Persona.hasMany(Solicitud, { foreignKey: 'creado_por', as: 'solicitudes_creadas' });
+
+// Relación entre Solicitud y Persona (policía asignado)
+Solicitud.belongsTo(Persona, { foreignKey: 'policia_asignado', as: 'policia' });
+Persona.hasMany(Solicitud, { foreignKey: 'policia_asignado', as: 'solicitudes_asignadas' });
+
 
 module.exports = {
   sequelize,
@@ -420,5 +515,7 @@ module.exports = {
   SolicitudEvidencia,
   Notificacion,
   NotificacionPersona,
-  SolicitudNotificacion
+  SolicitudNotificacion,
+  Observacion
 };
+

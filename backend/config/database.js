@@ -1,8 +1,9 @@
+require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
 const database = "db_upc_dev";
 const username = "postgres";
-const password = "1234";
+const password = "140220";
 const host = "localhost";
 
 const sequelize = new Sequelize(database, username, password, {
@@ -16,4 +17,4 @@ const sequelize = new Sequelize(database, username, password, {
 
 module.exports = {
   sequelize
-}
+};

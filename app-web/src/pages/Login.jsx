@@ -1,59 +1,39 @@
-import React, { useState } from "react";
-import { Input, Button, Typography, Dialog, DialogHeader, DialogBody, DialogFooter } from "@material-tailwind/react";
-import { Link, useNavigate } from "react-router-dom";
-
-const RegistrationModal = ({ isOpen, onClose }) => {
-  return (
-    <Dialog open={isOpen} handler={onClose}>
-      <DialogHeader>Registro</DialogHeader>
-      <DialogBody divider>
-        <form className="flex flex-col gap-4">
-          <Input label="Nombre" size="lg" />
-          <Input label="Apellido" size="lg" />
-          <Input label="Tipo de Ciudadano" size="lg" />
-          <Input label="Cédula" size="lg" />
-          <Input label="Dirección" size="lg" />
-          <Input label="Teléfono" size="lg" />
-        </form>
-      </DialogBody>
-      <DialogFooter>
-        <Button variant="text" color="red" onClick={onClose} className="mr-1">
-          <span>Cancelar</span>
-        </Button>
-        <Button variant="gradient" color="green" onClick={onClose}>
-          <span>Registrarse</span>
-        </Button>
-      </DialogFooter>
-    </Dialog>
-  );
-};
+import React, { useState, useEffect } from "react";
+import { Input, Button, Typography } from "@material-tailwind/react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { login } from "../context/redux/authSlide";
 
 const Home2 = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [inputEmail, setInputEmail] = useState("");
+  const [inputPassword, setInputPassword] = useState("");
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
+  const { isAuthenticated,loading } = useSelector((state) => state.auth);
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const email = "Luisinsuasti501@gmail.com";
-    const password = "12345678";
-
-    // Simulación de registro y redirección
-    console.log("Usuario registrado:", { email, password });
-    navigate("/home");
+    dispatch(login(inputEmail, inputPassword));
   };
+
+  // UseEffect para manejar la navegación después del login
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate("/home");
+    }
+  }, [isAuthenticated, loading, navigate]);
 
   return (
-    <>
-      <section className="m-8 flex gap-4">
-        <div className="w-full lg:w-3/5 mt-24">
+    <section className="flex justify-center items-center h-screen bg-gray-100 relative">
+      <div className="absolute left-7 top-1/2 transform -translate-y-1/2">
+        <h2 className="text-black text-6xl font-bold transform -rotate-90 origin-top-center ml-10">
+          @UPC DIGITAL
+        </h2>
+      </div>
+      <div className="flex flex-col items-center justify-center h-full w-full">
+        <div className="bg-blue-500 w-full max-w-lg h-full absolute right-0" />
+        <div className="bg-white rounded-lg p-8 shadow-md w-full max-w-lg relative">
           <div className="text-center">
             <Typography variant="h2" className="font-bold mb-4">
               Inicio de sesión
@@ -66,27 +46,28 @@ const Home2 = () => {
               Ingresa tu email y contraseña
             </Typography>
           </div>
-          <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleLogin}>
-            <div className="mb-1 flex flex-col gap-6">
+          <form className="mt-8" onSubmit={handleLogin}>
+            <div className="mb-4">
               <Typography
                 variant="small"
                 color="blue-gray"
-                className="-mb-3 font-medium"
+                className="block mb-2 font-medium"
               >
                 Tu email
               </Typography>
               <Input
                 size="lg"
                 placeholder="name@mail.com"
-                className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-                labelProps={{
-                  className: "before:content-none after:content-none",
-                }}
+                value={inputEmail}
+                onChange={(e) => setInputEmail(e.target.value)}
+                className="w-full border-gray-300 border rounded-lg py-2 px-3 focus:outline-none focus:border-blue-500"
               />
+            </div>
+            <div className="mb-4">
               <Typography
                 variant="small"
                 color="blue-gray"
-                className="-mb-3 font-medium"
+                className="block mb-2 font-medium"
               >
                 Contraseña
               </Typography>
@@ -94,43 +75,18 @@ const Home2 = () => {
                 type="password"
                 size="lg"
                 placeholder="********"
-                className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-                labelProps={{
-                  className: "before:content-none after:content-none",
-                }}
+                value={inputPassword}
+                onChange={(e) => setInputPassword(e.target.value)}
+                className="w-full border-gray-300 border rounded-lg py-2 px-3 focus:outline-none focus:border-blue-500"
               />
             </div>
-
-            <Button type="submit" className="mt-6 bg-blue-gray-900" fullWidth>
+            <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg">
               Ingresar
             </Button>
-
-            <div className="text-center mt-5">
-              <Typography variant="small" className="font-medium text-gray-900">
-                <a href="#">Forgot Password</a>
-              </Typography>
-            </div>
-
-            <Typography
-              variant="paragraph"
-              className="text-center text-blue-gray-500 font-medium mt-4"
-            >
-              No estas registrado?
-              <span onClick={handleOpenModal} className="text-gray-900 ml-1 cursor-pointer">
-                REGISTRO
-              </span>
-            </Typography>
           </form>
         </div>
-        <div className="w-2/5 h-full hidden lg:block">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Escudo_Policia_Nacional_Ecuador.jpg/800px-Escudo_Policia_Nacional_Ecuador.jpg"
-            className="h-full w-full object-cover rounded-3xl"
-          />
-        </div>
-      </section>
-      <RegistrationModal isOpen={isModalOpen} onClose={handleCloseModal} />
-    </>
+      </div>
+    </section>
   );
 };
 
