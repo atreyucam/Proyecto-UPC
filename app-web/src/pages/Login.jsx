@@ -7,19 +7,30 @@ import { login } from "../context/redux/authSlide";
 const Home2 = () => {
   const [inputEmail, setInputEmail] = useState("");
   const [inputPassword, setInputPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { isAuthenticated,loading } = useSelector((state) => state.auth);
+  const { isAuthenticated, loading } = useSelector((state) => state.auth);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    dispatch(login(inputEmail, inputPassword));
+    setErrorMessage("");
+    console.log("Formulario de inicio de sesión enviado");
+
+    try {
+      await dispatch(login(inputEmail, inputPassword));
+    } catch (err) {
+      setErrorMessage(
+        "Contraseña incorrecta o no tienes permiso para ingresar."
+      );
+    }
   };
 
   // UseEffect para manejar la navegación después del login
   useEffect(() => {
     if (!loading && isAuthenticated) {
+      console.log("Redirigiendo al home después de un login exitoso");
       navigate("/home");
     }
   }, [isAuthenticated, loading, navigate]);
@@ -80,7 +91,19 @@ const Home2 = () => {
                 className="w-full border-gray-300 border rounded-lg py-2 px-3 focus:outline-none focus:border-blue-500"
               />
             </div>
-            <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg">
+            {errorMessage && (
+              <Typography
+                variant="small"
+                color="red"
+                className="block mb-2 font-medium"
+              >
+                {errorMessage}
+              </Typography>
+            )}
+            <Button
+              type="submit"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg"
+            >
               Ingresar
             </Button>
           </form>
