@@ -23,14 +23,17 @@ const Home3 = () => {
   const [telefonoAdmin, setTelefonoAdmin] = useState('');
   const [editingAdminIndex, setEditingAdminIndex] = useState(null);
 
-  // Estado para gestionar datos del policía
-  const [nombrePolicia, setNombrePolicia] = useState('');
-  const [apellidoPolicia, setApellidoPolicia] = useState('');
+  // Estado para gestionar policías
+  const [policias, setPolicias] = useState([]);
+  const [isPoliciaModalOpen, setIsPoliciaModalOpen] = useState(false);
+  const [nombresPolicia, setNombresPolicia] = useState('');
+  const [apellidosPolicia, setApellidosPolicia] = useState('');
   const [cedulaPolicia, setCedulaPolicia] = useState('');
-  const [rangoPolicia, setRangoPolicia] = useState('');
-  const [direccionPolicia, setDireccionPolicia] = useState('');
   const [telefonoPolicia, setTelefonoPolicia] = useState('');
-  const [isPoliciaModalOpen, setIsPoliciaModalOpen] = useState(false); 
+  const [emailPolicia, setEmailPolicia] = useState('');
+  const [passwordPolicia, setPasswordPolicia] = useState('');
+  const [generoPolicia, setGeneroPolicia] = useState('');
+  const [editingPoliciaIndex, setEditingPoliciaIndex] = useState(null);
 
   // Funciones para gestionar circuitos
   const handleAddOrEditCircuito = () => {
@@ -106,52 +109,45 @@ const Home3 = () => {
     setAdministradores(adminsActualizados);
   };
 
-  // Función para crear un nuevo policía
-  const handleAddPolicia = async () => {
-    // Crear un objeto con los datos del nuevo policía
-    const nuevoPolicia = {
-      nombre: nombrePolicia,
-      apellido: apellidoPolicia,
-      cedula: cedulaPolicia,
-      rango: rangoPolicia,
-      direccion: direccionPolicia,
-      telefono: telefonoPolicia
-    };
-
-    try {
-      // Realizar la petición POST al servidor para crear el policía
-      const response = await fetch('/api/crear-policia', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(nuevoPolicia)
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al crear el policía');
-      }
-
-      // Limpiar los campos después de la creación exitosa
-      setNombrePolicia('');
-      setApellidoPolicia('');
-      setCedulaPolicia('');
-      setRangoPolicia('');
-      setDireccionPolicia('');
-      setTelefonoPolicia('');
-
-      // Cerrar el modal después de la creación exitosa
-      setIsPoliciaModalOpen(false);
-
-
-
-      alert('Policía creado exitosamente');
-    } catch (error) {
-      alert('Error al crear el policía: ' + error.message);
+  // Funciones para gestionar policías
+  const handleAddOrEditPolicia = () => {
+    const nuevoPolicia = { nombres: nombresPolicia, apellidos: apellidosPolicia, cedula: cedulaPolicia, telefono: telefonoPolicia, email: emailPolicia, password: passwordPolicia, genero: generoPolicia };
+    if (editingPoliciaIndex !== null) {
+      const policiasActualizados = [...policias];
+      policiasActualizados[editingPoliciaIndex] = nuevoPolicia;
+      setPolicias(policiasActualizados);
+    } else {
+      setPolicias([...policias, nuevoPolicia]);
     }
+    setIsPoliciaModalOpen(false);
+    setNombresPolicia('');
+    setApellidosPolicia('');
+    setCedulaPolicia('');
+    setTelefonoPolicia('');
+    setEmailPolicia('');
+    setPasswordPolicia('');
+    setGeneroPolicia('');
+    setEditingPoliciaIndex(null);
   };
 
+  const handleEditPolicia = (index) => {
+    const policia = policias[index];
+    setNombresPolicia(policia.nombres);
+    setApellidosPolicia(policia.apellidos);
+    setCedulaPolicia(policia.cedula);
+    setTelefonoPolicia(policia.telefono);
+    setEmailPolicia(policia.email);
+    setPasswordPolicia(policia.password);
+    setGeneroPolicia(policia.genero);
+    setEditingPoliciaIndex(index);
+    setIsPoliciaModalOpen(true);
+  };
 
+  const handleDeletePolicia = (index) => {
+    const policiasActualizados = [...policias];
+    policiasActualizados.splice(index, 1);
+    setPolicias(policiasActualizados);
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -161,7 +157,6 @@ const Home3 = () => {
           <h4 className="text-2xl font-bold">Gestión de Circuitos</h4>
           <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={() => setIsCircuitoModalOpen(true)}>
             Agregar
-
           </button>
         </div>
         <div className="grid gap-4">
@@ -188,49 +183,57 @@ const Home3 = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
             <div className="bg-white p-6 rounded shadow-lg w-96">
               <h5 className="text-xl font-bold mb-4">{editingIndex !== null ? 'Editar Circuito' : 'Agregar Circuito'}</h5>
-              <div className="flex flex-col gap-4 mb-4">
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Nombre</label>
                 <input
                   type="text"
-                  placeholder="Nombre"
-                  className="border p-2 rounded"
                   value={nombreCircuito}
                   onChange={(e) => setNombreCircuito(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Provincia"
-                  className="border p-2 rounded"
-                  value={provinciaCircuito}
-                  onChange={(e) => setProvinciaCircuito(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Ciudad"
-                  className="border p-2 rounded"
-                  value={ciudadCircuito}
-                  onChange={(e) => setCiudadCircuito(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Barrio"
-                  className="border p-2 rounded"
-                  value={barrioCircuito}
-                  onChange={(e) => setBarrioCircuito(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Número de Circuito"
-                  className="border p-2 rounded"
-                  value={numeroCircuito}
-                  onChange={(e) => setNumeroCircuito(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
                 />
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Provincia</label>
+                <input
+                  type="text"
+                  value={provinciaCircuito}
+                  onChange={(e) => setProvinciaCircuito(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Ciudad</label>
+                <input
+                  type="text"
+                  value={ciudadCircuito}
+                  onChange={(e) => setCiudadCircuito(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Barrio</label>
+                <input
+                  type="text"
+                  value={barrioCircuito}
+                  onChange={(e) => setBarrioCircuito(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Número de Circuito</label>
+                <input
+                  type="text"
+                  value={numeroCircuito}
+                  onChange={(e) => setNumeroCircuito(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="flex justify-between">
                 <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={() => setIsCircuitoModalOpen(false)}>
                   Cancelar
                 </button>
                 <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleAddOrEditCircuito}>
-                  {editingIndex !== null ? 'Guardar Cambios' : 'Guardar'}
+                  {editingIndex !== null ? 'Actualizar' : 'Agregar'}
                 </button>
               </div>
             </div>
@@ -238,12 +241,12 @@ const Home3 = () => {
         )}
       </div>
 
-      {/* Sección de Gestionar Administradores */}
-      <div>
+      {/* Sección de Gestión de Administradores */}
+      <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h4 className="text-2xl font-bold">Gestionar Administradores</h4>
+          <h4 className="text-2xl font-bold">Gestión de Administradores</h4>
           <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={() => setIsAdminModalOpen(true)}>
-            Agregar 
+            Agregar
           </button>
         </div>
         <div className="grid gap-4">
@@ -256,7 +259,7 @@ const Home3 = () => {
                 <p>Dirección: {admin.direccion}</p>
                 <p>Teléfono: {admin.telefono}</p>
               </div>
-              <div>
+              <div className="flex gap-2">
                 <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => handleEditAdmin(index)}>
                   Editar
                 </button>
@@ -272,150 +275,189 @@ const Home3 = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
             <div className="bg-white p-6 rounded shadow-lg w-96">
               <h5 className="text-xl font-bold mb-4">{editingAdminIndex !== null ? 'Editar Administrador' : 'Agregar Administrador'}</h5>
-              <div className="flex flex-col gap-4 mb-4">
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Nombre</label>
                 <input
                   type="text"
-                  placeholder="Nombre"
-                  className="border p-2 rounded"
                   value={nombreAdmin}
                   onChange={(e) => setNombreAdmin(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Apellido"
-                  className="border p-2 rounded"
-                  value={apellidoAdmin}
-                  onChange={(e) => setApellidoAdmin(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Cédula"
-                  className="border p-2 rounded"
-                  value={cedulaAdmin}
-                  onChange={(e) => setCedulaAdmin(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Rango"
-                  className="border p-2 rounded"
-                  value={rangoAdmin}
-                  onChange={(e) => setRangoAdmin(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Dirección"
-                  className="border p-2 rounded"
-                  value={direccionAdmin}
-                  onChange={(e) => setDireccionAdmin(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Teléfono"
-                  className="border p-2 rounded"
-                  value={telefonoAdmin}
-                  onChange={(e) => setTelefonoAdmin(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
                 />
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Apellido</label>
+                <input
+                  type="text"
+                  value={apellidoAdmin}
+                  onChange={(e) => setApellidoAdmin(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Cédula</label>
+                <input
+                  type="text"
+                  value={cedulaAdmin}
+                  onChange={(e) => setCedulaAdmin(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Rango</label>
+                <input
+                  type="text"
+                  value={rangoAdmin}
+                  onChange={(e) => setRangoAdmin(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Dirección</label>
+                <input
+                  type="text"
+                  value={direccionAdmin}
+                  onChange={(e) => setDireccionAdmin(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Teléfono</label>
+                <input
+                  type="text"
+                  value={telefonoAdmin}
+                  onChange={(e) => setTelefonoAdmin(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="flex justify-between">
                 <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={() => setIsAdminModalOpen(false)}>
                   Cancelar
                 </button>
                 <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleAddOrEditAdmin}>
-                  {editingAdminIndex !== null ? 'Guardar Cambios' : 'Guardar'}
+                  {editingAdminIndex !== null ? 'Actualizar' : 'Agregar'}
                 </button>
               </div>
             </div>
           </div>
         )}
       </div>
-      
-      {/* Formulario y Modal para crear un nuevo policía */}
-      <div className="mt-8">
+
+      {/* Sección de Gestión de Policías */}
+      <div>
         <div className="flex justify-between items-center mb-4">
-          <h4 className="text-2xl font-bold">Gestionar Policías</h4>
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded"
-            onClick={() => setIsPoliciaModalOpen(true)}
-          >
+          <h4 className="text-2xl font-bold">Gestión de Policías</h4>
+          <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={() => setIsPoliciaModalOpen(true)}>
             Agregar
           </button>
         </div>
         <div className="grid gap-4">
-        
+          {policias.map((policia, index) => (
+            <div key={index} className="bg-white shadow-md p-4 rounded flex justify-between items-center">
+              <div>
+                <h6 className="text-lg font-bold">{policia.nombres} {policia.apellidos}</h6>
+                <p>Cédula: {policia.cedula}</p>
+                <p>Teléfono: {policia.telefono}</p>
+                <p>Email: {policia.email}</p>
+                <p>Género: {policia.genero}</p>
+              </div>
+              <div className="flex gap-2">
+                <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => handleEditPolicia(index)}>
+                  Editar
+                </button>
+                <button className="bg-red-500 text-white px-2 py-1 rounded" onClick={() => handleDeletePolicia(index)}>
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
         {/* Modal para agregar/editar policía */}
         {isPoliciaModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
             <div className="bg-white p-6 rounded shadow-lg w-96">
-              <h5 className="text-xl font-bold mb-4">Agregar Policía</h5>
-              <div className="flex flex-col gap-4 mb-4">
+              <h5 className="text-xl font-bold mb-4">{editingPoliciaIndex !== null ? 'Editar Policía' : 'Agregar Policía'}</h5>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Nombres</label>
                 <input
                   type="text"
-                  placeholder="Nombre"
-                  className="border p-2 rounded"
-                  value={nombrePolicia}
-                  onChange={(e) => setNombrePolicia(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Apellido"
-                  className="border p-2 rounded"
-                  value={apellidoPolicia}
-                  onChange={(e) => setApellidoPolicia(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Cédula"
-                  className="border p-2 rounded"
-                  value={cedulaPolicia}
-                  onChange={(e) => setCedulaPolicia(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Rango"
-                  className="border p-2 rounded"
-                  value={rangoPolicia}
-                  onChange={(e) => setRangoPolicia(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Dirección"
-                  className="border p-2 rounded"
-                  value={direccionPolicia}
-                  onChange={(e) => setDireccionPolicia(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Teléfono"
-                  className="border p-2 rounded"
-                  value={telefonoPolicia}
-                  onChange={(e) => setTelefonoPolicia(e.target.value)}
+                  value={nombresPolicia}
+                  onChange={(e) => setNombresPolicia(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
                 />
               </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  className="bg-gray-500 text-white px-4 py-2 rounded"
-                  onClick={() => setIsPoliciaModalOpen(false)}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Apellidos</label>
+                <input
+                  type="text"
+                  value={apellidosPolicia}
+                  onChange={(e) => setApellidosPolicia(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Cédula</label>
+                <input
+                  type="text"
+                  value={cedulaPolicia}
+                  onChange={(e) => setCedulaPolicia(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Teléfono</label>
+                <input
+                  type="text"
+                  value={telefonoPolicia}
+                  onChange={(e) => setTelefonoPolicia(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Email</label>
+                <input
+                  type="text"
+                  value={emailPolicia}
+                  onChange={(e) => setEmailPolicia(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Password</label>
+                <input
+                  type="text"
+                  value={passwordPolicia}
+                  onChange={(e) => setPasswordPolicia(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Género</label>
+                <select
+                  value={generoPolicia}
+                  onChange={(e) => setGeneroPolicia(e.target.value)}
+                  className="w-full border border-gray-300 p-2 rounded"
                 >
+                  <option value="">Seleccione</option>
+                  <option value="Masculino">Masculino</option>
+                  <option value="Femenino">Femenino</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+              <div className="flex justify-between">
+                <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={() => setIsPoliciaModalOpen(false)}>
                   Cancelar
                 </button>
-                <button
-                  className="bg-green-500 text-white px-4 py-2 rounded"
-                  onClick={handleAddPolicia}
-                >
-                  Crear Policía
+                <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleAddOrEditPolicia}>
+                  {editingPoliciaIndex !== null ? 'Actualizar' : 'Agregar'}
                 </button>
               </div>
             </div>
           </div>
         )}
       </div>
-
     </div>
-
-    
-
   );
 };
+
 
 export default Home3;
