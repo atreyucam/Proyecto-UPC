@@ -141,32 +141,60 @@ const Home4 = () => {
   );
 
   // Define chart options and series data
-  const combinedOptions = {
+  const [barOptions, setBarOptions] = useState({
     chart: {
-      id: "line-chart",
-      toolbar: {
-        show: true,
+      type: "bar",
+      height: 350,
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "55%",
+        endingShape: "rounded",
       },
     },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ["transparent"],
+    },
     xaxis: {
-      categories: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"],
+      categories: ["Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct"],
     },
     yaxis: {
       title: {
-        text: "Número de Solicitudes",
+        text: "Solicitudes",
       },
     },
-    title: {
-      text: "Solicitudes Pendientes",
+    fill: {
+      opacity: 1,
     },
-  };
+    tooltip: {
+      y: {
+        formatter: function (val) {
+          return val + " solicitudes";
+        },
+      },
+    },
+  });
 
-  const combinedSeries = [
+  const [barSeries, setBarSeries] = useState([
     {
-      name: "Solicitudes Pendientes",
-      data: [10, 20, 15, 30, 25, 40],
+      name: "Botón Emergencia",
+      data: [44, 55, 57, 56, 61, 58, 63, 60, 66],
     },
-  ];
+    {
+      name: "Denuncia Ciudadana",
+      data: [76, 85, 101, 98, 87, 105, 91, 114, 94],
+    },
+    {
+      name: "Servicios Comunitarios",
+      data: [35, 41, 36, 26, 45, 48, 52, 53, 41],
+    },
+  ]);
 
   const handleRowClick = (solicitud) => {
     navigate(`/solicitudes/${solicitud.id_solicitud}`);
@@ -221,10 +249,10 @@ const Home4 = () => {
         <div className="bg-white rounded-lg p-4 shadow-md">
           <h2 className="text-lg font-bold mb-4">Disponibilidad</h2>
           <ApexCharts
-            options={combinedOptions}
-            series={combinedSeries}
-            type="line"
-            height={350}
+           options={barOptions}
+           series={barSeries}
+           type="bar"
+           height={350}
           />
         </div>
       </div>

@@ -94,38 +94,60 @@ const Home = () => {
   };
 
   // Datos y opciones del gráfico de líneas
-  const lineChartData = [
-    {
-      name: 'Politecnica',
-      data: [30, 40, 35, 50],
-    },
-    {
-      name: 'Ec911',
-      data: [20, 35, 45, 30],
-    },
-    {
-      name: 'Ficoa',
-      data: [45, 50, 30, 40],
-    },
-  ];
-  const lineChartOptions = {
+  const [barOptions, setBarOptions] = useState({
     chart: {
+      type: "bar",
       height: 350,
-      type: 'line',
-      zoom: {
-        enabled: false,
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "55%",
+        endingShape: "rounded",
       },
     },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ["transparent"],
+    },
     xaxis: {
-      categories: ['Enero', 'Febrero', 'Marzo', 'Abril'],
+      categories: ["Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct"],
     },
     yaxis: {
-      categories: ['Politecnica', 'Ec911', 'Ficoa'],
+      title: {
+        text: "Solicitudes",
+      },
     },
-    legend: {
-      position: 'top',
+    fill: {
+      opacity: 1,
     },
-  };
+    tooltip: {
+      y: {
+        formatter: function (val) {
+          return val + " solicitudes";
+        },
+      },
+    },
+  });
+
+  const [barSeries, setBarSeries] = useState([
+    {
+      name: "Botón Emergencia",
+      data: [44, 55, 57, 56, 61, 58, 63, 60, 66],
+    },
+    {
+      name: "Denuncia Ciudadana",
+      data: [76, 85, 101, 98, 87, 105, 91, 114, 94],
+    },
+    {
+      name: "Servicios Comunitarios",
+      data: [35, 41, 36, 26, 45, 48, 52, 53, 41],
+    },
+  ]);
 
   const handleRowClick = (solicitud) => {
     navigate(`/solicitudes/${solicitud.id_solicitud}`);
@@ -200,7 +222,12 @@ const Home = () => {
       <div className="grid grid-cols-4 gap-4">
         <div className="col-span-3 bg-white p-4 rounded-lg shadow-md">
           <h2 className="text-lg font-bold mb-4">Desempeños</h2>
-          <ApexCharts options={lineChartOptions} series={lineChartData} type="line" height={300} />
+         <ApexCharts
+            options={barOptions}
+            series={barSeries}
+            type="bar"
+            height={350}
+          />
         </div>
 
         <div className="col-span-1 bg-white p-1 rounded-lg shadow-md flex flex-col justify-center items-center">
