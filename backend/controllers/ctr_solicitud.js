@@ -1,4 +1,4 @@
-
+const multer = require('multer');
 const solicitudService = require('./services/srv_solicitud');
 
 exports.crearBotonEmergencia = async (req, res) => {
@@ -61,15 +61,6 @@ exports.agregarObservacion = async (req, res) => {
 };
 
 
-exports.crearSolicitud = async (req, res) => {
-    try {
-        const personaData = req.body;
-        const nuevaSolicitud = await solicitudService.crearSolicitud(personaData);
-        res.status(201).json(nuevaSolicitud);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-};
 
 
 exports.getSolicitudesPendientes = async (req, res) => {
@@ -91,3 +82,39 @@ exports.getSolicitudesPendientes = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   };
+
+
+
+// -------------------------------------------------------------------------
+// testing
+const upload = multer({
+  storage: multer.memoryStorage(), // Guardar archivos en memoria antes de procesarlos
+});
+
+
+
+exports.crearSolicitud = [
+  upload.array('evidencias'), // Aceptar múltiples archivos
+  async (req, res) => {
+    try {
+        const personaData = req.body;
+        const evidencias = req.files; // Archivos de evidencia
+
+        const nuevaSolicitud = await solicitudService.crearSolicitud(personaData, evidencias);
+        res.status(201).json(nuevaSolicitud);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+];
+
+
+//   exports.crearSolicitud = async (req, res) => {
+//     try {
+//         const personaData = req.body;
+//         const nuevaSolicitud = await solicitudService.crearSolicitud(personaData);
+//         res.status(201).json(nuevaSolicitud);
+//     } catch (error) {
+//         res.status(400).json({ error: error.message });
+//     }
+// };

@@ -8,42 +8,42 @@ import {
 } from "react-native";
 import { Appbar, IconButton, TextInput, Button } from "react-native-paper";
 import { useNavigate } from "react-router-native";
-import Notificacion from "./components/Notificacion";
+import Notificacion from "../components/Notificacion";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 
 const API_URL = "http://192.168.0.12:3000"; // Asegúrate de que esta URL apunte a tu backend
 
-const MisDenunciasScreen = () => {
+const SolicitudesAsignadasScreen = () => {
   const { authState } = useContext(AuthContext); // Obtener el estado de autenticación
   const navigate = useNavigate();
-  const [denuncias, setDenuncias] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
   const [filtro, setFiltro] = useState("");
 
   useEffect(() => {
-    const obtenerDenuncias = async () => {
+    const obtenerSolicitudesAsignadas = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/personas/ciudadano/${authState.user}`
+          `${API_URL}/personas/policia/${authState.user}`
         );
-        setDenuncias(response.data.solicitudes_creadas);
+        setSolicitudes(response.data.solicitudes_asignadas);
       } catch (error) {
-        console.error("Error al obtener las denuncias:", error);
+        console.error("Error al obtener las solicitudes asignadas:", error);
       }
     };
 
     if (authState.user) {
-      obtenerDenuncias();
+      obtenerSolicitudesAsignadas();
     }
   }, [authState.user]);
 
   const aplicarFiltro = () => {
-    const filteredDenuncias = denuncias.filter(
-      (denuncia) =>
-        denuncia.subtipo.toLowerCase().includes(filtro.toLowerCase()) ||
-        denuncia.tipo_solicitud.toLowerCase().includes(filtro.toLowerCase())
+    const filteredSolicitudes = solicitudes.filter(
+      (solicitud) =>
+        solicitud.subtipo.toLowerCase().includes(filtro.toLowerCase()) ||
+        solicitud.tipo_solicitud.toLowerCase().includes(filtro.toLowerCase())
     );
-    setDenuncias(filteredDenuncias);
+    setSolicitudes(filteredSolicitudes);
   };
 
   return (
@@ -75,21 +75,28 @@ const MisDenunciasScreen = () => {
         </Button>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {denuncias.map((denuncia) => (
-          <TouchableOpacity
-            key={denuncia.id_solicitud}
-            style={styles.denunciaItem}
-            onPress={() => navigate(`/denuncia/${denuncia.id_solicitud}`)}
-          >
-            <Text style={styles.denunciaTitulo}>{denuncia.subtipo}</Text>
-            <Text>{denuncia.tipo_solicitud}</Text>
-            <Text>{denuncia.estado}</Text>
-            <Text style={styles.fechaText}>
-              Fecha de creación:{" "}
-              {new Date(denuncia.fecha_creacion).toLocaleString()}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {solicitudes.length > 0 ? (
+          solicitudes.map((solicitud) => (
+            <TouchableOpacity
+              key={solicitud.id_solicitud}
+              style={styles.solicitudItem}
+              //   onPress={() => navigate(`/denuncia/${solicitud.id_solicitud}`)}
+              onPress={() => navigate(`/denuncia/${solicitud.id_solicitud}`)}
+            >
+              <Text style={styles.solicitudTitulo}>{solicitud.subtipo}</Text>
+              <Text>{solicitud.tipo_solicitud}</Text>
+              <Text>{solicitud.estado}</Text>
+              <Text style={styles.fechaText}>
+                Fecha de creación:{" "}
+                {new Date(solicitud.fecha_creacion).toLocaleString()}
+              </Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.noSolicitudesText}>
+            No hay solicitudes asignadas.
+          </Text>
+        )}
       </ScrollView>
     </View>
   );
@@ -103,13 +110,13 @@ const styles = StyleSheet.create({
     padding: 10,
     flexGrow: 1,
   },
-  denunciaItem: {
+  solicitudItem: {
     marginBottom: 10,
     padding: 10,
     backgroundColor: "#f0f0f0",
     borderRadius: 8,
   },
-  denunciaTitulo: {
+  solicitudTitulo: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 5,
@@ -130,6 +137,12 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 10,
   },
+  noSolicitudesText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
+    color: "#888",
+  },
 });
 
-export default MisDenunciasScreen;
+export default SolicitudesAsignadasScreen;
