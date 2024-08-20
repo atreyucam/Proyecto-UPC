@@ -395,81 +395,16 @@ exports.agregarObservacion = async (observacionData) => {
 
 
 
-// exports.crearSolicitud = async (personaData) => {
-//     const { id_persona, puntoGPS, direccion, id_subtipo } = personaData;
-//     const transaction = await sequelize.transaction();
-
-//     try {
-//         // Obtener el circuito de la persona que crea la solicitud
-//         const persona = await Persona.findByPk(id_persona);
-//         if (!persona) {
-//             throw new Error('Persona no encontrada');
-//         }
-//         const id_circuito = persona.id_circuito;
-
-//         // Obtener el subtipo y verificar que sea válido
-//         const subtipo = await Subtipo.findByPk(id_subtipo);
-//         if (!subtipo) {
-//             throw new Error('Subtipo no encontrado');
-//         }
-
-//         // Determinar el tipo de solicitud y el evento asociado
-//         const id_tipo = subtipo.id_tipo;
-//         let id_evento;
-//         if (id_tipo === 2) {
-//             id_evento = 2; // Denuncia ciudadana
-//         } else if (id_tipo === 3) {
-//             id_evento = 3; // Servicios comunitarios
-//         } else {
-//             throw new Error('Tipo de solicitud no válido');
-//         }
-
-//         // Definir ID para estado
-//         const id_estado = 1; // Pendiente
-
-//         // Crear solicitud
-//         const nuevaSolicitud = await Solicitud.create({
-//             id_estado,
-//             id_subtipo,
-//             fecha_creacion: new Date(),
-//             puntoGPS,
-//             direccion, // Incluir la dirección proporcionada
-//             id_circuito,
-//             creado_por: id_persona
-//         }, { transaction });
-
-//         // Crear la relación entre la solicitud y el evento
-//         await SolicitudEventoPersona.create({
-//             id_solicitud: nuevaSolicitud.id_solicitud,
-//             id_evento,
-//             id_persona
-//         }, { transaction });
-
-//         await transaction.commit();
-//         return nuevaSolicitud;
-
-//     } catch (error) {
-//         await transaction.rollback();
-//         console.error('Error al crear la solicitud:', error);
-//         throw error;
-//     }
-// };
-
-exports.crearSolicitud = async (personaData, evidencias) => {
+exports.crearSolicitud = async (personaData) => {
     const { id_persona, puntoGPS, direccion, id_subtipo } = personaData;
     const transaction = await sequelize.transaction();
 
     try {
-        // Log inicial
-        console.log('Iniciando la creación de la solicitud...');
-
         // Obtener el circuito de la persona que crea la solicitud
         const persona = await Persona.findByPk(id_persona);
         if (!persona) {
             throw new Error('Persona no encontrada');
         }
-        console.log('Persona encontrada:', persona);
-
         const id_circuito = persona.id_circuito;
 
         // Obtener el subtipo y verificar que sea válido
@@ -477,7 +412,6 @@ exports.crearSolicitud = async (personaData, evidencias) => {
         if (!subtipo) {
             throw new Error('Subtipo no encontrado');
         }
-        console.log('Subtipo encontrado:', subtipo);
 
         // Determinar el tipo de solicitud y el evento asociado
         const id_tipo = subtipo.id_tipo;
@@ -489,7 +423,6 @@ exports.crearSolicitud = async (personaData, evidencias) => {
         } else {
             throw new Error('Tipo de solicitud no válido');
         }
-        console.log('Tipo y evento determinados:', { id_tipo, id_evento });
 
         // Definir ID para estado
         const id_estado = 1; // Pendiente
@@ -500,11 +433,10 @@ exports.crearSolicitud = async (personaData, evidencias) => {
             id_subtipo,
             fecha_creacion: new Date(),
             puntoGPS,
-            direccion,
+            direccion, // Incluir la dirección proporcionada
             id_circuito,
             creado_por: id_persona
         }, { transaction });
-        console.log('Solicitud creada:', nuevaSolicitud);
 
         // Crear la relación entre la solicitud y el evento
         await SolicitudEventoPersona.create({
@@ -512,67 +444,8 @@ exports.crearSolicitud = async (personaData, evidencias) => {
             id_evento,
             id_persona
         }, { transaction });
-        console.log('Evento relacionado creado');
-
-        // Log para revisar el contenido de evidencias
-        console.log('Evidencias recibidas:', evidencias);
-
-        // Obtener token de acceso de OneDrive
-        const accessToken = await onedriveClient.getAccessToken();
-        console.log('Token de acceso obtenido');
-
-        // Manejar las evidencias si existen
-        if (evidencias && evidencias.length > 0) {
-            console.log('Evidencias encontradas, comenzando el proceso de subida...');
-
-            const onedriveFolderPath = `/drive/root:/solicitudes/sol-${nuevaSolicitud.id_solicitud}`;
-
-            // Crear carpeta en OneDrive
-            await axios.put(
-                `https://graph.microsoft.com/v1.0${onedriveFolderPath}:/content`,
-                null,
-                {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                        'Content-Type': 'application/json',
-                    },
-                }
-            );
-            console.log('Carpeta en OneDrive creada');
-
-            for (const evidencia of evidencias) {
-                const evidenciaNombre = uuidv4() + path.extname(evidencia.originalname);
-                const onedriveFilePath = `${onedriveFolderPath}/${evidenciaNombre}`;
-
-                // Subir archivo a OneDrive
-                await axios.put(
-                    `https://graph.microsoft.com/v1.0${onedriveFilePath}:/content`,
-                    evidencia.buffer,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${accessToken}`,
-                            'Content-Type': evidencia.mimetype,
-                        },
-                    }
-                );
-                console.log('Archivo subido a OneDrive:', onedriveFilePath);
-
-                // Guardar la evidencia en la base de datos con el link de OneDrive
-                const onedriveLink = `https://graph.microsoft.com/v1.0${onedriveFilePath}`;
-
-                await SolicitudEvidencia.create({
-                    id_solicitud: nuevaSolicitud.id_solicitud,
-                    id_evidencia: parseInt(evidencia.fieldname), // Asegúrate de que se está pasando el `id_evidencia` aquí
-                    evidencia: onedriveLink,
-                }, { transaction });
-                console.log('Evidencia guardada en la base de datos:', onedriveLink);
-            }
-        } else {
-            console.log('No se encontraron evidencias para subir.');
-        }
 
         await transaction.commit();
-        console.log('Transacción completada y commit realizada');
         return nuevaSolicitud;
 
     } catch (error) {
@@ -581,6 +454,133 @@ exports.crearSolicitud = async (personaData, evidencias) => {
         throw error;
     }
 };
+
+// exports.crearSolicitud = async (personaData, evidencias) => {
+//     const { id_persona, puntoGPS, direccion, id_subtipo } = personaData;
+//     const transaction = await sequelize.transaction();
+
+//     try {
+//         // Log inicial
+//         console.log('Iniciando la creación de la solicitud...');
+
+//         // Obtener el circuito de la persona que crea la solicitud
+//         const persona = await Persona.findByPk(id_persona);
+//         if (!persona) {
+//             throw new Error('Persona no encontrada');
+//         }
+//         console.log('Persona encontrada:', persona);
+
+//         const id_circuito = persona.id_circuito;
+
+//         // Obtener el subtipo y verificar que sea válido
+//         const subtipo = await Subtipo.findByPk(id_subtipo);
+//         if (!subtipo) {
+//             throw new Error('Subtipo no encontrado');
+//         }
+//         console.log('Subtipo encontrado:', subtipo);
+
+//         // Determinar el tipo de solicitud y el evento asociado
+//         const id_tipo = subtipo.id_tipo;
+//         let id_evento;
+//         if (id_tipo === 2) {
+//             id_evento = 2; // Denuncia ciudadana
+//         } else if (id_tipo === 3) {
+//             id_evento = 3; // Servicios comunitarios
+//         } else {
+//             throw new Error('Tipo de solicitud no válido');
+//         }
+//         console.log('Tipo y evento determinados:', { id_tipo, id_evento });
+
+//         // Definir ID para estado
+//         const id_estado = 1; // Pendiente
+
+//         // Crear solicitud
+//         const nuevaSolicitud = await Solicitud.create({
+//             id_estado,
+//             id_subtipo,
+//             fecha_creacion: new Date(),
+//             puntoGPS,
+//             direccion,
+//             id_circuito,
+//             creado_por: id_persona
+//         }, { transaction });
+//         console.log('Solicitud creada:', nuevaSolicitud);
+
+//         // Crear la relación entre la solicitud y el evento
+//         await SolicitudEventoPersona.create({
+//             id_solicitud: nuevaSolicitud.id_solicitud,
+//             id_evento,
+//             id_persona
+//         }, { transaction });
+//         console.log('Evento relacionado creado');
+
+//         // Log para revisar el contenido de evidencias
+//         console.log('Evidencias recibidas:', evidencias);
+
+//         // Obtener token de acceso de OneDrive
+//         const accessToken = await onedriveClient.getAccessToken();
+//         console.log('Token de acceso obtenido');
+
+//         // Manejar las evidencias si existen
+//         if (evidencias && evidencias.length > 0) {
+//             console.log('Evidencias encontradas, comenzando el proceso de subida...');
+
+//             const onedriveFolderPath = `/drive/root:/solicitudes/sol-${nuevaSolicitud.id_solicitud}`;
+
+//             // Crear carpeta en OneDrive
+//             await axios.put(
+//                 `https://graph.microsoft.com/v1.0${onedriveFolderPath}:/content`,
+//                 null,
+//                 {
+//                     headers: {
+//                         Authorization: `Bearer ${accessToken}`,
+//                         'Content-Type': 'application/json',
+//                     },
+//                 }
+//             );
+//             console.log('Carpeta en OneDrive creada');
+
+//             for (const evidencia of evidencias) {
+//                 const evidenciaNombre = uuidv4() + path.extname(evidencia.originalname);
+//                 const onedriveFilePath = `${onedriveFolderPath}/${evidenciaNombre}`;
+
+//                 // Subir archivo a OneDrive
+//                 await axios.put(
+//                     `https://graph.microsoft.com/v1.0${onedriveFilePath}:/content`,
+//                     evidencia.buffer,
+//                     {
+//                         headers: {
+//                             Authorization: `Bearer ${accessToken}`,
+//                             'Content-Type': evidencia.mimetype,
+//                         },
+//                     }
+//                 );
+//                 console.log('Archivo subido a OneDrive:', onedriveFilePath);
+
+//                 // Guardar la evidencia en la base de datos con el link de OneDrive
+//                 const onedriveLink = `https://graph.microsoft.com/v1.0${onedriveFilePath}`;
+
+//                 await SolicitudEvidencia.create({
+//                     id_solicitud: nuevaSolicitud.id_solicitud,
+//                     id_evidencia: parseInt(evidencia.fieldname), // Asegúrate de que se está pasando el `id_evidencia` aquí
+//                     evidencia: onedriveLink,
+//                 }, { transaction });
+//                 console.log('Evidencia guardada en la base de datos:', onedriveLink);
+//             }
+//         } else {
+//             console.log('No se encontraron evidencias para subir.');
+//         }
+
+//         await transaction.commit();
+//         console.log('Transacción completada y commit realizada');
+//         return nuevaSolicitud;
+
+//     } catch (error) {
+//         await transaction.rollback();
+//         console.error('Error al crear la solicitud:', error);
+//         throw error;
+//     }
+// };
 
 
 
