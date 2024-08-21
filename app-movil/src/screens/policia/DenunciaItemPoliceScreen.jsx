@@ -68,7 +68,9 @@ const DenunciaItemPoliceScreen = () => {
       });
       Alert.alert("Éxito", "La solicitud se ha cerrado correctamente.");
       setModalVisible(false);
-      navigate("/"); // Regresar a la página principal o a la lista de solicitudes
+      // Opcional: recargar la denuncia para mostrar la nueva observación
+      const response = await axios.get(`${API_URL}/solicitud/${denunciaId}`);
+      setDenuncia(response.data);
     } catch (error) {
       console.error("Error al cerrar la solicitud:", error);
       Alert.alert("Error", "No se pudo cerrar la solicitud.");
@@ -160,7 +162,7 @@ const DenunciaItemPoliceScreen = () => {
 
         <View style={styles.seccionContainer}>
           <Text style={styles.seccionTitulo}>Acciones</Text>
-          {denuncia.estado === "Resuelto" ? (
+          {denuncia.estado === "Resuelto" || denuncia.estado === "Falso" ? (
             <Button
               mode="contained"
               style={[styles.actionButton]}

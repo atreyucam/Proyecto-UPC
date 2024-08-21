@@ -4,6 +4,7 @@ import ApexCharts from "react-apexcharts";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
 
 const Home4 = () => {
   const { user } = useSelector((state) => state.auth); // Obtén el usuario del estado de Redux
@@ -250,7 +251,9 @@ const Home4 = () => {
                 solicitudesPendientes.map((solicitud) => (
                   <tr key={solicitud.id_solicitud} className="text-center">
                     <td className="border-b p-2">{solicitud.id_solicitud}</td>
-                    <td className="border-b p-2">{solicitud.estado}</td>
+                    <td className="border-b p-2">
+                      <EstadoBadge estado={solicitud.estado} tipo="estado" />
+                    </td>
                     <td className="border-b p-2">{solicitud.tipo}</td>
                     <td className="border-b p-2">{solicitud.subtipo}</td>
                     <td className="border-b p-2">{solicitud.creado_por}</td>
@@ -336,7 +339,10 @@ const Home4 = () => {
                           {police.Circuito.barrio}
                         </td>
                         <td className="border-b p-2">
-                          {police.disponibilidad}
+                          <EstadoBadge
+                            estado={police.disponibilidad}
+                            tipo="disponibilidad"
+                          />
                         </td>
                         <td className="border-b p-2">
                           <button

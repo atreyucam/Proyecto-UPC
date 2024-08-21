@@ -31,14 +31,16 @@ exports.login = async (req, res) => {
     const roles = persona.Rols.map(rol => rol.id_rol); // Obtener todos los roles del usuario
 
     // Generar token JWT
+    const expiresIn = 3600; // 1 hora en segundos
     const token = jwt.sign(
       { id_persona: persona.id_persona, roles }, 
       process.env.JWT_SECRET, 
-      { expiresIn: '1h' }
+      { expiresIn }
     );
-
+    const expirationTime = Date.now() + expiresIn * 1000; // Tiempo de expiración en milisegundos
     res.json({
       token,
+      expiresIn: expirationTime, // Devuelve el tiempo exacto en que expira el token
       user: {
         id_persona: persona.id_persona,
         email: persona.email,

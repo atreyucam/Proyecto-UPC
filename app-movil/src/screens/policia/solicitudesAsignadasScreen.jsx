@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import { Appbar, IconButton, TextInput, Button } from "react-native-paper";
 import { useNavigate } from "react-router-native";
-import Notificacion from "../components/Notificacion";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
 
@@ -26,7 +25,11 @@ const SolicitudesAsignadasScreen = () => {
         const response = await axios.get(
           `${API_URL}/personas/policia/${authState.user}`
         );
-        setSolicitudes(response.data.solicitudes_asignadas);
+        const solicitudesEnProgreso =
+          response.data.solicitudes_asignadas.filter(
+            (solicitud) => solicitud.estado === "En progreso"
+          );
+        setSolicitudes(solicitudesEnProgreso);
       } catch (error) {
         console.error("Error al obtener las solicitudes asignadas:", error);
       }
@@ -80,7 +83,6 @@ const SolicitudesAsignadasScreen = () => {
             <TouchableOpacity
               key={solicitud.id_solicitud}
               style={styles.solicitudItem}
-              //   onPress={() => navigate(`/denuncia/${solicitud.id_solicitud}`)}
               onPress={() => navigate(`/denuncia/${solicitud.id_solicitud}`)}
             >
               <Text style={styles.solicitudTitulo}>{solicitud.subtipo}</Text>

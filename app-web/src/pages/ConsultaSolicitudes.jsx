@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { FiCheckCircle, FiTrash, FiEye } from 'react-icons/fi';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { FiCheckCircle, FiTrash, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
 
 const ConsultaSolicitudes = () => {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -29,9 +30,13 @@ const ConsultaSolicitudes = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:3000/solicitud/${solicitudToDelete.id_solicitud}`);
+      await axios.delete(
+        `http://localhost:3000/solicitud/${solicitudToDelete.id_solicitud}`
+      );
       setSolicitudes((prevSolicitudes) =>
-        prevSolicitudes.filter((s) => s.id_solicitud !== solicitudToDelete.id_solicitud)
+        prevSolicitudes.filter(
+          (s) => s.id_solicitud !== solicitudToDelete.id_solicitud
+        )
       );
       setShowDeleteModal(false);
       setSolicitudToDelete(null);
@@ -86,21 +91,31 @@ const ConsultaSolicitudes = () => {
               <tbody>
                 {solicitudes.map((solicitud) => (
                   <tr key={solicitud.id_solicitud} className="hover:bg-gray-50">
-                    <td className="border-b p-2 text-center">{solicitud.id_solicitud}</td>
-                    <td className="border-b p-2 text-center">{solicitud.estado}</td>
-                    <td className="border-b p-2 text-center">{solicitud.tipo}</td>
-                    <td className="border-b p-2 text-center">{solicitud.subtipo}</td>
-                    <td className="border-b p-2 text-center">{new Date(solicitud.fecha_creacion).toLocaleString()}</td>
-                    <td className="border-b p-2 text-center">{solicitud.policia_asignado}</td>
-                    <td className="border-b p-2 text-center">{solicitud.circuito.ciudad}</td>
-                    <td className="border-b p-2 text-center">{solicitud.circuito.barrio}</td>
+                    <td className="border-b p-2 text-center">
+                      {solicitud.id_solicitud}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      <EstadoBadge estado={solicitud.estado} tipo="estado" />
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {solicitud.tipo}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {solicitud.subtipo}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {new Date(solicitud.fecha_creacion).toLocaleString()}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {solicitud.policia_asignado}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {solicitud.circuito.ciudad}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {solicitud.circuito.barrio}
+                    </td>
                     <td className="border-b p-2 flex gap-2 justify-center">
-                      <button
-                        onClick={() => handleDeleteClick(solicitud)}
-                        className="bg-red-500 text-white px-2 py-1 rounded"
-                      >
-                        <FiTrash />
-                      </button>
                       <button
                         onClick={() => handleRowClick(solicitud)}
                         className="bg-green-500 text-white px-2 py-1 rounded"
@@ -117,31 +132,6 @@ const ConsultaSolicitudes = () => {
           <p className="text-center mt-4">No existen solicitudes registradas</p>
         )}
       </div>
-
-      {showDeleteModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-lg font-bold mb-4">Confirmar eliminación</h2>
-            <p>
-              ¿Está seguro de que desea eliminar la solicitud con ID {solicitudToDelete?.id_solicitud}?
-            </p>
-            <div className="flex gap-4 mt-4">
-              <button
-                onClick={confirmDelete}
-                className="bg-red-500 text-white px-4 py-2 rounded"
-              >
-                Confirmar
-              </button>
-              <button
-                onClick={cancelDelete}
-                className="bg-gray-500 text-white px-4 py-2 rounded"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -12,8 +12,8 @@ import {
 } from "react-icons/fi";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-// import { useSelector } from "react-redux";
-// import * as jwtDecode from "jwt-decode";
+
+import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
 
 const Button = ({ text, subText = "", number = null, onClick, icon }) => {
   return (
@@ -281,7 +281,9 @@ const Home = () => {
               {topSolicitudes.map((solicitud) => (
                 <tr key={solicitud.id_solicitud}>
                   <td className="py-2 px-4">{solicitud.id_solicitud}</td>
-                  <td className="py-2 px-4">{solicitud.estado}</td>
+                  <td className="py-2 px-4">
+                    <EstadoBadge estado={solicitud.estado} tipo="estado" />
+                  </td>
                   <td className="py-2 px-4">{solicitud.subtipo}</td>
                   <td className="py-2 px-4">
                     {new Date(solicitud.fecha_creacion).toLocaleString()}
