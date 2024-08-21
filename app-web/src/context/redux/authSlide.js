@@ -131,6 +131,7 @@ const initialState = {
   expirationTime: null,  // Añadido: para almacenar el tiempo de expiración
 };
 
+console.log("s");
 const authSlice = createSlice({
   name: "auth",
   initialState,
