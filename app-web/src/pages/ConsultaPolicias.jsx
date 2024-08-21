@@ -270,6 +270,7 @@ const ConsultaPolicias = () => {
             <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
               <thead>
                 <tr>
+                  <th className="border-b p-2 text-center">id</th>
                   <th className="border-b p-2 text-center">Cédula</th>
                   <th className="border-b p-2 text-center">Nombres</th>
                   <th className="border-b p-2 text-center">Apellidos</th>
@@ -282,6 +283,9 @@ const ConsultaPolicias = () => {
               <tbody>
                 {filteredPolicias.map((policia) => (
                   <tr key={policia.id_persona} className="hover:bg-gray-50">
+                    <td className="border-b p-2 text-center">
+                      {policia.id_persona}
+                    </td>
                     <td className="border-b p-2 text-center">
                       {policia.cedula}
                     </td>
