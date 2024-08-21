@@ -300,8 +300,10 @@ exports.getSolicitudById = async (id_solicitud) => {
     }
 };
 
+
+
 exports.cerrarSolicitud = async (cerrarData) => {
-    const { id_solicitud, observacion } = cerrarData;
+    const { id_solicitud, observacion, estado_cierre } = cerrarData;
     const transaction = await sequelize.transaction();
     try {
         // Verificar que la solicitud existe
@@ -318,10 +320,19 @@ exports.cerrarSolicitud = async (cerrarData) => {
             throw new Error('El policía asignado no existe.');
         }
 
-        // Actualizar el estado de la solicitud a "Resuelto"
-        const estadoResuelto = 3; // ID del estado "Resuelto"
+        // Verificar que el estado de cierre es válido ("Resuelto" o "Falso")
+        const estadosValidos = {
+            "Resuelto": 3,
+            "Falso": 4
+        };
+
+        if (!estadosValidos[estado_cierre]) {
+            throw new Error('El estado de cierre especificado no es válido.');
+        }
+
+        // Actualizar el estado de la solicitud al estado seleccionado
         await Solicitud.update(
-            { id_estado: estadoResuelto },
+            { id_estado: estadosValidos[estado_cierre] },
             { where: { id_solicitud }, transaction }
         );
 
@@ -341,10 +352,10 @@ exports.cerrarSolicitud = async (cerrarData) => {
             { transaction }
         );
 
-         // Crear la relación entre la solicitud y el evento
-         await SolicitudEventoPersona.create({
+        // Crear la relación entre la solicitud y el evento
+        await SolicitudEventoPersona.create({
             id_solicitud: id_solicitud,
-            id_evento: 8,
+            id_evento: 14, // Asumiendo que el evento ID 8 es el cierre de solicitud
             id_persona: id_persona_policia
         }, { transaction });
 
@@ -356,6 +367,8 @@ exports.cerrarSolicitud = async (cerrarData) => {
         throw error;
     }
 };
+
+
 
 
 
