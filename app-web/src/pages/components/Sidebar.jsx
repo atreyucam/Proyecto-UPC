@@ -32,7 +32,7 @@ const Sidebar = () => {
         </div>
         <div className="m-4">
           <ul className="mb-4 flex flex-col gap-1">
-            <li>
+            {/* <li>
               <NavLink to="/login" exact>
                 {({ isActive }) => (
                   <Button
