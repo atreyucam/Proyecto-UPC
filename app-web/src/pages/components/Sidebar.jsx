@@ -32,8 +32,8 @@ const Sidebar = () => {
         </div>
         <div className="m-4">
           <ul className="mb-4 flex flex-col gap-1">
-            {/* <li>
-              <NavLink to="/login">
+            <li>
+              <NavLink to="/login" exact>
                 {({ isActive }) => (
                   <Button
                     variant={isActive ? "gradient" : "text"}
@@ -44,10 +44,7 @@ const Sidebar = () => {
                     }`}
                     fullWidth
                   >
-                    <Typography
-                      color="inherit"
-                      className="font-medium capitalize"
-                    >
+                    <Typography color="inherit" className="font-medium capitalize">
                       Login
                     </Typography>
                   </Button>
@@ -55,7 +52,7 @@ const Sidebar = () => {
               </NavLink>
             </li> */}
             <li>
-              <NavLink to="/home">
+              <NavLink to="/home" exact>
                 {({ isActive }) => (
                   <Button
                     className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${
@@ -78,7 +75,7 @@ const Sidebar = () => {
             </li>
 
             <li>
-              <NavLink to="/3">
+              <NavLink to="/3" exact>
                 {({ isActive }) => (
                   <Button
                     className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${
@@ -101,7 +98,7 @@ const Sidebar = () => {
             </li>
 
             <li>
-              <NavLink to="/AsignarPolicias">
+              <NavLink to="/AsignarPolicias" exact>
                 {({ isActive }) => (
                   <Button
                     className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${
@@ -112,10 +109,7 @@ const Sidebar = () => {
                     variant={isActive ? "gradient" : "text"}
                     fullWidth
                   >
-                    <Typography
-                      color="inherit"
-                      className="font-medium capitalize"
-                    >
+                    <Typography color="inherit" className="font-medium capitalize">
                       Asignar Policias
                     </Typography>
                   </Button>
@@ -124,7 +118,7 @@ const Sidebar = () => {
             </li>
 
             <li>
-              <NavLink to="/ConsultaPolicias">
+              <NavLink to="/ConsultaPolicias" exact>
                 {({ isActive }) => (
                   <Button
                     className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${
@@ -135,10 +129,7 @@ const Sidebar = () => {
                     variant={isActive ? "gradient" : "text"}
                     fullWidth
                   >
-                    <Typography
-                      color="inherit"
-                      className="font-medium capitalize"
-                    >
+                    <Typography color="inherit" className="font-medium capitalize">
                       Consulta Policias
                     </Typography>
                   </Button>
@@ -147,7 +138,7 @@ const Sidebar = () => {
             </li>
 
             <li>
-              <NavLink to="/ConsultaCiudadanos">
+              <NavLink to="/ConsultaCiudadanos" exact>
                 {({ isActive }) => (
                   <Button
                     className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${
@@ -158,10 +149,7 @@ const Sidebar = () => {
                     variant={isActive ? "gradient" : "text"}
                     fullWidth
                   >
-                    <Typography
-                      color="inherit"
-                      className="font-medium capitalize"
-                    >
+                    <Typography color="inherit" className="font-medium capitalize">
                       Consulta ciudadanos
                     </Typography>
                   </Button>
@@ -170,7 +158,7 @@ const Sidebar = () => {
             </li>
 
             <li>
-              <NavLink to="/ConsultaSolicitudes">
+              <NavLink to="/ConsultaSolicitudes" exact>
                 {({ isActive }) => (
                   <Button
                     className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${
@@ -181,10 +169,7 @@ const Sidebar = () => {
                     variant={isActive ? "gradient" : "text"}
                     fullWidth
                   >
-                    <Typography
-                      color="inherit"
-                      className="font-medium capitalize"
-                    >
+                    <Typography color="inherit" className="font-medium capitalize">
                       Consulta Solicitudes
                     </Typography>
                   </Button>

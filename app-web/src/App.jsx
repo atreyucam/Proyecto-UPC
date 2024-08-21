@@ -12,28 +12,26 @@ import ProtectedRoute from "./pages/components/ProtectedRoute";
 import DetalleSolicitud from "./pages/components/DetalleSolicitud";
 import Unauthorized from "./pages/Unauthorized";
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { loadUser } from "./context/redux/authSlide";
 
 function App() {
   const dispatch = useDispatch();
-  const { token } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (token) {
-      dispatch(loadUser());
-    }
-  }, [dispatch, token]);
+    dispatch(loadUser());
+  }, [dispatch]);
 
   return (
     <BrowserRouter>
       <Routes>
-        {/* Para login y registro */}
+        {/* Redirige automáticamente a /login si la ruta es / */}
         <Route path="/" element={<Navigate to="/login" />} />
+
         <Route path="/login" element={<Login />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
-        {/* Rutas dentro de la app */}
+        {/* Rutas protegidas */}
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<Home />} />
           <Route path="/3" element={<Home3 />} />

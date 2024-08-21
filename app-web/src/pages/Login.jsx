@@ -16,6 +16,7 @@ const Home2 = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    console.log("Formulario de inicio de sesión enviado");
 
     try {
       await dispatch(login(inputEmail, inputPassword));
@@ -29,6 +30,7 @@ const Home2 = () => {
   // UseEffect para manejar la navegación después del login
   useEffect(() => {
     if (!loading && isAuthenticated) {
+      console.log("Redirigiendo al home después de un login exitoso");
       navigate("/home");
     }
   }, [isAuthenticated, loading, navigate]);
