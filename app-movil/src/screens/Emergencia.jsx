@@ -14,7 +14,7 @@ import Notificacion from "./components/Notificacion";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext"; // Importa tu contexto de autenticación
 
-const API_URL = "http://192.168.0.11:3000";
+const API_URL = "http://192.168.0.12:3000";
 
 export default function EmergenciaScreen() {
   const { authState } = useContext(AuthContext); // Obtén la información del usuario desde el contexto

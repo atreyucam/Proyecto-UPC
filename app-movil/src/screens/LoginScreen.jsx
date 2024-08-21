@@ -54,6 +54,8 @@ const LoginScreen = () => {
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
+                autoCapitalize="none" // Evitar capitalización automática
+                keyboardType="email-address" // Especificar el teclado para email
                 style={[styles.input, errors.email && styles.inputError]}
               />
             )}
@@ -74,6 +76,7 @@ const LoginScreen = () => {
                 onChangeText={onChange}
                 value={value}
                 secureTextEntry
+                autoCapitalize="none" // Evitar capitalización automática
                 style={[styles.input, errors.password && styles.inputError]}
               />
             )}
@@ -150,10 +153,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     marginTop: 10,
     width: "100%",
-  },
-  errorText: {
-    color: "red",
-    marginBottom: 16,
   },
 });
 

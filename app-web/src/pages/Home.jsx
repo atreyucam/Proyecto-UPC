@@ -1,15 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import ApexCharts from 'react-apexcharts';
-import PropTypes from 'prop-types';
-import { FiAlertCircle, FiCheckCircle, FiUserCheck, FiShield, FiSmile, FiFlag,FiEye } from 'react-icons/fi';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import ApexCharts from "react-apexcharts";
+import PropTypes from "prop-types";
+import {
+  FiAlertCircle,
+  FiCheckCircle,
+  FiUserCheck,
+  FiShield,
+  FiSmile,
+  FiFlag,
+  FiEye,
+} from "react-icons/fi";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import * as jwtDecode from 'jwt-decode';
 
+import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
 
-
-const Button = ({ text, subText, number, onClick, icon }) => {
+const Button = ({ text, subText = "", number = null, onClick, icon }) => {
   return (
     <button
       className="w-full h-full bg-white text-gray-800 p-4 rounded-lg shadow-md flex flex-col items-start justify-between hover:bg-black hover:text-white transition duration-300"
@@ -19,7 +25,9 @@ const Button = ({ text, subText, number, onClick, icon }) => {
         <div>
           <span className="block text-lg font-bold">{text}</span>
           <span className="block text-sm">{subText}</span>
-          {number !== null && <span className="block text-lg font-bold">{number}</span>}
+          {number !== null && (
+            <span className="block text-lg font-bold">{number}</span>
+          )}
         </div>
         {icon}
       </div>
@@ -35,33 +43,32 @@ Button.propTypes = {
   icon: PropTypes.element.isRequired,
 };
 
-Button.defaultProps = {
-  subText: '',
-  number: null,
-};
-
 const Home = () => {
   const [stats, setStats] = useState({});
   const [topSolicitudes, setTopSolicitudes] = useState([]);
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
+  // const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/estadisticas/contadorSolicitudesTotales');
+        const response = await axios.get(
+          "http://localhost:3000/estadisticas/contadorSolicitudesTotales"
+        );
         setStats(response.data);
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        console.error("Error fetching stats:", error);
       }
     };
 
     const fetchTopSolicitudes = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/solicitud/top10solicitudes');
+        const response = await axios.get(
+          "http://localhost:3000/solicitud/top10solicitudes"
+        );
         setTopSolicitudes(response.data);
       } catch (error) {
-        console.error('Error fetching top solicitudes:', error);
+        console.error("Error fetching top solicitudes:", error);
       }
     };
 
@@ -69,28 +76,22 @@ const Home = () => {
     fetchTopSolicitudes();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-
-      console.log(`Bienvenido, ${user.email}.`);
-    }
-  }, [user]);
-
-
-
   // Datos y opciones del gráfico de pastel
-  const pieChartData = [stats.byStatus?.counts?.['Solicitudes falsas'] || 0, stats.byStatus?.counts?.['Solicitudes en Progreso'] || 0];
+  const pieChartData = [
+    stats.byStatus?.counts?.["Solicitudes falsas"] || 0,
+    stats.byStatus?.counts?.["Solicitudes en Progreso"] || 0,
+  ];
   const pieChartOptions = {
     chart: {
-      type: 'pie',
-      width: '100%',
-      height: '100%',
+      type: "pie",
+      width: "100%",
+      height: "100%",
       toolbar: {
         show: true,
       },
     },
-    labels: ['Solicitudes falsas', 'Solicitudes en Progreso'],
-    colors: ['#ff073a', '#007bff'],
+    labels: ["Solicitudes falsas", "Solicitudes en Progreso"],
+    colors: ["#ff073a", "#007bff"],
   };
 
   // Datos y opciones del gráfico de líneas
@@ -153,7 +154,6 @@ const Home = () => {
     navigate(`/solicitudes/${solicitud.id_solicitud}`);
   };
 
-
   return (
     <div className="container mx-auto px-3 py-8">
       {/* Botones con iconos */}
@@ -161,41 +161,55 @@ const Home = () => {
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
             text="Total Solicitudes"
-            subText={stats.total?.count || 0}
+            subText={String(stats.total?.count || 0)}
             icon={<FiUserCheck size={24} />}
-            onClick={() => console.log('Botón Total Solicitudes presionado')}
+            onClick={() => console.log("Botón Total Solicitudes presionado")}
           />
         </div>
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
             text="Solicitudes Resueltas"
-            number={stats.byStatus?.counts?.['Solicitudes resueltas'] || 0}
+            subText={String(
+              stats.byStatus?.counts?.["Solicitudes resueltas"] || 0
+            )}
             icon={<FiCheckCircle size={24} />}
-            onClick={() => console.log('Botón Solicitudes Resueltas presionado')}
+            onClick={() =>
+              console.log("Botón Solicitudes Resueltas presionado")
+            }
           />
         </div>
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
             text="Solicitudes Pendientes"
-            number={stats.byStatus?.counts?.['Solicitudes pendientes'] || 0}
+            subText={String(
+              stats.byStatus?.counts?.["Solicitudes pendientes"] || 0
+            )}
             icon={<FiSmile size={24} />}
-            onClick={() => console.log('Botón Solicitudes Pendientes presionado')}
+            onClick={() =>
+              console.log("Botón Solicitudes Pendientes presionado")
+            }
           />
         </div>
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
             text="Solicitudes en Progreso"
-            number={stats.byStatus?.counts?.['Solicitudes en Progreso'] || 0}
+            subText={String(
+              stats.byStatus?.counts?.["Solicitudes en Progreso"] || 0
+            )}
             icon={<FiShield size={24} />}
-            onClick={() => console.log('Botón Solicitudes en Progreso presionado')}
+            onClick={() =>
+              console.log("Botón Solicitudes en Progreso presionado")
+            }
           />
         </div>
         <div className="p-5 bg-gray-100 rounded-lg">
           <Button
             text="Solicitudes Falsas"
-            number={stats.byStatus?.counts?.['Solicitudes falsas'] || 0}
+            subText={String(
+              stats.byStatus?.counts?.["Solicitudes falsas"] || 0
+            )}
             icon={<FiFlag size={24} />}
-            onClick={() => console.log('Botón Solicitudes Falsas presionado')}
+            onClick={() => console.log("Botón Solicitudes Falsas presionado")}
           />
         </div>
       </div>
@@ -259,7 +273,11 @@ const Home = () => {
           </div>
           <h2 className="text-lg font-bold mb-14">Distribución de Casos</h2>
           <div className="w-full">
-            <ApexCharts options={pieChartOptions} series={pieChartData} type="pie" />
+            <ApexCharts
+              options={pieChartOptions}
+              series={pieChartData}
+              type="pie"
+            />
           </div>
         </div>
       </div>
@@ -285,20 +303,30 @@ const Home = () => {
               {topSolicitudes.map((solicitud) => (
                 <tr key={solicitud.id_solicitud}>
                   <td className="py-2 px-4">{solicitud.id_solicitud}</td>
-                  <td className="py-2 px-4">{solicitud.estado}</td>
+                  <td className="py-2 px-4">
+                    <EstadoBadge estado={solicitud.estado} tipo="estado" />
+                  </td>
                   <td className="py-2 px-4">{solicitud.subtipo}</td>
-                  <td className="py-2 px-4">{new Date(solicitud.fecha_creacion).toLocaleString()}</td>
-                  <td className="border-b p-2 text-center">{solicitud.policia_asignado}</td>
-                  <td className="border-b p-2 text-center">{solicitud.circuito.ciudad}</td>
-                  <td className="border-b p-2 text-center">{solicitud.circuito.barrio}</td>
+                  <td className="py-2 px-4">
+                    {new Date(solicitud.fecha_creacion).toLocaleString()}
+                  </td>
+                  <td className="border-b p-2 text-center">
+                    {solicitud.policia_asignado}
+                  </td>
+                  <td className="border-b p-2 text-center">
+                    {solicitud.circuito.ciudad}
+                  </td>
+                  <td className="border-b p-2 text-center">
+                    {solicitud.circuito.barrio}
+                  </td>
                   <td className="border-b p-2 flex gap-2 justify-center">
-                      <button
-                        onClick={() => handleRowClick(solicitud)}
-                        className="bg-green-500 text-white px-2 py-1 rounded"
-                      >
-                        <FiEye />
-                      </button>
-                    </td>
+                    <button
+                      onClick={() => handleRowClick(solicitud)}
+                      className="bg-green-500 text-white px-2 py-1 rounded"
+                    >
+                      <FiEye />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

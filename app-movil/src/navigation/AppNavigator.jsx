@@ -1,5 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { Route, Routes, useNavigate, useLocation } from "react-router-native";
+import { Alert, BackHandler } from "react-native";
 import LoginScreen from "../screens/LoginScreen";
 import RegistroScreen from "../screens/RegistroScreen";
 import RecuperarCuenta from "../screens/RecuperarCuenta";
@@ -13,14 +14,16 @@ import DenunciaItemScreen from "../screens/DenunciaItemScreen";
 import HomeScreenPolicia from "../screens/policia/PoliceHomeScreen";
 import PoliceNavigation from "./PoliceNavigation"; // Importa el nuevo PoliceNavigation
 import { AuthContext } from "../context/AuthContext";
+import SolicitudesAsignadasScreen from "../screens/policia/solicitudesAsignadasScreen";
+import DenunciaItemPoliceScreen from "../screens/policia/DenunciaItemPoliceScreen";
 
 const AppNavigator = () => {
   const { authState } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
+  const unauthenticatedPaths = ["/login", "/registro", "/recuperar-cuenta"];
   useEffect(() => {
-    const unauthenticatedPaths = ["/login", "/registro", "/recuperar-cuenta"];
     if (
       !authState.isAuthenticated &&
       !unauthenticatedPaths.includes(location.pathname)
@@ -28,6 +31,41 @@ const AppNavigator = () => {
       navigate("/login");
     }
   }, [authState.isAuthenticated, navigate, location.pathname]);
+
+  useEffect(() => {
+    const backAction = () => {
+      if (location.pathname === "/") {
+        // Si estamos en la pantalla principal, mostrar un diálogo para confirmar salida
+        Alert.alert(
+          "Salir",
+          "¿Estás seguro que deseas salir de la aplicación?",
+          [
+            {
+              text: "Cancelar",
+              onPress: () => null,
+              style: "cancel",
+            },
+            { text: "Sí", onPress: () => BackHandler.exitApp() },
+          ],
+          { cancelable: false }
+        );
+        return true;
+      } else if (location.pathname !== "/" && location.pathname !== "/login") {
+        // Si estamos en otra pantalla, navegar hacia atrás
+        navigate(-1);
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [location.pathname, navigate]);
 
   return (
     <Routes>
@@ -52,6 +90,14 @@ const AppNavigator = () => {
             <>
               <Route path="/" element={<PoliceNavigation />} />
               <Route path="*" element={<PoliceNavigation />} />
+              <Route
+                path="/denunciasAsignadas"
+                element={<SolicitudesAsignadasScreen />}
+              />
+              <Route
+                path="/denuncia/:denunciaId"
+                element={<DenunciaItemPoliceScreen />}
+              />
             </>
           )}
         </>

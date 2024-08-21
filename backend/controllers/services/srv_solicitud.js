@@ -1,4 +1,11 @@
-const { Solicitud, SolicitudEventoPersona, Subtipo, Persona, sequelize, TipoSolicitud, Circuito, Observacion, Estado, Evento, Rol} = require('../../models/db_models');
+const { Solicitud, SolicitudEventoPersona, Subtipo, Persona, sequelize, TipoSolicitud, Circuito, Observacion, Estado, Evento, Rol, SolicitudEvidencia, TipoEvidencia} = require('../../models/db_models');
+
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid'); // Para generar nombres únicos si es necesario
+const axios = require('axios');
+const onedriveClient = require('./oneDrivClient');
+
 
 // * Crear boton de emergencia
 /** 
@@ -123,6 +130,7 @@ exports.getSolicitudes = async () => {
 exports.asignarPoliciaASolicitud = async (solicitudData) => {
     const { id_solicitud, id_persona_asignador, id_persona_policia } = solicitudData;
     const transaction = await sequelize.transaction();
+    const id_evento = 10; // Un policia ha sido asignado a tu solicitud.
     
     try {
         // Verificar que la persona que asigna es un policía
@@ -162,6 +170,13 @@ exports.asignarPoliciaASolicitud = async (solicitudData) => {
             { disponibilidad: 'Ocupado' },
             { where: { id_persona: id_persona_policia }, transaction }
         );
+
+        // Crear la relación entre la solicitud y el evento
+        await SolicitudEventoPersona.create({
+            id_solicitud: id_solicitud,
+            id_evento,
+            id_persona: id_persona_policia
+        }, { transaction });
 
         await transaction.commit();
         return { message: 'Policía asignado a la solicitud correctamente.' };
@@ -230,6 +245,17 @@ exports.getSolicitudById = async (id_solicitud) => {
                     ],
                     attributes: ['observacion', 'fecha'],
                     order: [['fecha', 'ASC']]
+                },
+
+                {
+                    model: SolicitudEvidencia,
+                    include: [
+                        {
+                            model: TipoEvidencia,
+                            attributes: ['evidencia'] // Incluir el tipo de evidencia (imagen, video, audio)
+                        }
+                    ],
+                    attributes: ['evidencia'] // Nombre del archivo de la evidencia
                 }
             ]
         });
@@ -259,6 +285,11 @@ exports.getSolicitudById = async (id_solicitud) => {
                 observacion: obs.observacion,
                 fecha: obs.fecha,
                 persona: obs.Persona
+            })),
+
+            evidencias: solicitud.SolicitudEvidencia.map(evidencia => ({
+                tipo: evidencia.TipoEvidencia.evidencia, // Tipo de la evidencia
+                url: `https://onedrive-link/${evidencia.evidencia}` // Aquí se debería generar el enlace correcto a la nube
             }))
         };
 
@@ -269,8 +300,10 @@ exports.getSolicitudById = async (id_solicitud) => {
     }
 };
 
+
+
 exports.cerrarSolicitud = async (cerrarData) => {
-    const { id_solicitud, observacion } = cerrarData;
+    const { id_solicitud, observacion, estado_cierre } = cerrarData;
     const transaction = await sequelize.transaction();
     try {
         // Verificar que la solicitud existe
@@ -287,10 +320,19 @@ exports.cerrarSolicitud = async (cerrarData) => {
             throw new Error('El policía asignado no existe.');
         }
 
-        // Actualizar el estado de la solicitud a "Resuelto"
-        const estadoResuelto = 3; // ID del estado "Resuelto"
+        // Verificar que el estado de cierre es válido ("Resuelto" o "Falso")
+        const estadosValidos = {
+            "Resuelto": 3,
+            "Falso": 4
+        };
+
+        if (!estadosValidos[estado_cierre]) {
+            throw new Error('El estado de cierre especificado no es válido.');
+        }
+
+        // Actualizar el estado de la solicitud al estado seleccionado
         await Solicitud.update(
-            { id_estado: estadoResuelto },
+            { id_estado: estadosValidos[estado_cierre] },
             { where: { id_solicitud }, transaction }
         );
 
@@ -310,6 +352,13 @@ exports.cerrarSolicitud = async (cerrarData) => {
             { transaction }
         );
 
+        // Crear la relación entre la solicitud y el evento
+        await SolicitudEventoPersona.create({
+            id_solicitud: id_solicitud,
+            id_evento: 14, // Asumiendo que el evento ID 8 es el cierre de solicitud
+            id_persona: id_persona_policia
+        }, { transaction });
+
         await transaction.commit();
         return { message: 'Solicitud cerrada correctamente.' };
 
@@ -318,6 +367,8 @@ exports.cerrarSolicitud = async (cerrarData) => {
         throw error;
     }
 };
+
+
 
 
 
@@ -336,6 +387,13 @@ exports.agregarObservacion = async (observacionData) => {
             observacion: observacion,
             id_persona: id_persona
         }, { transaction: transaction });
+
+         // Crear la relación entre la solicitud y el evento
+         await SolicitudEventoPersona.create({
+            id_solicitud: id_solicitud,
+            id_evento: 16,
+            id_persona: id_persona
+        }, { transaction });
 
         await transaction.commit();
     } catch (error) {
@@ -409,6 +467,139 @@ exports.crearSolicitud = async (personaData) => {
         throw error;
     }
 };
+
+// exports.crearSolicitud = async (personaData, evidencias) => {
+//     const { id_persona, puntoGPS, direccion, id_subtipo } = personaData;
+//     const transaction = await sequelize.transaction();
+
+//     try {
+//         // Log inicial
+//         console.log('Iniciando la creación de la solicitud...');
+
+//         // Obtener el circuito de la persona que crea la solicitud
+//         const persona = await Persona.findByPk(id_persona);
+//         if (!persona) {
+//             throw new Error('Persona no encontrada');
+//         }
+//         console.log('Persona encontrada:', persona);
+
+//         const id_circuito = persona.id_circuito;
+
+//         // Obtener el subtipo y verificar que sea válido
+//         const subtipo = await Subtipo.findByPk(id_subtipo);
+//         if (!subtipo) {
+//             throw new Error('Subtipo no encontrado');
+//         }
+//         console.log('Subtipo encontrado:', subtipo);
+
+//         // Determinar el tipo de solicitud y el evento asociado
+//         const id_tipo = subtipo.id_tipo;
+//         let id_evento;
+//         if (id_tipo === 2) {
+//             id_evento = 2; // Denuncia ciudadana
+//         } else if (id_tipo === 3) {
+//             id_evento = 3; // Servicios comunitarios
+//         } else {
+//             throw new Error('Tipo de solicitud no válido');
+//         }
+//         console.log('Tipo y evento determinados:', { id_tipo, id_evento });
+
+//         // Definir ID para estado
+//         const id_estado = 1; // Pendiente
+
+//         // Crear solicitud
+//         const nuevaSolicitud = await Solicitud.create({
+//             id_estado,
+//             id_subtipo,
+//             fecha_creacion: new Date(),
+//             puntoGPS,
+//             direccion,
+//             id_circuito,
+//             creado_por: id_persona
+//         }, { transaction });
+//         console.log('Solicitud creada:', nuevaSolicitud);
+
+//         // Crear la relación entre la solicitud y el evento
+//         await SolicitudEventoPersona.create({
+//             id_solicitud: nuevaSolicitud.id_solicitud,
+//             id_evento,
+//             id_persona
+//         }, { transaction });
+//         console.log('Evento relacionado creado');
+
+//         // Log para revisar el contenido de evidencias
+//         console.log('Evidencias recibidas:', evidencias);
+
+//         // Obtener token de acceso de OneDrive
+//         const accessToken = await onedriveClient.getAccessToken();
+//         console.log('Token de acceso obtenido');
+
+//         // Manejar las evidencias si existen
+//         if (evidencias && evidencias.length > 0) {
+//             console.log('Evidencias encontradas, comenzando el proceso de subida...');
+
+//             const onedriveFolderPath = `/drive/root:/solicitudes/sol-${nuevaSolicitud.id_solicitud}`;
+
+//             // Crear carpeta en OneDrive
+//             await axios.put(
+//                 `https://graph.microsoft.com/v1.0${onedriveFolderPath}:/content`,
+//                 null,
+//                 {
+//                     headers: {
+//                         Authorization: `Bearer ${accessToken}`,
+//                         'Content-Type': 'application/json',
+//                     },
+//                 }
+//             );
+//             console.log('Carpeta en OneDrive creada');
+
+//             for (const evidencia of evidencias) {
+//                 const evidenciaNombre = uuidv4() + path.extname(evidencia.originalname);
+//                 const onedriveFilePath = `${onedriveFolderPath}/${evidenciaNombre}`;
+
+//                 // Subir archivo a OneDrive
+//                 await axios.put(
+//                     `https://graph.microsoft.com/v1.0${onedriveFilePath}:/content`,
+//                     evidencia.buffer,
+//                     {
+//                         headers: {
+//                             Authorization: `Bearer ${accessToken}`,
+//                             'Content-Type': evidencia.mimetype,
+//                         },
+//                     }
+//                 );
+//                 console.log('Archivo subido a OneDrive:', onedriveFilePath);
+
+//                 // Guardar la evidencia en la base de datos con el link de OneDrive
+//                 const onedriveLink = `https://graph.microsoft.com/v1.0${onedriveFilePath}`;
+
+//                 await SolicitudEvidencia.create({
+//                     id_solicitud: nuevaSolicitud.id_solicitud,
+//                     id_evidencia: parseInt(evidencia.fieldname), // Asegúrate de que se está pasando el `id_evidencia` aquí
+//                     evidencia: onedriveLink,
+//                 }, { transaction });
+//                 console.log('Evidencia guardada en la base de datos:', onedriveLink);
+//             }
+//         } else {
+//             console.log('No se encontraron evidencias para subir.');
+//         }
+
+//         await transaction.commit();
+//         console.log('Transacción completada y commit realizada');
+//         return nuevaSolicitud;
+
+//     } catch (error) {
+//         await transaction.rollback();
+//         console.error('Error al crear la solicitud:', error);
+//         throw error;
+//     }
+// };
+
+
+
+
+
+
 
 
 

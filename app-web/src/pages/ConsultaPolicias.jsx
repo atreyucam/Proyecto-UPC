@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { FiCheckCircle, FiEdit, FiTrash, FiSave, FiEye } from 'react-icons/fi';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { FiCheckCircle, FiEdit, FiTrash, FiSave, FiEye } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
+import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
 
 const ConsultaPolicias = () => {
   const [policias, setPolicias] = useState([]);
   const [filteredPolicias, setFilteredPolicias] = useState([]);
   const [filtros, setFiltros] = useState({
-    provincia: '',
-    ciudad: '',
-    barrio: '',
-    disponibilidad: '',
+    provincia: "",
+    ciudad: "",
+    barrio: "",
+    disponibilidad: "",
   });
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
@@ -21,12 +22,13 @@ const ConsultaPolicias = () => {
   const [policiaToDelete, setPoliciaToDelete] = useState(null);
   const navigate = useNavigate();
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         // * policiaRes permite traer los datos de los policias.
-        const policiaRes = await axios.get("http://localhost:3000/personas/policias");
+        const policiaRes = await axios.get(
+          "http://localhost:3000/personas/policias"
+        );
         // * CircuitoRes permite traer los datos de los circuitos para dar uso de los filtros.
         const circuitosRes = await axios.get("http://localhost:3000/circuitos");
 
@@ -45,7 +47,6 @@ const ConsultaPolicias = () => {
 
     fetchData();
   }, []);
-
 
   useEffect(() => {
     if (filtros.provincia) {
@@ -92,21 +93,26 @@ const ConsultaPolicias = () => {
   };
 
   const handleBuscarClick = () => {
-    const filtered = policias.filter(policia => 
-      (filtros.provincia ? policia.Circuito.provincia === filtros.provincia : true) &&
-      (filtros.ciudad ? policia.Circuito.ciudad === filtros.ciudad : true) &&
-      (filtros.barrio ? policia.Circuito.barrio === filtros.barrio : true) &&
-      (filtros.disponibilidad ? policia.disponibilidad === filtros.disponibilidad : true)
+    const filtered = policias.filter(
+      (policia) =>
+        (filtros.provincia
+          ? policia.Circuito.provincia === filtros.provincia
+          : true) &&
+        (filtros.ciudad ? policia.Circuito.ciudad === filtros.ciudad : true) &&
+        (filtros.barrio ? policia.Circuito.barrio === filtros.barrio : true) &&
+        (filtros.disponibilidad
+          ? policia.disponibilidad === filtros.disponibilidad
+          : true)
     );
     setFilteredPolicias(filtered);
   };
 
   const handleLimpiarClick = () => {
     setFiltros({
-      provincia: '',
-      ciudad: '',
-      barrio: '',
-      disponibilidad: '',
+      provincia: "",
+      ciudad: "",
+      barrio: "",
+      disponibilidad: "",
     });
     setFilteredPolicias(policias);
     setCiudades([]);
@@ -117,16 +123,21 @@ const ConsultaPolicias = () => {
     setEditingPolicia(policia);
   };
 
-
-
   const handleSaveClick = async (policia) => {
     try {
-      await axios.put(`http://localhost:3000/personas/${policia.id_persona}`, policia);
+      await axios.put(
+        `http://localhost:3000/personas/${policia.id_persona}`,
+        policia
+      );
       setPolicias((prevPolicias) =>
-        prevPolicias.map((c) => (c.id_persona === policia.id_persona ? policia : c))
+        prevPolicias.map((c) =>
+          c.id_persona === policia.id_persona ? policia : c
+        )
       );
       setFilteredPolicias((prevFiltered) =>
-        prevFiltered.map((c) => (c.id_persona === policia.id_persona ? policia : c))
+        prevFiltered.map((c) =>
+          c.id_persona === policia.id_persona ? policia : c
+        )
       );
       setEditingPolicia(null);
     } catch (error) {
@@ -140,14 +151,21 @@ const ConsultaPolicias = () => {
   };
 
   const confirmDelete = () => {
-    axios.delete(`http://localhost:3000/personas/${policiaToDelete.id_persona}`)
+    axios
+      .delete(`http://localhost:3000/personas/${policiaToDelete.id_persona}`)
       .then(() => {
-        setPolicias(policias.filter(p => p.id_persona !== policiaToDelete.id_persona));
-        setFilteredPolicias(filteredPolicias.filter(p => p.id_persona !== policiaToDelete.id_persona));
+        setPolicias(
+          policias.filter((p) => p.id_persona !== policiaToDelete.id_persona)
+        );
+        setFilteredPolicias(
+          filteredPolicias.filter(
+            (p) => p.id_persona !== policiaToDelete.id_persona
+          )
+        );
         setShowDeleteModal(false);
         setPoliciaToDelete(null);
       })
-      .catch(error => console.error('Error deleting policia:', error));
+      .catch((error) => console.error("Error deleting policia:", error));
   };
 
   const cancelDelete = () => {
@@ -263,9 +281,10 @@ const ConsultaPolicias = () => {
               </thead>
               <tbody>
                 {filteredPolicias.map((policia) => (
-
-                  <tr key={policia.id_persona} className="hover:bg-gray-50" >
-                    <td className="border-b p-2 text-center">{policia.cedula}</td>
+                  <tr key={policia.id_persona} className="hover:bg-gray-50">
+                    <td className="border-b p-2 text-center">
+                      {policia.cedula}
+                    </td>
                     <td className="border-b p-2 ">
                       {editingPolicia?.id_persona === policia.id_persona ? (
                         <input
@@ -317,9 +336,14 @@ const ConsultaPolicias = () => {
                         policia.telefono
                       )}
                     </td>
-                    <td className="border-b p-2 text-center">{policia.Circuito.barrio}</td>
                     <td className="border-b p-2 text-center">
-                      {policia.disponibilidad}
+                      {policia.Circuito.barrio}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      <EstadoBadge
+                        estado={policia.disponibilidad}
+                        tipo="disponibilidad"
+                      />
                     </td>
                     <td className="border-b p-2 flex gap-2 justify-center">
                       {editingPolicia?.id_persona === policia.id_persona ? (
@@ -363,7 +387,10 @@ const ConsultaPolicias = () => {
       {showDeleteModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded shadow-md text-center">
-            <p>¿Estás seguro de que quieres eliminar a {policiaToDelete.nombres} {policiaToDelete.apellidos}?</p>
+            <p>
+              ¿Estás seguro de que quieres eliminar a {policiaToDelete.nombres}{" "}
+              {policiaToDelete.apellidos}?
+            </p>
             <div className="flex justify-center mt-4">
               <button
                 className="bg-red-500 text-white px-4 py-2 rounded mr-2"
