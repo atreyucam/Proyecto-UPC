@@ -30,7 +30,30 @@ const ConsultaSolicitudes = () => {
   const denunciaData = [
     { numero: 1, tipo: 'Robo', fechaGenerada: '2024-08-01', incremento: '5%', absoluta: 100, pesoDelictual: 0.5 },
     { numero: 2, tipo: 'Asalto', fechaGenerada: '2024-08-02', incremento: '10%', absoluta: 150, pesoDelictual: 0.7 },
+    { numero: 3, tipo: 'Hurto', fechaGenerada: '2024-08-03', incremento: '15%', absoluta: 200, pesoDelictual: 0.9 },
+    // Add more data entries here
   ];
+
+  const additionalTableData = [
+    { numero: 1, circuito: 'Circuito A', enero2023: 50, enero2024: 100, incremento: '100%', absoluta: 50, pesoDelictual: 0.8 },
+    { numero: 2, circuito: 'Circuito B', enero2023: 150, enero2024: 120, incremento: '-20%', absoluta: -30, pesoDelictual: 0.6 },
+    { numero: 3, circuito: 'Circuito C', enero2023: 70, enero2024: 80, incremento: '14%', absoluta: 10, pesoDelictual: 0.7 },
+    // Add more data entries here
+  ];
+
+  // Calculate totals for Denuncia Table
+  const totalDenuncias = {
+    incremento: denunciaData.reduce((total, denuncia) => total + parseFloat(denuncia.incremento), 0),
+    absoluta: denunciaData.reduce((total, denuncia) => total + denuncia.absoluta, 0),
+    pesoDelictual: denunciaData.reduce((total, denuncia) => total + denuncia.pesoDelictual, 0)
+  };
+
+  // Calculate totals for Additional Table
+  const totalAdditional = {
+    incremento: additionalTableData.reduce((total, data) => total + parseFloat(data.incremento), 0),
+    absoluta: additionalTableData.reduce((total, data) => total + data.absoluta, 0),
+    pesoDelictual: additionalTableData.reduce((total, data) => total + data.pesoDelictual, 0)
+  };
 
   const downloadPDF = () => {
     const doc = new jsPDF();
@@ -67,9 +90,47 @@ const ConsultaSolicitudes = () => {
       denuncia.pesoDelictual
     ]);
 
+    // Add total row to Denuncia Table
+    denunciaTable.push([
+      'Total',
+      '',
+      '',
+      '',
+      totalDenuncias.absoluta,
+      totalDenuncias.pesoDelictual.toFixed(2)
+    ]);
+
     autoTable(doc, {
       head: [['Numero', 'Tipo de Denuncia', 'Fecha Generada', 'Incremento', 'Absoluta', 'Peso Delictual']],
       body: denunciaTable,
+      startY: doc.previousAutoTable.finalY + 10,
+    });
+
+    // Additional Table
+    const additionalTable = additionalTableData.map(data => [
+      data.numero,
+      data.circuito,
+      data.enero2023,
+      data.enero2024,
+      { content: `${data.incremento}`, styles: { fillColor: data.incremento.includes('%') ? [255, 0, 0] : undefined }},
+      { content: `${data.absoluta}`, styles: { textColor: data.absoluta > 0 ? [0, 128, 0] : [255, 0, 0] }},
+      data.pesoDelictual
+    ]);
+
+    // Add total row to Additional Table
+    additionalTable.push([
+      'Total',
+      '',
+      '',
+      '',
+      totalAdditional.incremento.toFixed(2) + '%',
+      totalAdditional.absoluta,
+      totalAdditional.pesoDelictual.toFixed(2)
+    ]);
+
+    autoTable(doc, {
+      head: [['Numero', 'Circuito', '01 Enero 2023', '01 Enero 2024', 'Incremento', 'Absoluta', 'Peso Delictual']],
+      body: additionalTable,
       startY: doc.previousAutoTable.finalY + 10,
     });
 
@@ -129,36 +190,72 @@ const ConsultaSolicitudes = () => {
             </tr>
           </thead>
           <tbody>
-            {denunciaData.map((denuncia, index) => (
-              <tr key={index}>
+            {denunciaData.map((denuncia) => (
+              <tr key={denuncia.numero}>
                 <td className="border px-4 py-2">{denuncia.numero}</td>
                 <td className="border px-4 py-2">{denuncia.tipo}</td>
                 <td className="border px-4 py-2">{denuncia.fechaGenerada}</td>
-                <td className="border px-4 py-2">
-                  <div className="flex items-center">
-                    <div className="w-full bg-red-200">
-                      <div
-                        className="bg-red-500 text-xs leading-none py-1 text-center text-white"
-                        style={{ width: denuncia.incremento }}
-                      >
-                        {denuncia.incremento}
-                      </div>
-                    </div>
-                  </div>
-                </td>
+                <td className="border px-4 py-2">{denuncia.incremento}</td>
                 <td className="border px-4 py-2">{denuncia.absoluta}</td>
                 <td className="border px-4 py-2">{denuncia.pesoDelictual}</td>
               </tr>
             ))}
+            <tr>
+              <td className="border px-4 py-2 font-bold">Total</td>
+              <td className="border px-4 py-2"></td>
+              <td className="border px-4 py-2"></td>
+              <td className="border px-4 py-2"></td>
+              <td className="border px-4 py-2 font-bold">{totalDenuncias.absoluta}</td>
+              <td className="border px-4 py-2 font-bold">{totalDenuncias.pesoDelictual.toFixed(2)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mb-6">
+        <h2 className="text-xl font-bold mb-4">Tabla Adicional</h2>
+        <table id="additional-table" className="table-auto w-full border-collapse">
+          <thead>
+            <tr>
+              <th className="border px-4 py-2">Numero</th>
+              <th className="border px-4 py-2">Circuito</th>
+              <th className="border px-4 py-2">01 Enero 2023</th>
+              <th className="border px-4 py-2">01 Enero 2024</th>
+              <th className="border px-4 py-2">Incremento</th>
+              <th className="border px-4 py-2">Absoluta</th>
+              <th className="border px-4 py-2">Peso Delictual</th>
+            </tr>
+          </thead>
+          <tbody>
+            {additionalTableData.map((data) => (
+              <tr key={data.numero}>
+                <td className="border px-4 py-2">{data.numero}</td>
+                <td className="border px-4 py-2">{data.circuito}</td>
+                <td className="border px-4 py-2">{data.enero2023}</td>
+                <td className="border px-4 py-2">{data.enero2024}</td>
+                <td className="border px-4 py-2">{data.incremento}</td>
+                <td className="border px-4 py-2">{data.absoluta}</td>
+                <td className="border px-4 py-2">{data.pesoDelictual}</td>
+              </tr>
+            ))}
+            <tr>
+              <td className="border px-4 py-2 font-bold">Total</td>
+              <td className="border px-4 py-2"></td>
+              <td className="border px-4 py-2"></td>
+              <td className="border px-4 py-2"></td>
+              <td className="border px-4 py-2 font-bold">{totalAdditional.incremento.toFixed(2)}%</td>
+              <td className="border px-4 py-2 font-bold">{totalAdditional.absoluta}</td>
+              <td className="border px-4 py-2 font-bold">{totalAdditional.pesoDelictual.toFixed(2)}</td>
+            </tr>
           </tbody>
         </table>
       </div>
 
       <button
         onClick={downloadPDF}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white font-bold rounded"
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
       >
-        Descargar PDF
+        Descagar PDF
       </button>
     </div>
   );
