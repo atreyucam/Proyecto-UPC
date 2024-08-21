@@ -16,15 +16,47 @@ import {
   Bars3Icon,
 } from "@heroicons/react/24/solid";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
-import { useDispatch } from "react-redux";
-import { logoutUser } from "../../context/redux/authSlide"; // Asegúrate de ajustar la ruta según sea necesario
-import { useNavigate } from "react-router-dom"; // Para redirigir después de logout
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../context/redux/authSlide";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { fixedNavbar, openSidenav } = controller;
   const reduxDispatch = useDispatch(); // Hook de Redux para disparar acciones
   const navigate = useNavigate(); // Hook de React Router para redirigir
+  const expirationTime = useSelector((state) => state.auth.expirationTime);
+
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  useEffect(() => {
+    if (expirationTime) {
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const remainingTime = Math.max(0, expirationTime - now);
+
+        if (remainingTime <= 0) {
+          clearInterval(interval);
+          handleLogout();
+          alert("Su sesión ha expirado. Por favor, vuelva a iniciar sesión.");
+          window.location.reload();
+        } else {
+          setTimeLeft(remainingTime);
+        }
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [expirationTime]);
+
+  const formatTimeLeft = (milliseconds) => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
 
   const handleLogout = () => {
     reduxDispatch(logoutUser()); // Disparar la acción de logout
@@ -51,7 +83,11 @@ export function DashboardNavbar() {
 
         <div className="flex items-center">
           <div className="mr-auto md:mr-4 md:w-56">
-            <Input label="Buscar" />
+            <Typography variant="small" className="text-blue-gray-500">
+              {timeLeft
+                ? `Su sesión expira en: ${formatTimeLeft(timeLeft)}`
+                : ""}
+            </Typography>
           </div>
           <IconButton
             variant="text"
@@ -104,7 +140,10 @@ export function DashboardNavbar() {
               </IconButton>
             </MenuHandler>
             <MenuList className="w-max border-0">
-              <MenuItem className="flex items-center gap-3" onClick={handleLogout}>
+              <MenuItem
+                className="flex items-center gap-3"
+                onClick={handleLogout}
+              >
                 <Typography
                   variant="small"
                   color="blue-gray"

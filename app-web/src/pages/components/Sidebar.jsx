@@ -50,7 +50,7 @@ const Sidebar = () => {
                   </Button>
                 )}
               </NavLink>
-            </li>
+            </li> */}
             <li>
               <NavLink to="/home" exact>
                 {({ isActive }) => (

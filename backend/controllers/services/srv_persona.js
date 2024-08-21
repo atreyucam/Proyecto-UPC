@@ -304,8 +304,6 @@ exports.getCiudadanoConSolicitudes = async (id_persona) => {
   }
 };
 
-
-
 exports.getPoliciaConSolicitudes = async (id_persona) => {
   try {
     // Obtener la información del policía con las solicitudes asignadas
@@ -342,6 +340,27 @@ exports.getPoliciaConSolicitudes = async (id_persona) => {
       throw new Error('El policía especificado no existe.');
     }
 
+    // Contadores por tipo de solicitud
+    const tipoSolicitudContadores = {};
+
+    policia.solicitudes_asignadas.forEach(solicitud => {
+      const tipoDescripcion = solicitud.Subtipo.TipoSolicitud.descripcion;
+      if (!tipoSolicitudContadores[tipoDescripcion]) {
+        tipoSolicitudContadores[tipoDescripcion] = 0;
+      }
+      tipoSolicitudContadores[tipoDescripcion]++;
+    });
+
+    // Determinar la solicitud más resuelta
+    let solicitudMasResuelta = null;
+    let maxCount = 0;
+    for (const [tipo, count] of Object.entries(tipoSolicitudContadores)) {
+      if (count > maxCount) {
+        maxCount = count;
+        solicitudMasResuelta = tipo;
+      }
+    }
+
     // Mapear la respuesta para que tenga la estructura deseada y ordenar las solicitudes por fecha de creación descendente
     const formattedPolicia = {
       id_persona: policia.id_persona,
@@ -352,6 +371,8 @@ exports.getPoliciaConSolicitudes = async (id_persona) => {
       email: policia.email,
       disponibilidad: policia.disponibilidad,
       id_circuito: policia.id_circuito,
+      resumen_solicitudes_asignadas: tipoSolicitudContadores,
+      solicitud_mas_resuelta: solicitudMasResuelta,
       solicitudes_asignadas: policia.solicitudes_asignadas
         .map(solicitud => ({
           id_solicitud: solicitud.id_solicitud,

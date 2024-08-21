@@ -4,14 +4,14 @@ import { IconButton, Menu } from "react-native-paper";
 
 const Notificacion = () => {
   const [visible, setVisible] = useState(false);
-  const openMenu = () => setVisible(true); 
+  const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
   return (
     <Menu
       visible={visible}
       onDismiss={closeMenu}
       anchor={
-        <IconButton icon="bell" color="white" size={24} onPress={openMenu}  />
+        <IconButton icon="bell" color="white" size={24} onPress={openMenu} />
       }
     >
       <View style={{ marginTop: 30 }}>
