@@ -85,7 +85,7 @@ const ConsultaSolicitudes = () => {
                   <th className="border-b p-2">Policía Asignado</th>
                   <th className="border-b p-2">Ciudad</th>
                   <th className="border-b p-2">Barrio</th>
-                  <th className="border-b p-2">Acciones</th>
+                  <th className="border-b p-2">Detalle</th>
                 </tr>
               </thead>
               <tbody>

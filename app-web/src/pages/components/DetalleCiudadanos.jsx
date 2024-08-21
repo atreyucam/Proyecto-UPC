@@ -79,6 +79,9 @@ const CiudadanoDetail = () => {
       <div className="bg-white p-4 rounded-lg shadow-sm mb-6 grid grid-cols-2  border border-gray-200">
         <div>
           <p>
+            <strong>Id:</strong> {ciudadano.id_persona}
+          </p>
+          <p>
             <strong>Cédula:</strong> {ciudadano.cedula}
           </p>
           <p>

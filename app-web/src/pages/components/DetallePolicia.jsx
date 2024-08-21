@@ -51,6 +51,9 @@ const PoliciaDetail = () => {
       <div className="bg-white p-4 rounded-lg shadow-sm mb-6 grid grid-cols-2 border border-gray-200">
         <div>
           <p>
+            <strong>Id:</strong> {policia.id_persona}
+          </p>
+          <p>
             <strong>Cédula:</strong> {policia.cedula}
           </p>
           <p>

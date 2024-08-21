@@ -70,7 +70,7 @@ const DetalleSolicitud = () => {
               Información del Ciudadano
             </h3>
             <p>
-              <strong>ID Solicitud:</strong> {solicitud.id_solicitud}
+              <strong>ID Ciudadano:</strong> {solicitud.creado_por.id_persona}
             </p>
             <p>
               <strong>Nombre:</strong>{" "}
@@ -85,6 +85,9 @@ const DetalleSolicitud = () => {
               <h3 className="text-lg font-bold mb-2">
                 Detalles de la Solicitud
               </h3>
+              <p>
+                <strong>Id Solicitud:</strong> {solicitud.id_solicitud}
+              </p>
               <p>
                 <strong>Tipo de Solicitud:</strong> {solicitud.tipo}
               </p>
