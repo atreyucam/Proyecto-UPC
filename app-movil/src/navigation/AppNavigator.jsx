@@ -16,6 +16,7 @@ import PoliceNavigation from "./PoliceNavigation"; // Importa el nuevo PoliceNav
 import { AuthContext } from "../context/AuthContext";
 import SolicitudesAsignadasScreen from "../screens/policia/solicitudesAsignadasScreen";
 import DenunciaItemPoliceScreen from "../screens/policia/DenunciaItemPoliceScreen";
+import ResumenActividad from "../screens/policia/ResumenActividadScreen";
 
 const AppNavigator = () => {
   const { authState } = useContext(AuthContext);
@@ -98,6 +99,7 @@ const AppNavigator = () => {
                 path="/denuncia/:denunciaId"
                 element={<DenunciaItemPoliceScreen />}
               />
+              <Route path="/resumenActividad" element={<ResumenActividad />} />
             </>
           )}
         </>
