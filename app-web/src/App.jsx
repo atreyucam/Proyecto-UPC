@@ -11,6 +11,7 @@ import DetalleCiudadano from "./pages/components/DetalleCiudadanos";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
 import DetalleSolicitud from "./pages/components/DetalleSolicitud";
 import Unauthorized from "./pages/Unauthorized";
+import Reporte  from "./pages/Reporte";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { loadUser } from "./context/redux/authSlide";
@@ -40,11 +41,13 @@ function App() {
           <Route path="/policias/:id" element={<DetallePolicia />} />
           <Route path="/ConsultaCiudadanos" element={<ConsultaCiudadanos />} />
           <Route path="/ciudadanos/:id" element={<DetalleCiudadano />} />
+ 
           <Route
             path="/ConsultaSolicitudes"
             element={<ConsultaSolicitudes />}
           />
           <Route path="/solicitudes/:id" element={<DetalleSolicitud />} />
+          <Route path="/reporte" element={<Reporte />} />
         </Route>
       </Routes>
     </BrowserRouter>
