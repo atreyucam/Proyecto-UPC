@@ -255,6 +255,7 @@ const ConsultaCiudadanos = () => {
             <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
               <thead>
                 <tr>
+                <th className="border-b p-2">Id</th>
                   <th className="border-b p-2">Cédula</th>
                   <th className="border-b p-2">Nombres</th>
                   <th className="border-b p-2">Apellidos</th>
@@ -267,6 +268,7 @@ const ConsultaCiudadanos = () => {
               <tbody>
                 {filteredCiudadanos.map((ciudadano) => (
                   <tr key={ciudadano.id_persona} className="hover:bg-gray-50">
+                     <td className="border-b p-2 text-center">{ciudadano.id_persona}</td>
                     <td className="border-b p-2 text-center">{ciudadano.cedula}</td>
                     <td className="border-b p-2 ">
                       {editingCiudadano?.id_persona === ciudadano.id_persona ? (
