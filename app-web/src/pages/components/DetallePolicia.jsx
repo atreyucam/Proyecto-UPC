@@ -106,6 +106,24 @@ const PoliciaDetail = () => {
         </div>
 
         <div className="flex-1">
+          <h3 className="text-lg font-bold mb-4">Total de Solicitudes</h3>
+          <div className="overflow-x-auto shadow-sm mb-4">
+            <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
+              <thead>
+                <tr>
+                  <th className="border-b p-2 text-center">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="hover:bg-gray-50">
+                  <td className="border-b p-2 text-center">
+                    {policia.total_solicitudes}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <h3 className="text-lg font-bold mb-4">Solicitud Más Resuelta</h3>
           <div className="overflow-x-auto shadow-sm">
             <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">

@@ -361,6 +361,9 @@ exports.getPoliciaConSolicitudes = async (id_persona) => {
       }
     }
 
+    // Contar el total de solicitudes asignadas
+    const totalSolicitudes = policia.solicitudes_asignadas.length;
+
     // Mapear la respuesta para que tenga la estructura deseada y ordenar las solicitudes por fecha de creación descendente
     const formattedPolicia = {
       id_persona: policia.id_persona,
@@ -373,6 +376,7 @@ exports.getPoliciaConSolicitudes = async (id_persona) => {
       id_circuito: policia.id_circuito,
       resumen_solicitudes_asignadas: tipoSolicitudContadores,
       solicitud_mas_resuelta: solicitudMasResuelta,
+      total_solicitudes: totalSolicitudes, // Aquí añadimos el total de solicitudes
       solicitudes_asignadas: policia.solicitudes_asignadas
         .map(solicitud => ({
           id_solicitud: solicitud.id_solicitud,
@@ -391,6 +395,7 @@ exports.getPoliciaConSolicitudes = async (id_persona) => {
     throw new Error('Error al obtener la información del policía: ' + error.message);
   }
 };
+
 
 
 
