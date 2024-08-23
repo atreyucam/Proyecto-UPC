@@ -18,12 +18,10 @@ const Home4 = () => {
   const [solicitudesPendientes, setSolicitudesPendientes] = useState([]);
   const [policeData, setPoliceData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false); // Estado para el modal de asignación
   const [selectedPolice, setSelectedPolice] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
   const [notification, setNotification] = useState("");
-  const [reports, setReports] = useState([]);
   const navigate = useNavigate();
 
   const recordsPerPage = 4;
@@ -57,7 +55,7 @@ const Home4 = () => {
       .then((response) => setPoliceData(response.data.policias))
       .catch((error) => console.error("Error fetching police data:", error));
 
-    // Fetch reports
+    // Fetch reports (si es necesario)
     axios
       .get("http://localhost:3000/reports")
       .then((response) => setReports(response.data))
@@ -92,13 +90,13 @@ const Home4 = () => {
               : police
           );
 
-          // Filtrar los policías ocupados de la lista (suponiendo que no quieres mostrar policías ocupados)
+          // Filtrar los policías ocupados de la lista
           return updatedPoliceData.filter(
             (police) => police.disponibilidad !== "Ocupado"
           );
         });
 
-        // Eliminar la solicitud asignada de la lista
+        // Eliminar la solicitud asignada de la lista de solicitudes pendientes
         setSolicitudesPendientes((prevRequests) =>
           prevRequests.filter(
             (request) => request.id_solicitud !== selectedReport.id_solicitud
@@ -136,10 +134,7 @@ const Home4 = () => {
 
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = policeData.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
-  );
+  const currentRecords = policeData.slice(indexOfFirstRecord, indexOfLastRecord);
 
   // Define chart options and series data
   const [barOptions, setBarOptions] = useState({
@@ -234,13 +229,11 @@ const Home4 = () => {
           </div>
 
           <div className="bg-gray-100 rounded-lg p-4">
-            <h2 className="text-lg font-bold mb-2">
-              Total Solicitudes por Tipo
-            </h2>
+            <h2 className="text-lg font-bold mb-2">Total Solicitudes por Tipo</h2>
             <ul>
               {solicitudesTotales.byType?.map((tipo) => (
                 <li key={tipo.id_tipo}>
-                  Tipo {tipo.id_tipo}: {tipo.count}
+                                    Tipo {tipo.id_tipo}: {tipo.count}
                 </li>
               ))}
             </ul>
@@ -250,10 +243,10 @@ const Home4 = () => {
         <div className="bg-white rounded-lg p-4 shadow-md">
           <h2 className="text-lg font-bold mb-4">Disponibilidad</h2>
           <ApexCharts
-           options={barOptions}
-           series={barSeries}
-           type="bar"
-           height={350}
+            options={barOptions}
+            series={barSeries}
+            type="bar"
+            height={350}
           />
         </div>
       </div>
@@ -269,7 +262,9 @@ const Home4 = () => {
                 <th className="border-b p-2">Tipo</th>
                 <th className="border-b p-2">Subtipo</th>
                 <th className="border-b p-2">Creado por</th>
-                <th className="border-b p-2">Circuito</th>
+                <th className="border-b p-2">Distrito</th>
+                <th className="border-b p-2">Cantón</th>
+                <th className="border-b p-2">Subzona</th>
                 <th className="border-b p-2">Fecha Creación</th>
                 <th className="border-b p-2">Asignar</th>
               </tr>
@@ -286,14 +281,20 @@ const Home4 = () => {
                     <td className="border-b p-2">{solicitud.subtipo}</td>
                     <td className="border-b p-2">{solicitud.creado_por}</td>
                     <td className="border-b p-2">
-                      {solicitud.circuito.ciudad}
+                      {solicitud.ubicacion.distrito}
+                    </td>
+                    <td className="border-b p-2">
+                      {solicitud.ubicacion.canton}
+                    </td>
+                    <td className="border-b p-2">
+                      {solicitud.ubicacion.subzona}
                     </td>
                     <td className="border-b p-2">
                       {new Date(solicitud.fecha_creacion).toLocaleString()}
                     </td>
                     <td className="border-b p-2 flex gap-2 justify-center">
                       <button
-                        className=" bg-green-500 text-white px-3 py-1 rounded"
+                        className="bg-green-500 text-white px-3 py-1 rounded"
                         onClick={() => handleAssignClick(solicitud)}
                       >
                         Asignar Policía
@@ -309,7 +310,7 @@ const Home4 = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="text-center p-4 text-gray-500">
+                  <td colSpan="10" className="text-center p-4 text-gray-500">
                     No hay solicitudes pendientes
                   </td>
                 </tr>
@@ -349,8 +350,10 @@ const Home4 = () => {
                     <th className="border-b p-2">ID Policía</th>
                     <th className="border-b p-2">Nombres</th>
                     <th className="border-b p-2">Apellidos</th>
-                    <th className="border-b p-2">Telefono</th>
-                    <th className="border-b p-2">Barrio</th>
+                    <th className="border-b p-2">Teléfono</th>
+                    <th className="border-b p-2">Distrito</th>
+                    <th className="border-b p-2">Cantón</th>
+                    <th className="border-b p-2">Subzona</th>
                     <th className="border-b p-2">Disponibilidad</th>
                     <th className="border-b p-2">Asignar</th>
                   </tr>
@@ -364,7 +367,13 @@ const Home4 = () => {
                         <td className="border-b p-2">{police.apellidos}</td>
                         <td className="border-b p-2">{police.telefono}</td>
                         <td className="border-b p-2">
-                          {police.Circuito.barrio}
+                          {police.nombre_distrito}
+                        </td>
+                        <td className="border-b p-2">
+                          {police.nombre_canton}
+                        </td>
+                        <td className="border-b p-2">
+                          {police.nombre_subzona}
                         </td>
                         <td className="border-b p-2">
                           <EstadoBadge
@@ -390,7 +399,7 @@ const Home4 = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="text-center p-4 text-gray-500">
+                      <td colSpan="9" className="text-center p-4 text-gray-500">
                         No hay policías disponibles
                       </td>
                     </tr>
@@ -425,10 +434,7 @@ const Home4 = () => {
 };
 
 const Button = ({ text, number, icon }) => (
-  <button
-    className="bg-blue-500 text-white px-4 py-2 rounded flex items-center justify-between w-full"
-    // onClick={onClick}
-  >
+  <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center justify-between w-full">
     <div className="flex items-center gap-2">
       {icon}
       <span>{text}</span>
@@ -438,3 +444,4 @@ const Button = ({ text, number, icon }) => (
 );
 
 export default Home4;
+

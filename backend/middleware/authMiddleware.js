@@ -14,9 +14,8 @@ const authenticateJWT = (req, res, next) => {
     req.user = decoded;
 
     // Verificar si el usuario tiene el rol de administrador (id_rol = 2)
-    if (req.user.roles.includes(2)) {
-      next();
-    } else {
+    if (req.user.roles.includes(2)) { next(); } 
+    else {
       return res.status(403).json({ message: 'Acceso denegado: solo los administradores pueden acceder' });
     }
   } catch (error) {

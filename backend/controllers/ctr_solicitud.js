@@ -31,15 +31,18 @@ exports.getSolicitudes = async (req, res) => {
 
 
 exports.getSolicitudById = async (req, res) => {
-    try {
-        const solicitud = await solicitudService.getSolicitudById(req.params.id);
-        if (solicitud) {
-            res.status(200).json(solicitud);
-        }
-    } catch (error) {
-            res.status(404).json({message: 'Solicitud no encontrada'});
-    }
+  try {
+      const solicitud = await solicitudService.getSolicitudById(req.params.id);
+      if (solicitud) {
+          res.status(200).json(solicitud);
+      } else {
+          res.status(404).json({ message: 'Solicitud no encontrada' });
+      }
+  } catch (error) {
+      res.status(500).json({ message: 'Error al obtener la solicitud: ' + error.message });
+  }
 }
+
 
 
 exports.cerrarSolicitud = async (req, res) => {

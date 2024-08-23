@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiCheckCircle, FiTrash, FiEye } from "react-icons/fi";
+import { FiCheckCircle, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
 
 const ConsultaSolicitudes = () => {
   const [solicitudes, setSolicitudes] = useState([]);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [solicitudToDelete, setSolicitudToDelete] = useState(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,32 +22,10 @@ const ConsultaSolicitudes = () => {
     fetchData();
   }, []);
 
-  const handleDeleteClick = (solicitud) => {
-    setShowDeleteModal(true);
-    setSolicitudToDelete(solicitud);
-  };
 
-  const confirmDelete = async () => {
-    try {
-      await axios.delete(
-        `http://localhost:3000/solicitud/${solicitudToDelete.id_solicitud}`
-      );
-      setSolicitudes((prevSolicitudes) =>
-        prevSolicitudes.filter(
-          (s) => s.id_solicitud !== solicitudToDelete.id_solicitud
-        )
-      );
-      setShowDeleteModal(false);
-      setSolicitudToDelete(null);
-    } catch (error) {
-      console.error("Error deleting solicitud", error);
-    }
-  };
 
-  const cancelDelete = () => {
-    setShowDeleteModal(false);
-    setSolicitudToDelete(null);
-  };
+
+
 
   const handleRowClick = (solicitud) => {
     navigate(`/solicitudes/${solicitud.id_solicitud}`);
@@ -83,8 +60,9 @@ const ConsultaSolicitudes = () => {
                   <th className="border-b p-2">Subtipo</th>
                   <th className="border-b p-2">Fecha de Creación</th>
                   <th className="border-b p-2">Policía Asignado</th>
-                  <th className="border-b p-2">Ciudad</th>
-                  <th className="border-b p-2">Barrio</th>
+                  <th className="border-b p-2">Distrito</th>
+                  <th className="border-b p-2">Cantón</th>
+                  <th className="border-b p-2">Subzona</th>
                   <th className="border-b p-2">Detalle</th>
                 </tr>
               </thead>
@@ -110,10 +88,13 @@ const ConsultaSolicitudes = () => {
                       {solicitud.policia_asignado}
                     </td>
                     <td className="border-b p-2 text-center">
-                      {solicitud.circuito.ciudad}
+                      {solicitud.ubicacion.distrito}
                     </td>
                     <td className="border-b p-2 text-center">
-                      {solicitud.circuito.barrio}
+                      {solicitud.ubicacion.canton}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {solicitud.ubicacion.subzona}
                     </td>
                     <td className="border-b p-2 flex gap-2 justify-center">
                       <button

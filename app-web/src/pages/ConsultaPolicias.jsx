@@ -25,20 +25,17 @@ const ConsultaPolicias = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // * policiaRes permite traer los datos de los policias.
+        // Llamada a la API para obtener los datos de los policías
         const policiaRes = await axios.get(
           "http://localhost:3000/personas/policias"
         );
-        // * CircuitoRes permite traer los datos de los circuitos para dar uso de los filtros.
-        const circuitosRes = await axios.get("http://localhost:3000/circuitos");
-
-        const uniqueProvincias = [
-          ...new Set(circuitosRes.data.map((circuito) => circuito.provincia)),
-        ];
-
         setPolicias(policiaRes.data.policias);
         setFilteredPolicias(policiaRes.data.policias);
-        setCircuitos(circuitosRes.data);
+
+        // Extraer provincias, ciudades y barrios de los policías
+        const uniqueProvincias = [
+          ...new Set(policiaRes.data.policias.map((policia) => policia.nombre_subzona)),
+        ];
         setProvincias(uniqueProvincias);
       } catch (error) {
         console.error("Error fetching data", error);
@@ -52,9 +49,9 @@ const ConsultaPolicias = () => {
     if (filtros.provincia) {
       const uniqueCiudades = [
         ...new Set(
-          circuitos
-            .filter((circuito) => circuito.provincia === filtros.provincia)
-            .map((circuito) => circuito.ciudad)
+          policias
+            .filter((policia) => policia.nombre_subzona === filtros.provincia)
+            .map((policia) => policia.nombre_canton)
         ),
       ];
       setCiudades(uniqueCiudades);
@@ -64,19 +61,19 @@ const ConsultaPolicias = () => {
 
     setFiltros((prevFiltros) => ({ ...prevFiltros, ciudad: "", barrio: "" }));
     setBarrios([]);
-  }, [filtros.provincia, circuitos]);
+  }, [filtros.provincia, policias]);
 
   useEffect(() => {
     if (filtros.ciudad) {
       const uniqueBarrios = [
         ...new Set(
-          circuitos
+          policias
             .filter(
-              (circuito) =>
-                circuito.provincia === filtros.provincia &&
-                circuito.ciudad === filtros.ciudad
+              (policia) =>
+                policia.nombre_subzona === filtros.provincia &&
+                policia.nombre_canton === filtros.ciudad
             )
-            .map((circuito) => circuito.barrio)
+            .map((policia) => policia.nombre_distrito)
         ),
       ];
       setBarrios(uniqueBarrios);
@@ -85,7 +82,7 @@ const ConsultaPolicias = () => {
     }
 
     setFiltros((prevFiltros) => ({ ...prevFiltros, barrio: "" }));
-  }, [filtros.ciudad, circuitos]);
+  }, [filtros.ciudad, policias]);
 
   const handleFiltroChange = (e) => {
     const { name, value } = e.target;
@@ -96,10 +93,10 @@ const ConsultaPolicias = () => {
     const filtered = policias.filter(
       (policia) =>
         (filtros.provincia
-          ? policia.Circuito.provincia === filtros.provincia
+          ? policia.nombre_subzona === filtros.provincia
           : true) &&
-        (filtros.ciudad ? policia.Circuito.ciudad === filtros.ciudad : true) &&
-        (filtros.barrio ? policia.Circuito.barrio === filtros.barrio : true) &&
+        (filtros.ciudad ? policia.nombre_canton === filtros.ciudad : true) &&
+        (filtros.barrio ? policia.nombre_distrito === filtros.barrio : true) &&
         (filtros.disponibilidad
           ? policia.disponibilidad === filtros.disponibilidad
           : true)
@@ -130,13 +127,13 @@ const ConsultaPolicias = () => {
         policia
       );
       setPolicias((prevPolicias) =>
-        prevPolicias.map((c) =>
-          c.id_persona === policia.id_persona ? policia : c
+        prevPolicias.map((p) =>
+          p.id_persona === policia.id_persona ? policia : p
         )
       );
       setFilteredPolicias((prevFiltered) =>
-        prevFiltered.map((c) =>
-          c.id_persona === policia.id_persona ? policia : c
+        prevFiltered.map((p) =>
+          p.id_persona === policia.id_persona ? policia : p
         )
       );
       setEditingPolicia(null);
@@ -230,7 +227,7 @@ const ConsultaPolicias = () => {
             className="border p-2 rounded"
             disabled={!filtros.ciudad}
           >
-            <option value="">Barrio</option>
+            <option value="">Subzona</option>
             {barrios.map((barrio) => (
               <option key={barrio} value={barrio}>
                 {barrio}
@@ -270,26 +267,32 @@ const ConsultaPolicias = () => {
             <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
               <thead>
                 <tr>
-                  <th className="border-b p-2 text-center">id</th>
+                  <th className="border-b p-2 text-center">ID</th>
                   <th className="border-b p-2 text-center">Cédula</th>
                   <th className="border-b p-2 text-center">Nombres</th>
                   <th className="border-b p-2 text-center">Apellidos</th>
                   <th className="border-b p-2 text-center">Teléfono</th>
-                  <th className="border-b p-2 text-center">Barrio</th>
+                  <th className="border-b p-2 text-center">Distrito</th>
+                  <th className="border-b p-2 text-center">Cantón</th>
+                  <th className="border-b p-2 text-center">Subzona</th>
                   <th className="border-b p-2 text-center">Disponibilidad</th>
                   <th className="border-b p-2 text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPolicias.map((policia) => (
-                  <tr key={policia.id_persona} className="hover:bg-gray-50">
+                  <tr
+                    key={policia.id_persona}
+                    className="hover:bg-gray-50"
+                    onClick={() => handleRowClick(policia)}
+                  >
                     <td className="border-b p-2 text-center">
                       {policia.id_persona}
                     </td>
                     <td className="border-b p-2 text-center">
                       {policia.cedula}
                     </td>
-                    <td className="border-b p-2 ">
+                    <td className="border-b p-2 text-center">
                       {editingPolicia?.id_persona === policia.id_persona ? (
                         <input
                           type="text"
@@ -306,7 +309,7 @@ const ConsultaPolicias = () => {
                         policia.nombres
                       )}
                     </td>
-                    <td className="border-b p-2">
+                    <td className="border-b p-2 text-center">
                       {editingPolicia?.id_persona === policia.id_persona ? (
                         <input
                           type="text"
@@ -341,7 +344,13 @@ const ConsultaPolicias = () => {
                       )}
                     </td>
                     <td className="border-b p-2 text-center">
-                      {policia.Circuito.barrio}
+                      {policia.nombre_distrito}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {policia.nombre_canton}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {policia.nombre_subzona}
                     </td>
                     <td className="border-b p-2 text-center">
                       <EstadoBadge
@@ -430,3 +439,5 @@ const Button = ({ text, number, icon, onClick }) => (
 );
 
 export default ConsultaPolicias;
+
+       

@@ -1,29 +1,67 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-native";
 import { UserContext } from "../context/UserContext";
 import { Picker } from "@react-native-picker/picker";
+import axios from "axios";
 
 const RegistroScreen = () => {
   const navigate = useNavigate();
   const { userState, registroUsuario } = useContext(UserContext);
+  const [subzonas, setSubzonas] = useState([]);
+  const [cantones, setCantones] = useState([]);
+  const [parroquias, setParroquias] = useState([]);
+  const API_URL = "http://192.168.0.12:3000";
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    watch,
-    setValue,
-    setError,
-  } = useForm();
+  const { control, handleSubmit, formState: { errors, isSubmitting }, watch, setValue, setError } = useForm();
+
+  useEffect(() => {
+    const fetchSubzonas = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/circuitos/subzonas`);
+        setSubzonas(response.data);
+      } catch (error) {
+        console.error("Error fetching subzonas:", error);
+      }
+    };
+
+    fetchSubzonas();
+  }, []);
+
+  const handleSubzonaChange = async (subzonaId) => {
+    setValue("id_subzona", subzonaId);
+    setCantones([]);
+    setParroquias([]);
+    setValue("id_canton", "");
+    setValue("id_parroquia", "");
+
+    try {
+      const response = await axios.get(`${API_URL}/circuitos/subzonas/${subzonaId}/cantones`);
+      setCantones(response.data);
+    } catch (error) {
+      console.error("Error fetching cantones:", error);
+    }
+  };
+
+  const handleCantonChange = async (cantonId) => {
+    setValue("id_canton", cantonId);
+    setParroquias([]);
+    setValue("id_parroquia", "");
+  
+    try {
+      const response = await axios.get(`${API_URL}/circuitos/cantones/${cantonId}/parroquias`);
+      setParroquias(response.data);
+    } catch (error) {
+      console.error("Error fetching parroquias:", error);
+    }
+  };
 
   const onSubmit = async (data) => {
     const userData = {
       ...data,
-      roles: ["Ciudadano"], // Asegúrate de que el rol sea "Ciudadano"
-      id_circuito: 1, // Puedes ajustar esto según tu lógica
+      roles: ["Ciudadano"],
     };
 
     const registroExitoso = await registroUsuario(userData);
@@ -35,13 +73,12 @@ const RegistroScreen = () => {
         [
           {
             text: "OK",
-            onPress: () => navigate("/login"), // Navega al login cuando el usuario presione OK
+            onPress: () => navigate("/login"),
           },
         ],
         { cancelable: false }
       );
     } else if (userState.errorNewUser) {
-      // Maneja el error inmediatamente y muestra la alerta
       if (userState.errorNewUser.includes("cedula")) {
         setError("cedula", {
           type: "manual",
@@ -56,7 +93,7 @@ const RegistroScreen = () => {
 
       Alert.alert(
         "Error de Registro",
-        userState.errorNewUser, // Muestra el mensaje de error desde el estado del contexto
+        userState.errorNewUser,
         [
           {
             text: "OK",
@@ -81,6 +118,8 @@ const RegistroScreen = () => {
           {userState.errorNewUser && (
             <Text style={styles.errorText}>{userState.errorNewUser}</Text>
           )}
+          
+          {/* Nombres */}
           <Controller
             control={control}
             name="nombres"
@@ -93,7 +132,7 @@ const RegistroScreen = () => {
                 onChangeText={onChange}
                 value={value}
                 style={styles.input}
-                outlineColor={errors.nombres ? "red" : "#78288c"} // Cambiar color del borde si hay error
+                outlineColor={errors.nombres ? "red" : "#78288c"}
               />
             )}
           />
@@ -101,6 +140,7 @@ const RegistroScreen = () => {
             <Text style={styles.errorText}>{errors.nombres.message}</Text>
           )}
 
+          {/* Apellidos */}
           <Controller
             control={control}
             name="apellidos"
@@ -113,13 +153,15 @@ const RegistroScreen = () => {
                 onChangeText={onChange}
                 value={value}
                 style={styles.input}
-                outlineColor={errors.apellidos ? "red" : "#78288c"} // Cambiar color del borde si hay error
+                outlineColor={errors.apellidos ? "red" : "#78288c"}
               />
             )}
           />
           {errors.apellidos && (
             <Text style={styles.errorText}>{errors.apellidos.message}</Text>
           )}
+
+          {/* Cédula */}
           <Controller
             control={control}
             name="cedula"
@@ -139,7 +181,7 @@ const RegistroScreen = () => {
                 value={value}
                 style={styles.input}
                 keyboardType="phone-pad"
-                outlineColor={errors.cedula ? "red" : "#78288c"} // Cambiar color del borde si hay error
+                outlineColor={errors.cedula ? "red" : "#78288c"}
               />
             )}
           />
@@ -147,6 +189,7 @@ const RegistroScreen = () => {
             <Text style={styles.errorText}>{errors.cedula.message}</Text>
           )}
 
+          {/* Teléfono */}
           <Controller
             control={control}
             name="telefono"
@@ -166,7 +209,7 @@ const RegistroScreen = () => {
                 value={value}
                 style={styles.input}
                 keyboardType="phone-pad"
-                outlineColor={errors.telefono ? "red" : "#78288c"} // Cambiar color del borde si hay error
+                outlineColor={errors.telefono ? "red" : "#78288c"}
               />
             )}
           />
@@ -174,6 +217,7 @@ const RegistroScreen = () => {
             <Text style={styles.errorText}>{errors.telefono.message}</Text>
           )}
 
+          {/* Email */}
           <Controller
             control={control}
             name="email"
@@ -193,7 +237,7 @@ const RegistroScreen = () => {
                 value={value}
                 style={styles.input}
                 autoCapitalize="none"
-                outlineColor={errors.email ? "red" : "#78288c"} // Cambiar color del borde si hay error
+                outlineColor={errors.email ? "red" : "#78288c"}
               />
             )}
           />
@@ -201,6 +245,7 @@ const RegistroScreen = () => {
             <Text style={styles.errorText}>{errors.email.message}</Text>
           )}
 
+          {/* Género */}
           <Controller
             control={control}
             name="genero"
@@ -224,6 +269,93 @@ const RegistroScreen = () => {
             <Text style={styles.errorText}>{errors.genero.message}</Text>
           )}
 
+          {/* Subzona */}
+          <Controller
+            control={control}
+            name="id_subzona"
+            rules={{ required: "La subzona es obligatoria" }}
+            render={({ field: { onChange, value } }) => (
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={value}
+                  onValueChange={(itemValue) => {
+                    onChange(itemValue);
+                    handleSubzonaChange(itemValue);
+                  }}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Seleccione una subzona" value="" />
+                  {subzonas.map((subzona) => (
+                    <Picker.Item
+                      key={subzona.id_subzona}
+                      label={subzona.nombre_subzona}
+                      value={subzona.id_subzona}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            )}
+          />
+          {errors.id_subzona && (
+            <Text style={styles.errorText}>{errors.id_subzona.message}</Text>
+          )}
+
+          {/* Cantón */}
+          <Controller
+            control={control}
+            name="id_canton"
+            rules={{ required: "El cantón es obligatorio" }}
+            render={({ field: { onChange, value } }) => (
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={value}
+                  onValueChange={(itemValue) => {
+                    onChange(itemValue);
+                    handleCantonChange(itemValue);
+                  }}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Seleccione un cantón" value="" />
+                  {cantones.map((canton) => (
+                    <Picker.Item
+                      key={canton.id_canton}
+                      label={canton.nombre_canton}
+                      value={canton.id_canton}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            )}
+          />
+          {errors.id_canton && (
+            <Text style={styles.errorText}>{errors.id_canton.message}</Text>
+          )}
+
+          {/* Parroquia (opcional) */}
+          <Controller
+            control={control}
+            name="id_parroquia"
+            render={({ field: { onChange, value } }) => (
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={value}
+                  onValueChange={onChange}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Seleccione una parroquia (opcional)" value="" />
+                  {parroquias.map((parroquia) => (
+                    <Picker.Item
+                      key={parroquia.id_parroquia}
+                      label={parroquia.nombre_parroquia}
+                      value={parroquia.id_parroquia}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            )}
+          />
+
+          {/* Contraseña */}
           <Controller
             control={control}
             name="password"
@@ -248,7 +380,7 @@ const RegistroScreen = () => {
                 value={value}
                 secureTextEntry
                 style={styles.input}
-                outlineColor={errors.password ? "red" : "#78288c"} // Cambiar color del borde si hay error
+                outlineColor={errors.password ? "red" : "#78288c"}
               />
             )}
           />
@@ -256,6 +388,7 @@ const RegistroScreen = () => {
             <Text style={styles.errorText}>{errors.password.message}</Text>
           )}
 
+          {/* Confirmar contraseña */}
           <Controller
             control={control}
             name="confirmPassword"
@@ -273,7 +406,7 @@ const RegistroScreen = () => {
                 value={value}
                 secureTextEntry
                 style={styles.input}
-                outlineColor={errors.confirmPassword ? "red" : "#78288c"} // Cambiar color del borde si hay error
+                outlineColor={errors.confirmPassword ? "red" : "#78288c"}
               />
             )}
           />
@@ -283,6 +416,7 @@ const RegistroScreen = () => {
             </Text>
           )}
 
+          {/* Botón de Registro */}
           <Button
             mode="contained"
             onPress={handleSubmit(onSubmit)}
@@ -293,6 +427,7 @@ const RegistroScreen = () => {
             Registrarse
           </Button>
 
+          {/* Enlace para iniciar sesión */}
           <View style={styles.bottomLinks}>
             <Button onPress={handleLogin} color="#007BFF">
               ¿Ya tienes una cuenta? Inicia sesión
@@ -346,10 +481,7 @@ const styles = StyleSheet.create({
     width: "100%",
     marginBottom: 10,
   },
-  errorText: {
-    color: "red",
-    marginBottom: 16,
-  },
 });
 
 export default RegistroScreen;
+

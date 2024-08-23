@@ -1,4 +1,4 @@
-const { Solicitud, SolicitudEventoPersona, Subtipo, Persona, sequelize, TipoSolicitud, Circuito, Observacion, Estado, Evento, Rol, SolicitudEvidencia, TipoEvidencia} = require('../../models/db_models');
+const { Solicitud, SolicitudEventoPersona, Subtipo, Persona, sequelize, TipoSolicitud, Circuito, Observacion, Estado, Evento, Rol, SolicitudEvidencia, TipoEvidencia, Distrito, Canton, Subzona, Parroquia, Zona} = require('../../models/db_models');
 
 const fs = require('fs');
 const path = require('path');
@@ -66,7 +66,6 @@ exports.crearBotonEmergencia = async (personaData) => {
 
 exports.getSolicitudes = async () => {
     try {
-        // Obtener todas las solicitudes con información asociada, ordenadas por fecha de creación ascendente
         const solicitudes = await Solicitud.findAll({
             include: [
                 {
@@ -84,46 +83,99 @@ exports.getSolicitudes = async () => {
                     include: [
                         {
                             model: TipoSolicitud,
-                            attributes: ['descripcion'] // Asegúrate de incluir la descripción del tipo de solicitud
+                            attributes: ['descripcion'],
+                            as: 'TipoSolicitud'
                         }
                     ],
-                    attributes: ['descripcion']
+                    attributes: ['descripcion'],
+                    as: 'Subtipo'
                 },
                 {
                     model: Estado,
-                    attributes: ['descripcion']
+                    attributes: ['descripcion'],
+                    as: 'Estado'
                 },
                 {
                     model: Circuito,
-                    attributes: ['provincia', 'ciudad', 'barrio', 'numero_circuito']
+                    attributes: ['nombre_circuito'],
+                    as: 'Circuito',
+                    include: [
+                        {
+                            model: Parroquia,
+                            attributes: ['nombre_parroquia'],
+                            as: 'Parroquium', // Asegúrate de que el alias sea correcto
+                            include: [
+                                {
+                                    model: Canton,
+                                    attributes: ['nombre_canton'],
+                                    as: 'Canton', // Verificar si 'Canton' es el alias correcto
+                                    include: [
+                                        {
+                                            model: Subzona,
+                                            attributes: ['nombre_subzona'],
+                                            as: 'Subzona' // Asegúrate de que el alias sea correcto
+                                        }
+                                    ]
+                                },
+                                {
+                                    model: Distrito,
+                                    attributes: ['nombre_distrito'],
+                                    as: 'Distrito' // Asegúrate de que el alias sea correcto
+                                }
+                            ]
+                        }
+                    ]
                 }
             ],
-            order: [['fecha_creacion', 'DESC']] // Ordenar por fecha_creacion ascendente
+            order: [['fecha_creacion', 'DESC']]
         });
 
-        // Mapear las solicitudes para estructurar la respuesta
-        const solicitudesEstructuradas = solicitudes.map(solicitud => ({
-            id_solicitud: solicitud.id_solicitud,
-            estado: solicitud.Estado.descripcion,
-            tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
-            subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
-            creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
-            policia_asignado: solicitud.policia ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}` : 'No asignado',
-            puntoGPS: solicitud.puntoGPS,
-            circuito: {
-                provincia: solicitud.Circuito.provincia,
-                ciudad: solicitud.Circuito.ciudad,
-                barrio: solicitud.Circuito.barrio,
-                numero_circuito: solicitud.Circuito.numero_circuito
-            },
-            fecha_creacion: solicitud.fecha_creacion.toISOString() // Convertir la fecha a formato ISO 8601
-        }));
+        console.log("Solicitudes obtenidas:", JSON.stringify(solicitudes, null, 2));
+
+        const solicitudesEstructuradas = solicitudes.map(solicitud => {
+            const circuito = solicitud.Circuito;
+            console.log("Circuito:", JSON.stringify(circuito, null, 2));
+            
+            const parroquia = circuito?.Parroquium; // Usa el alias correcto
+            console.log("Parroquia:", JSON.stringify(parroquia, null, 2));
+            
+            const canton = parroquia?.Canton; // Usa el alias correcto
+            console.log("Canton:", JSON.stringify(canton, null, 2));
+            
+            const subzona = canton?.Subzona;
+            console.log("Subzona:", JSON.stringify(subzona, null, 2));
+            
+            const distrito = circuito?.Distrito;
+            console.log("Distrito:", JSON.stringify(distrito, null, 2));
+
+            return {
+                id_solicitud: solicitud.id_solicitud,
+                estado: solicitud.Estado.descripcion,
+                tipo: solicitud.Subtipo.TipoSolicitud.descripcion,
+                subtipo: solicitud.Subtipo.descripcion,
+                creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
+                policia_asignado: solicitud.policia ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}` : 'No asignado',
+                puntoGPS: solicitud.puntoGPS,
+                ubicacion: {
+                    subzona: subzona?.nombre_subzona || 'Sin Subzona',
+                    canton: canton?.nombre_canton || 'Sin Cantón',
+                    distrito: distrito?.nombre_distrito || 'Sin Distrito',
+                },
+                fecha_creacion: solicitud.fecha_creacion.toISOString()
+            };
+        });
 
         return solicitudesEstructuradas;
     } catch (error) {
+        console.error('Error al obtener las solicitudes:', error);
         throw new Error('Error al obtener las solicitudes: ' + error.message);
     }
 };
+
+
+
+
+
 
 
 
@@ -207,7 +259,7 @@ exports.getSolicitudById = async (id_solicitud) => {
                     include: [
                         {
                             model: TipoSolicitud,
-                            attributes: ['descripcion'] // Asegúrate de incluir la descripción del tipo de solicitud
+                            attributes: ['descripcion'] // Incluir la descripción del tipo de solicitud
                         }
                     ],
                     attributes: ['descripcion']
@@ -218,7 +270,35 @@ exports.getSolicitudById = async (id_solicitud) => {
                 },
                 {
                     model: Circuito,
-                    attributes: ['provincia', 'ciudad', 'barrio', 'numero_circuito']
+                    include: [
+                        {
+                            model: Parroquia,
+                            attributes: ['nombre_parroquia'],
+                            as: 'Parroquium', // Asegúrate de usar el alias correcto si lo defines así en tu ORM
+                            include: [
+                                {
+                                    model: Distrito,
+                                    attributes: ['nombre_distrito'],
+                                    as: 'Distrito', // Ajustar si se usa un alias diferente en ORM
+                                    include: [
+                                        {
+                                            model: Canton,
+                                            attributes: ['nombre_canton'],
+                                            as: 'cantones', // Usar alias 'cantones' si es definido así
+                                            include: [
+                                                {
+                                                    model: Subzona,
+                                                    attributes: ['nombre_subzona'],
+                                                    as: 'Subzona' // Asegúrate de usar el alias correcto
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    as: 'Circuito' // Usar el alias definido en ORM
                 },
                 {
                     model: SolicitudEventoPersona,
@@ -246,7 +326,6 @@ exports.getSolicitudById = async (id_solicitud) => {
                     attributes: ['observacion', 'fecha'],
                     order: [['fecha', 'ASC']]
                 },
-
                 {
                     model: SolicitudEvidencia,
                     include: [
@@ -264,20 +343,30 @@ exports.getSolicitudById = async (id_solicitud) => {
             throw new Error('La solicitud especificada no existe.');
         }
 
-        // Mapear la solicitud para reemplazar el id_estado y el id_subtipo por sus descripciones
+        // Mapear la solicitud para estructurar la respuesta
+        const circuito = solicitud.Circuito;
+        const parroquia = circuito?.Parroquium; // Asegúrate de usar el alias correcto
+        const distrito = parroquia?.Distrito; // Ajustar si se usa un alias diferente
+        const canton = distrito?.cantones?.[0]; // Acceder al primer cantón del distrito si es una relación muchos a muchos
+        const subzona = canton?.Subzona;
+
         const formattedSolicitud = {
             id_solicitud: solicitud.id_solicitud,
-            estado: solicitud.Estado.descripcion, // Reemplazar id_estado por descripcion
-            tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
-            subtipo: solicitud.Subtipo.descripcion, // Reemplazar id_subtipo por descripcion
+            estado: solicitud.Estado.descripcion,
+            tipo: solicitud.Subtipo.TipoSolicitud.descripcion,
+            subtipo: solicitud.Subtipo.descripcion,
             fecha_creacion: solicitud.fecha_creacion,
             puntoGPS: solicitud.puntoGPS,
             direccion: solicitud.direccion,
-            circuito: solicitud.Circuito,
+            ubicacion: {
+                distrito: distrito?.nombre_distrito || 'Sin Distrito',
+                canton: canton?.nombre_canton || 'Sin Cantón',
+                subzona: subzona?.nombre_subzona || 'Sin Subzona'
+            },
             creado_por: solicitud.creador,
             policia_asignado: solicitud.policia,
             SolicitudEventoPersonas: solicitud.SolicitudEventoPersonas.map(sep => ({
-                id_evento: sep.Evento.evento, // Solo mostrar la descripción del evento
+                id_evento: sep.Evento.evento,
                 fecha_creacion: sep.fecha_creacion,
                 persona: sep.Persona
             })),
@@ -286,10 +375,9 @@ exports.getSolicitudById = async (id_solicitud) => {
                 fecha: obs.fecha,
                 persona: obs.Persona
             })),
-
             evidencias: solicitud.SolicitudEvidencia.map(evidencia => ({
-                tipo: evidencia.TipoEvidencia.evidencia, // Tipo de la evidencia
-                url: `https://onedrive-link/${evidencia.evidencia}` // Aquí se debería generar el enlace correcto a la nube
+                tipo: evidencia.TipoEvidencia.evidencia,
+                url: `https://onedrive-link/${evidencia.evidencia}`
             }))
         };
 
@@ -299,6 +387,9 @@ exports.getSolicitudById = async (id_solicitud) => {
         throw new Error('Error al obtener la solicitud: ' + error.message);
     }
 };
+
+
+
 
 
 
@@ -602,15 +693,10 @@ exports.crearSolicitud = async (personaData) => {
 
 
 
-
-
 exports.getSolicitudesPendientes = async () => {
     try {
         // Obtener las solicitudes con estado "Pendiente", con información asociada, ordenadas por fecha de creación descendente
         const solicitudesPendientes = await Solicitud.findAll({
-            where: {
-                '$Estado.descripcion$': 'Pendiente' // Filtrar por estado "Pendiente"
-            },
             include: [
                 {
                     model: Persona,
@@ -627,40 +713,82 @@ exports.getSolicitudesPendientes = async () => {
                     include: [
                         {
                             model: TipoSolicitud,
-                            attributes: ['descripcion'] // Incluir la descripción del tipo de solicitud
+                            attributes: ['descripcion'],
+                            as: 'TipoSolicitud' // Asegúrate de usar el alias correcto
                         }
                     ],
-                    attributes: ['descripcion']
+                    attributes: ['descripcion'],
+                    as: 'Subtipo' // Asegúrate de usar el alias correcto
                 },
                 {
                     model: Estado,
-                    attributes: ['descripcion']
+                    attributes: ['descripcion'],
+                    as: 'Estado' // Asegúrate de usar el alias correcto
                 },
                 {
                     model: Circuito,
-                    attributes: ['provincia', 'ciudad', 'barrio', 'numero_circuito']
+                    attributes: ['nombre_circuito'],
+                    as: 'Circuito', // Asegúrate de usar el alias correcto
+                    include: [
+                        {
+                            model: Parroquia,
+                            attributes: ['nombre_parroquia'],
+                            as: 'Parroquium', // Asegúrate de usar el alias correcto
+                            include: [
+                                {
+                                    model: Distrito,
+                                    attributes: ['nombre_distrito'],
+                                    as: 'Distrito', // Asegúrate de usar el alias correcto
+                                    include: [
+                                        {
+                                            model: Canton,
+                                            attributes: ['nombre_canton'],
+                                            as: 'cantones', // Usar el alias definido en el ORM
+                                            include: [
+                                                {
+                                                    model: Subzona,
+                                                    attributes: ['nombre_subzona'],
+                                                    as: 'Subzona' // Asegúrate de usar el alias correcto
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
                 }
             ],
+            where: {
+                '$Estado.descripcion$': 'Pendiente' // Filtrar por estado "Pendiente"
+            },
             order: [['fecha_creacion', 'DESC']] // Ordenar por fecha_creacion descendente
         });
 
         // Mapear las solicitudes para estructurar la respuesta
-        const solicitudesEstructuradas = solicitudesPendientes.map(solicitud => ({
-            id_solicitud: solicitud.id_solicitud,
-            estado: solicitud.Estado.descripcion,
-            tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
-            subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
-            creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
-            policia_asignado: solicitud.policia ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}` : 'No asignado',
-            // puntoGPS: solicitud.puntoGPS,
-            circuito: {
-                provincia: solicitud.Circuito.provincia,
-                ciudad: solicitud.Circuito.ciudad,
-                barrio: solicitud.Circuito.barrio,
-                numero_circuito: solicitud.Circuito.numero_circuito
-            },
-            fecha_creacion: solicitud.fecha_creacion.toISOString() // Convertir la fecha a formato ISO 8601
-        }));
+        const solicitudesEstructuradas = solicitudesPendientes.map(solicitud => {
+            const circuito = solicitud.Circuito;
+            const parroquia = circuito?.Parroquium;
+            const distrito = parroquia?.Distrito;
+            const canton = distrito?.cantones?.[0];
+            const subzona = canton?.Subzona;
+
+            return {
+                id_solicitud: solicitud.id_solicitud,
+                estado: solicitud.Estado.descripcion,
+                tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
+                subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
+                creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
+                policia_asignado: solicitud.policia ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}` : 'No asignado',
+                puntoGPS: solicitud.puntoGPS,
+                ubicacion: {
+                    distrito: distrito?.nombre_distrito || 'Sin Distrito',
+                    canton: canton?.nombre_canton || 'Sin Cantón',
+                    subzona: subzona?.nombre_subzona || 'Sin Subzona'
+                },
+                fecha_creacion: solicitud.fecha_creacion.toISOString() // Convertir la fecha a formato ISO 8601
+            };
+        });
 
         return solicitudesEstructuradas;
     } catch (error) {
@@ -669,9 +797,75 @@ exports.getSolicitudesPendientes = async () => {
 };
 
 
+
+
+// exports.top10SolicitudesRecientes = async () => {
+//     try {
+//         // Obtener las 10 solicitudes más recientes con información asociada
+//         const solicitudes = await Solicitud.findAll({
+//             include: [
+//                 {
+//                     model: Persona,
+//                     as: 'creador',
+//                     attributes: ['nombres', 'apellidos']
+//                 },
+//                 {
+//                     model: Persona,
+//                     as: 'policia',
+//                     attributes: ['nombres', 'apellidos']
+//                 },
+//                 {
+//                     model: Subtipo,
+//                     include: [
+//                         {
+//                             model: TipoSolicitud,
+//                             attributes: ['descripcion'] // Incluir la descripción del tipo de solicitud
+//                         }
+//                     ],
+//                     attributes: ['descripcion']
+//                 },
+//                 {
+//                     model: Estado,
+//                     attributes: ['descripcion']
+//                 },
+//                 {
+//                     model: Circuito,
+//                     attributes: ['provincia', 'ciudad', 'barrio', 'numero_circuito']
+//                 }
+//             ],
+//             order: [['fecha_creacion', 'DESC']], // Ordenar por fecha_creacion descendente
+//             limit: 5 // Limitar los resultados a los 10 más recientes
+//         });
+
+//         // Mapear las solicitudes para estructurar la respuesta
+//         const solicitudesEstructuradas = solicitudes.map(solicitud => ({
+//             id_solicitud: solicitud.id_solicitud,
+//             estado: solicitud.Estado.descripcion,
+//             tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
+//             subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
+//             creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
+//             policia_asignado: solicitud.policia ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}` : 'No asignado',
+//             puntoGPS: solicitud.puntoGPS,
+//             circuito: {
+//                 provincia: solicitud.Circuito.provincia,
+//                 ciudad: solicitud.Circuito.ciudad,
+//                 barrio: solicitud.Circuito.barrio,
+//                 numero_circuito: solicitud.Circuito.numero_circuito
+//             },
+//             fecha_creacion: solicitud.fecha_creacion.toISOString() // Convertir la fecha a formato ISO 8601
+//         }));
+
+//         return solicitudesEstructuradas;
+//     } catch (error) {
+//         throw new Error('Error al obtener las solicitudes recientes: ' + error.message);
+//     }
+// };
+
+
+
 exports.top10SolicitudesRecientes = async () => {
     try {
-        // Obtener las 10 solicitudes más recientes con información asociada
+        // Obtener todas las solicitudes con información asociada, ordenadas por fecha de creación ascendente
         const solicitudes = await Solicitud.findAll({
             include: [
                 {
@@ -689,7 +883,7 @@ exports.top10SolicitudesRecientes = async () => {
                     include: [
                         {
                             model: TipoSolicitud,
-                            attributes: ['descripcion'] // Incluir la descripción del tipo de solicitud
+                            attributes: ['descripcion'] // Asegúrate de incluir la descripción del tipo de solicitud
                         }
                     ],
                     attributes: ['descripcion']
@@ -700,7 +894,30 @@ exports.top10SolicitudesRecientes = async () => {
                 },
                 {
                     model: Circuito,
-                    attributes: ['provincia', 'ciudad', 'barrio', 'numero_circuito']
+                    include: [
+                        {
+                            model: Parroquia,
+                            attributes: ['nombre_parroquia'],
+                            include: [
+                                {
+                                    model: Distrito,
+                                    attributes: ['nombre_distrito'],
+                                    include: [
+                                        {
+                                            model: Canton,
+                                            attributes: ['nombre_canton'],
+                                            include: [
+                                                {
+                                                    model: Subzona,
+                                                    attributes: ['nombre_subzona']
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
                 }
             ],
             order: [['fecha_creacion', 'DESC']], // Ordenar por fecha_creacion descendente
@@ -708,25 +925,32 @@ exports.top10SolicitudesRecientes = async () => {
         });
 
         // Mapear las solicitudes para estructurar la respuesta
-        const solicitudesEstructuradas = solicitudes.map(solicitud => ({
-            id_solicitud: solicitud.id_solicitud,
-            estado: solicitud.Estado.descripcion,
-            tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
-            subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
-            creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
-            policia_asignado: solicitud.policia ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}` : 'No asignado',
-            puntoGPS: solicitud.puntoGPS,
-            circuito: {
-                provincia: solicitud.Circuito.provincia,
-                ciudad: solicitud.Circuito.ciudad,
-                barrio: solicitud.Circuito.barrio,
-                numero_circuito: solicitud.Circuito.numero_circuito
-            },
-            fecha_creacion: solicitud.fecha_creacion.toISOString() // Convertir la fecha a formato ISO 8601
-        }));
+        const solicitudesEstructuradas = solicitudes.map(solicitud => {
+            const circuito = solicitud.Circuito;
+            const parroquia = circuito?.Parroquia;
+            const distrito = parroquia?.Distrito;
+            const canton = distrito?.Canton;
+            const subzona = canton?.Subzona;
+
+            return {
+                id_solicitud: solicitud.id_solicitud,
+                estado: solicitud.Estado.descripcion,
+                tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
+                subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
+                creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
+                policia_asignado: solicitud.policia ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}` : 'No asignado',
+                puntoGPS: solicitud.puntoGPS,
+                ubicacion: {
+                    distrito: distrito?.nombre_distrito || 'Sin Distrito',
+                    canton: canton?.nombre_canton || 'Sin Cantón',
+                    subzona: subzona?.nombre_subzona || 'Sin Subzona'
+                },
+                fecha_creacion: solicitud.fecha_creacion.toISOString() // Convertir la fecha a formato ISO 8601
+            };
+        });
 
         return solicitudesEstructuradas;
     } catch (error) {
-        throw new Error('Error al obtener las solicitudes recientes: ' + error.message);
+        throw new Error('Error al obtener las solicitudes: ' + error.message);
     }
 };

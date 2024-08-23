@@ -79,6 +79,18 @@ const ResumenActividadScreen = () => {
       </Card>
 
       <Card style={styles.card}>
+        <Card.Title title="Total de Solicitudes" />
+        <Card.Content>
+          <View style={styles.tableRow}>
+            <Text style={styles.tableCell}>Total</Text>
+            <Text style={styles.tableCell}>
+              {policiaData.total_solicitudes}
+            </Text>
+          </View>
+        </Card.Content>
+      </Card>
+
+      <Card style={styles.card}>
         <Card.Title title="Solicitud Más Resuelta" />
         <Card.Content>
           <View style={styles.tableRow}>
@@ -95,6 +107,7 @@ const ResumenActividadScreen = () => {
           </View>
         </Card.Content>
       </Card>
+
       <Card style={styles.card}>
         <Card.Title title="Solicitudes Asignadas" />
         <Card.Content>

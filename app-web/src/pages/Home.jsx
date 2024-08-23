@@ -47,7 +47,6 @@ const Home = () => {
   const [stats, setStats] = useState({});
   const [topSolicitudes, setTopSolicitudes] = useState([]);
   const navigate = useNavigate();
-  // const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -261,7 +260,7 @@ const Home = () => {
 
             <div className="bg-white rounded-lg p-3 shadow-md">
               <div className="flex items-center">
-                <div className="mr-3">
+              <div className="mr-3">
                   <FiCheckCircle size={20} color="#28a745" />
                 </div>
                 <div>
@@ -293,9 +292,9 @@ const Home = () => {
                 <th className="py-2 px-4 text-left">Estado</th>
                 <th className="py-2 px-4 text-left">Subtipo</th>
                 <th className="py-2 px-4 text-left">Fecha</th>
-                <th className="border-b p-2">Policía Asignado</th>
-                <th className="border-b p-2">Ciudad</th>
-                <th className="border-b p-2">Barrio</th>
+                <th className="border-b p-2 text-left">Distrito</th>
+                <th className="border-b p-2 text-left">Cantón</th>
+                <th className="border-b p-2 text-left">Subzona</th>
                 <th className="py-2 px-4 text-left">Acciones</th>
               </tr>
             </thead>
@@ -310,16 +309,10 @@ const Home = () => {
                   <td className="py-2 px-4">
                     {new Date(solicitud.fecha_creacion).toLocaleString()}
                   </td>
-                  <td className="border-b p-2 text-center">
-                    {solicitud.policia_asignado}
-                  </td>
-                  <td className="border-b p-2 text-center">
-                    {solicitud.circuito.ciudad}
-                  </td>
-                  <td className="border-b p-2 text-center">
-                    {solicitud.circuito.barrio}
-                  </td>
-                  <td className="border-b p-2 flex gap-2 justify-center">
+                  <td className="py-2 px-4">{solicitud.ubicacion.distrito}</td>
+                  <td className="py-2 px-4">{solicitud.ubicacion.canton}</td>
+                  <td className="py-2 px-4">{solicitud.ubicacion.subzona}</td>
+                  <td className="py-2 px-4 flex gap-2 justify-center">
                     <button
                       onClick={() => handleRowClick(solicitud)}
                       className="bg-green-500 text-white px-2 py-1 rounded"
@@ -338,3 +331,4 @@ const Home = () => {
 };
 
 export default Home;
+

@@ -7,35 +7,31 @@ const ConsultaCiudadanos = () => {
   const [ciudadanos, setCiudadanos] = useState([]);
   const [filteredCiudadanos, setFilteredCiudadanos] = useState([]);
   const [filtros, setFiltros] = useState({
-    provincia: "",
-    ciudad: "",
-    barrio: "",
+    zona: "",
+    subzona: "",
+    canton: "",
+    parroquia: "",
   });
-  const [provincias, setProvincias] = useState([]);
-  const [ciudades, setCiudades] = useState([]);
-  const [barrios, setBarrios] = useState([]);
+  const [zonas, setZonas] = useState([]);
+  const [subzonas, setSubzonas] = useState([]);
+  const [cantones, setCantones] = useState([]);
+  const [parroquias, setParroquias] = useState([]);
   const [circuitos, setCircuitos] = useState([]);
   const [editingCiudadano, setEditingCiudadano] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [ciudadanoToDelete, setCiudadanoToDelete] = useState(null);
   const navigate = useNavigate();
+  const API_URL = "http://localhost:3000"; // Asegúrate de usar la misma URL base
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // * CiudadanoRes permite traer los datos de los ciudadanos.
-        const ciudadanosRes = await axios.get("http://localhost:3000/personas/ciudadanos");
-        // * CircuitoRes permite traer los datos de los circuitos para dar uso de los filtros.
-        const circuitosRes = await axios.get("http://localhost:3000/circuitos");
-
-        const uniqueProvincias = [
-          ...new Set(circuitosRes.data.map((circuito) => circuito.provincia)),
-        ];
+        const ciudadanosRes = await axios.get(`${API_URL}/personas/ciudadanos`);
+        const zonasRes = await axios.get(`${API_URL}/circuitos/zonas`);
 
         setCiudadanos(ciudadanosRes.data.ciudadanos);
         setFilteredCiudadanos(ciudadanosRes.data.ciudadanos);
-        setCircuitos(circuitosRes.data);
-        setProvincias(uniqueProvincias);
+        setZonas(zonasRes.data);
       } catch (error) {
         console.error("Error fetching data", error);
       }
@@ -45,43 +41,61 @@ const ConsultaCiudadanos = () => {
   }, []);
 
   useEffect(() => {
-    if (filtros.provincia) {
-      const uniqueCiudades = [
-        ...new Set(
-          circuitos
-            .filter((circuito) => circuito.provincia === filtros.provincia)
-            .map((circuito) => circuito.ciudad)
-        ),
-      ];
-      setCiudades(uniqueCiudades);
-    } else {
-      setCiudades([]);
-    }
+    const fetchSubzonas = async () => {
+      if (filtros.zona) {
+        try {
+          const subzonasRes = await axios.get(`${API_URL}/circuitos/zonas/${filtros.zona}/subzonas`);
+          setSubzonas(subzonasRes.data);
+        } catch (error) {
+          console.error("Error fetching subzonas", error);
+        }
+      } else {
+        setSubzonas([]);
+        setCantones([]);
+        setParroquias([]);
+      }
+    };
 
-    setFiltros((prevFiltros) => ({ ...prevFiltros, ciudad: "", barrio: "" }));
-    setBarrios([]);
-  }, [filtros.provincia, circuitos]);
+    fetchSubzonas();
+    setFiltros((prevFiltros) => ({ ...prevFiltros, subzona: "", canton: "", parroquia: "" }));
+  }, [filtros.zona]);
 
   useEffect(() => {
-    if (filtros.ciudad) {
-      const uniqueBarrios = [
-        ...new Set(
-          circuitos
-            .filter(
-              (circuito) =>
-                circuito.provincia === filtros.provincia &&
-                circuito.ciudad === filtros.ciudad
-            )
-            .map((circuito) => circuito.barrio)
-        ),
-      ];
-      setBarrios(uniqueBarrios);
-    } else {
-      setBarrios([]);
-    }
+    const fetchCantones = async () => {
+      if (filtros.subzona) {
+        try {
+          const cantonesRes = await axios.get(`${API_URL}/circuitos/subzonas/${filtros.subzona}/cantones`);
+          setCantones(cantonesRes.data);
+        } catch (error) {
+          console.error("Error fetching cantones", error);
+        }
+      } else {
+        setCantones([]);
+        setParroquias([]);
+      }
+    };
 
-    setFiltros((prevFiltros) => ({ ...prevFiltros, barrio: "" }));
-  }, [filtros.ciudad, circuitos]);
+    fetchCantones();
+    setFiltros((prevFiltros) => ({ ...prevFiltros, canton: "", parroquia: "" }));
+  }, [filtros.subzona]);
+
+  useEffect(() => {
+    const fetchParroquias = async () => {
+      if (filtros.canton) {
+        try {
+          const parroquiasRes = await axios.get(`${API_URL}/circuitos/cantones/${filtros.canton}/distritos`);
+          setParroquias(parroquiasRes.data);
+        } catch (error) {
+          console.error("Error fetching parroquias", error);
+        }
+      } else {
+        setParroquias([]);
+      }
+    };
+
+    fetchParroquias();
+    setFiltros((prevFiltros) => ({ ...prevFiltros, parroquia: "" }));
+  }, [filtros.canton]);
 
   const handleFiltroChange = (e) => {
     const { name, value } = e.target;
@@ -91,14 +105,29 @@ const ConsultaCiudadanos = () => {
   const handleBuscarClick = () => {
     let filtered = ciudadanos;
 
-    if (filtros.provincia) {
-      filtered = filtered.filter((ciudadano) => ciudadano.Circuito.provincia === filtros.provincia);
+    if (filtros.zona) {
+      filtered = filtered.filter(
+        (ciudadano) =>
+          ciudadano.nombre_zona === filtros.zona
+      );
     }
-    if (filtros.ciudad) {
-      filtered = filtered.filter((ciudadano) => ciudadano.Circuito.ciudad === filtros.ciudad);
+    if (filtros.subzona) {
+      filtered = filtered.filter(
+        (ciudadano) =>
+          ciudadano.nombre_subzona === filtros.subzona
+      );
     }
-    if (filtros.barrio) {
-      filtered = filtered.filter((ciudadano) => ciudadano.Circuito.barrio === filtros.barrio);
+    if (filtros.canton) {
+      filtered = filtered.filter(
+        (ciudadano) =>
+          ciudadano.nombre_canton === filtros.canton
+      );
+    }
+    if (filtros.parroquia) {
+      filtered = filtered.filter(
+        (ciudadano) =>
+          ciudadano.nombre_parroquia === filtros.parroquia
+      );
     }
 
     setFilteredCiudadanos(filtered);
@@ -106,26 +135,24 @@ const ConsultaCiudadanos = () => {
 
   const handleLimpiarClick = () => {
     setFiltros({
-      provincia: "",
-      ciudad: "",
-      barrio: "",
+      zona: "",
+      subzona: "",
+      canton: "",
+      parroquia: "",
     });
     setFilteredCiudadanos(ciudadanos);
-    setCiudades([]);
-    setBarrios([]);
+    setSubzonas([]);
+    setCantones([]);
+    setParroquias([]);
   };
 
   const handleEditClick = (ciudadano) => {
     setEditingCiudadano(ciudadano);
   };
 
-  /**
-    // * Metodo para la edicion de un ciudadano.
-    // * En funcionamiento
-   */
   const handleSaveClick = async (ciudadano) => {
     try {
-      await axios.put(`http://localhost:3000/personas/${ciudadano.id_persona}`, ciudadano);
+      await axios.put(`${API_URL}/personas/${ciudadano.id_persona}`, ciudadano);
       setCiudadanos((prevCiudadanos) =>
         prevCiudadanos.map((c) => (c.id_persona === ciudadano.id_persona ? ciudadano : c))
       );
@@ -138,19 +165,14 @@ const ConsultaCiudadanos = () => {
     }
   };
 
-
-  
-  /**
-    // * Metodo para la eliminacion de un ciudadano.
-    // * En funcionamiento
-   */
   const handleDeleteClick = (ciudadano) => {
     setShowDeleteModal(true);
     setCiudadanoToDelete(ciudadano);
   };
+
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:3000/personas/${ciudadanoToDelete.id_persona}`);
+      await axios.delete(`${API_URL}/personas/${ciudadanoToDelete.id_persona}`);
       setCiudadanos((prevCiudadanos) =>
         prevCiudadanos.filter((c) => c.id_persona !== ciudadanoToDelete.id_persona)
       );
@@ -193,43 +215,57 @@ const ConsultaCiudadanos = () => {
         <h2 className="text-lg font-bold mb-4">Filtros</h2>
         <div className="grid grid-cols-4 gap-4 mb-4">
           <select
-            name="provincia"
-            value={filtros.provincia}
+            name="zona"
+            value={filtros.zona}
             onChange={handleFiltroChange}
             className="border p-2 rounded"
           >
-            <option value="">Provincia</option>
-            {provincias.map((provincia) => (
-              <option key={provincia} value={provincia}>
-                {provincia}
+            <option value="">Zona</option>
+            {zonas.map((zona) => (
+              <option key={zona.id_zona} value={zona.nombre_zona}>
+                {zona.nombre_zona}
               </option>
             ))}
           </select>
           <select
-            name="ciudad"
-            value={filtros.ciudad}
+            name="subzona"
+            value={filtros.subzona}
             onChange={handleFiltroChange}
             className="border p-2 rounded"
-            disabled={!filtros.provincia}
+            disabled={!filtros.zona}
           >
-            <option value="">Ciudad</option>
-            {ciudades.map((ciudad) => (
-              <option key={ciudad} value={ciudad}>
-                {ciudad}
+            <option value="">Subzona</option>
+            {subzonas.map((subzona) => (
+              <option key={subzona.id_subzona} value={subzona.nombre_subzona}>
+                {subzona.nombre_subzona}
               </option>
             ))}
           </select>
           <select
-            name="barrio"
-            value={filtros.barrio}
+            name="canton"
+            value={filtros.canton}
             onChange={handleFiltroChange}
             className="border p-2 rounded"
-            disabled={!filtros.ciudad}
+            disabled={!filtros.subzona}
           >
-            <option value="">Barrio</option>
-            {barrios.map((barrio) => (
-              <option key={barrio} value={barrio}>
-                {barrio}
+            <option value="">Cantón</option>
+            {cantones.map((canton) => (
+              <option key={canton.id_canton} value={canton.nombre_canton}>
+                {canton.nombre_canton}
+              </option>
+            ))}
+          </select>
+          <select
+            name="parroquia"
+            value={filtros.parroquia}
+            onChange={handleFiltroChange}
+            className="border p-2 rounded"
+            disabled={!filtros.canton}
+          >
+            <option value="">Parroquia</option>
+            {parroquias.map((parroquia) => (
+              <option key={parroquia.id_parroquia} value={parroquia.nombre_parroquia}>
+                {parroquia.nombre_parroquia}
               </option>
             ))}
           </select>
@@ -255,22 +291,24 @@ const ConsultaCiudadanos = () => {
             <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
               <thead>
                 <tr>
-                <th className="border-b p-2">Id</th>
+                  <th className="border-b p-2">Id</th>
                   <th className="border-b p-2">Cédula</th>
                   <th className="border-b p-2">Nombres</th>
                   <th className="border-b p-2">Apellidos</th>
-                  <th className="border-b p-2">Teléfono</th>
-                  <th className="border-b p-2">Ciudad</th>
-                  <th className="border-b p-2">Barrio</th>
+                  <th className="border-b p-2">Telefono</th>
+                  <th className="border-b p-2">Subzona</th>
+                  <th className="border-b p-2">Cantón</th>
+                  <th className="border-b p-2">Distrito</th>
+                  <th className="border-b p-2">Parroquia</th>
                   <th className="border-b p-2">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredCiudadanos.map((ciudadano) => (
                   <tr key={ciudadano.id_persona} className="hover:bg-gray-50">
-                     <td className="border-b p-2 text-center">{ciudadano.id_persona}</td>
+                    <td className="border-b p-2 text-center">{ciudadano.id_persona}</td>
                     <td className="border-b p-2 text-center">{ciudadano.cedula}</td>
-                    <td className="border-b p-2 ">
+                    <td className="border-b p-2">
                       {editingCiudadano?.id_persona === ciudadano.id_persona ? (
                         <input
                           type="text"
@@ -305,24 +343,20 @@ const ConsultaCiudadanos = () => {
                       )}
                     </td>
                     <td className="border-b p-2 text-center">
-                      {editingCiudadano?.id_persona === ciudadano.id_persona ? (
-                        <input
-                          type="text"
-                          value={editingCiudadano.telefono}
-                          onChange={(e) =>
-                            setEditingCiudadano((prev) => ({
-                              ...prev,
-                              telefono: e.target.value,
-                            }))
-                          }
-                          className="border p-1 rounded"
-                        />
-                      ) : (
-                        ciudadano.telefono
-                      )}
+                      {ciudadano.telefono}
                     </td>
-                    <td className="border-b p-2 text-center">{ciudadano.Circuito.ciudad}</td>
-                    <td className="border-b p-2 text-center">{ciudadano.Circuito.barrio}</td>
+                    <td className="border-b p-2 text-center">
+                      {ciudadano.nombre_subzona}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {ciudadano.nombre_canton}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {ciudadano.nombre_distrito}
+                    </td>
+                    <td className="border-b p-2 text-center">
+                      {ciudadano.nombre_parroquia}
+                    </td>
                     <td className="border-b p-2 flex gap-2 justify-center">
                       {editingCiudadano?.id_persona === ciudadano.id_persona ? (
                         <button
@@ -358,7 +392,7 @@ const ConsultaCiudadanos = () => {
             </table>
           </div>
         ) : (
-          <p className="text-center mt-4">No existen ciudadanos registrados en dicho barrio</p>
+          <p className="text-center mt-4">No existen ciudadanos registrados en dicha parroquia</p>
         )}
       </div>
 
@@ -405,3 +439,4 @@ const Button = ({ text, number, icon, onClick }) => (
 );
 
 export default ConsultaCiudadanos;
+

@@ -14,7 +14,7 @@ const UserProvider = ({ children }) => {
   const registroUsuario = async (userData) => {
     try {
       const response = await axios.post(
-        `${API_URL}/personas/nuevoUsuario`,
+        `${API_URL}/personas/nuevoCiudadano`,
         userData
       );
       setUserState({

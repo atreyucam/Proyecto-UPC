@@ -104,8 +104,8 @@ exports.deletePersona = async (req, res) => {
 // * Metodo en funcionamiento
 exports.getCiudadanos = async (req, res) => {
   try {
-    const { ciudadanos, count } = await personaService.getCiudadanos(req.params.idCircuito);
-    res.status(200).json({ ciudadanos, count });
+    const { countCiudadanos, ciudadanos } = await personaService.getCiudadanos();
+    res.status(200).json({ countCiudadanos, ciudadanos  });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -159,5 +159,42 @@ exports.getPoliciasDisponibles = async (req, res) => {
   } catch (error) {
     console.log('entra?');
     res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+
+// funciones de prueba
+// Controlador para crear un ciudadano
+exports.createCiudadano = async (req, res) => {
+  try {
+      const ciudadanoData = req.body;
+      const nuevoCiudadano = await personaService.createCiudadano(ciudadanoData);
+      res.status(201).json(nuevoCiudadano);
+  } catch (error) {
+      res.status(400).json({ message: error.message });
+  }
+};
+
+
+exports.createAdmin = async (req, res) => {
+  try {
+      const adminData = req.body;
+      const nuevoAdmin = await personaService.createAdmin(adminData);
+      res.status(201).json(nuevoAdmin);
+  } catch (error) {
+      res.status(400).json({ message: error.message });
+  }
+};
+
+
+exports.createPolicia = async (req, res) => {
+  try {
+      const policiaData = req.body;
+      const nuevoPolicia = await personaService.createPolicia(policiaData);
+      res.status(201).json(nuevoPolicia);
+  } catch (error) {
+      res.status(400).json({ message: error.message });
   }
 };

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import {FiEye } from "react-icons/fi";
 import axios from "axios";
 import EstadoBadge from "./EstadoBadge"; // Importa el componente
 
@@ -74,7 +75,13 @@ const PoliciaDetail = () => {
             <strong>Disponibilidad:</strong> {policia.disponibilidad}
           </p>
           <p>
-            <strong>ID Circuito:</strong> {policia.id_circuito}
+            <strong>Distrito:</strong> {policia.nombre_distrito}
+          </p>
+          <p>
+            <strong>Cantón:</strong> {policia.nombre_canton}
+          </p>
+          <p>
+            <strong>Subzona:</strong> {policia.nombre_subzona}
           </p>
         </div>
       </div>
@@ -195,10 +202,10 @@ const PoliciaDetail = () => {
                   </td>
                   <td className="border-b p-2 text-center">
                     <button
-                      className="bg-blue-500 text-white px-2 py-1 rounded"
+                      className="bg-green-500 text-white px-2 py-1 rounded"
                       onClick={() => handleVerSolicitud(solicitud.id_solicitud)}
                     >
-                      Ver
+                      <FiEye />
                     </button>
                   </td>
                 </tr>

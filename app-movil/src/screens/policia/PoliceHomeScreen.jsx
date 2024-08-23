@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Appbar, Card } from "react-native-paper";
 import { useNavigate } from "react-router-native";
-import Notificacion from "../components/Notificacion";
 
 export default function HomeScreenPolicia() {
   const navigate = useNavigate();
@@ -11,7 +10,7 @@ export default function HomeScreenPolicia() {
     <View style={styles.container}>
       <Appbar.Header>
         <Appbar.Content title="UPC - Digital" />
-        <Notificacion />
+        <Appbar.Action icon="bell" onPress={() => {}} />
       </Appbar.Header>
 
       <View style={styles.content}>
@@ -30,7 +29,7 @@ export default function HomeScreenPolicia() {
           </Card.Content>
         </Card>
 
-        <Card style={styles.card} onPress={() => navigate("/emergencia")}>
+        <Card style={styles.card} onPress={() => navigate("/Emergencia")}>
           <Card.Content style={styles.cardContent}>
             <Text style={styles.cardTitle}>Botón de emergencia</Text>
           </Card.Content>

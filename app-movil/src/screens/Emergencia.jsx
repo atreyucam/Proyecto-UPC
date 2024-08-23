@@ -13,6 +13,7 @@ import MapView, { Marker } from "react-native-maps";
 import Notificacion from "./components/Notificacion";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext"; // Importa tu contexto de autenticación
+import { useNavigate } from "react-router-native"; // Importa el hook para la navegación
 
 const API_URL = "http://192.168.0.12:3000";
 
@@ -21,6 +22,7 @@ export default function EmergenciaScreen() {
   const [ubicacion, setUbicacion] = useState(null);
   const [marker, setMarker] = useState(null);
   const [initialRegion, setInitialRegion] = useState(null);
+  const navigate = useNavigate(); // Hook de navegación
 
   const getLocation = async () => {
     try {
@@ -100,6 +102,7 @@ export default function EmergenciaScreen() {
   return (
     <View style={styles.container}>
       <Appbar.Header>
+        <Appbar.BackAction onPress={() => navigate(-1)} /> 
         <Appbar.Content title="EMERGENCIA" />
         <Notificacion />
       </Appbar.Header>

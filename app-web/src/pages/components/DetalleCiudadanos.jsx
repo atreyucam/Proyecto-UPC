@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
+import {  FiEye } from 'react-icons/fi';
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const CiudadanoDetail = () => {
   const { id } = useParams();
-  const [ciudadano, setCiudadano] = useState({ Circuito: {} });
+  const [ciudadano, setCiudadano] = useState({});
   const [historial, setHistorial] = useState([]);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -22,9 +23,9 @@ const CiudadanoDetail = () => {
         const solicitudesOrdenadas = response.data.solicitudes_creadas
           .map(solicitud => ({
             id_solicitud: solicitud.id_solicitud,
-            estado: solicitud.estado, // Utilizar la descripción del estado
-            subtipo: solicitud.subtipo, // Utilizar la descripción del subtipo
-            tipo_solicitud: solicitud.tipo_solicitud, // Incluir la descripción del tipo de solicitud
+            estado: solicitud.estado,
+            subtipo: solicitud.subtipo,
+            tipo_solicitud: solicitud.tipo_solicitud,
             fecha_creacion: new Date(solicitud.fecha_creacion),
             puntoGPS: solicitud.puntoGPS,
             observacion: solicitud.observacion
@@ -76,7 +77,7 @@ const CiudadanoDetail = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Detalles del Ciudadano</h1>
       </div>
-      <div className="bg-white p-4 rounded-lg shadow-sm mb-6 grid grid-cols-2  border border-gray-200">
+      <div className="bg-white p-4 rounded-lg shadow-sm mb-6 grid grid-cols-2 border border-gray-200">
         <div>
           <p>
             <strong>Id:</strong> {ciudadano.id_persona}
@@ -99,16 +100,13 @@ const CiudadanoDetail = () => {
             <strong>Email:</strong> {ciudadano.email}
           </p>
           <p>
-            <strong>Provincia:</strong> {ciudadano.Circuito.provincia}
+            <strong>Distrito:</strong> {ciudadano.nombre_distrito}
           </p>
           <p>
-            <strong>Ciudad:</strong> {ciudadano.Circuito.ciudad}
+            <strong>Cantón:</strong> {ciudadano.nombre_canton}
           </p>
           <p>
-            <strong>Barrio:</strong> {ciudadano.Circuito.barrio}
-          </p>
-          <p>
-            <strong>Número de Circuito:</strong> {ciudadano.Circuito.numero_circuito}
+            <strong>Subzona:</strong> {ciudadano.nombre_subzona}
           </p>
         </div>
       </div>
@@ -142,10 +140,10 @@ const CiudadanoDetail = () => {
                 <td className="border-b p-2">{solicitud.puntoGPS}</td>
                 <td className="border-b p-2">
                   <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                    className="bg-green-500 text-white px-2 py-1 rounded"
                     onClick={() => navigate(`/solicitud/${solicitud.id_solicitud}`, { state: { solicitud } })}
                   >
-                    Ver
+                    <FiEye />
                   </button>
                 </td>
               </tr>

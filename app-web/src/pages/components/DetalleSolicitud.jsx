@@ -222,8 +222,10 @@ const DetalleSolicitud = () => {
                 <td className="px-6 py-4 whitespace-nowrap">{index + 1}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {observacion.observacion}
+                  </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {`${observacion.persona.nombres} ${observacion.persona.apellidos}`}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">{`${observacion.persona.nombres} ${observacion.persona.apellidos}`}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {new Date(observacion.fecha).toLocaleString()}
                 </td>
@@ -243,3 +245,4 @@ const DetalleSolicitud = () => {
 };
 
 export default DetalleSolicitud;
+
