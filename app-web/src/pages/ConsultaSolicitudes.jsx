@@ -3,6 +3,10 @@ import axios from "axios";
 import { FiCheckCircle, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
+import io from "socket.io-client";
+
+const socket = io("http://localhost:3000"); // Conectar al servidor Socket.IO
+
 
 const ConsultaSolicitudes = () => {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -20,11 +24,37 @@ const ConsultaSolicitudes = () => {
     };
 
     fetchData();
-  }, []);
 
+    socket.on("nuevaSolicitud", async (nuevaSolicitud) => {
+      console.log("Nueva solicitud recibida:", nuevaSolicitud);
+      try {
+        // Llamada para obtener la solicitud completa por su ID
+        const response = await axios.get(`http://localhost:3000/solicitud/${nuevaSolicitud.id_solicitud}`);
+        const solicitudCompleta = response.data;
+        setSolicitudes((prevSolicitudes) => [solicitudCompleta, ...prevSolicitudes]);
+      } catch (error) {
+        console.error("Error al obtener detalles completos de la solicitud:", error);
+      }
+    });
+    
+    socket.on("nuevoBotonEmergencia", async (nuevoBotonEmergencia) => {
+      console.log("Nuevo botón de emergencia recibido:", nuevoBotonEmergencia);
+      try {
+        // Obtener detalles completos de la solicitud usando el id_solicitud
+        const response = await axios.get(`http://localhost:3000/solicitud/${nuevoBotonEmergencia.id_solicitud}`);
+        const solicitudCompleta = response.data;
+        setSolicitudes((prevSolicitudes) => [solicitudCompleta, ...prevSolicitudes]);
+      } catch (error) {
+        console.error("Error al obtener detalles completos de la solicitud:", error);
+      }
+    });
+    
 
-
-
+return () => {
+  socket.off("nuevaSolicitud");
+  socket.off("nuevoBotonEmergencia");
+};
+}, []);
 
 
   const handleRowClick = (solicitud) => {
@@ -88,14 +118,15 @@ const ConsultaSolicitudes = () => {
                       {solicitud.policia_asignado}
                     </td>
                     <td className="border-b p-2 text-center">
-                      {solicitud.ubicacion.distrito}
-                    </td>
-                    <td className="border-b p-2 text-center">
-                      {solicitud.ubicacion.canton}
-                    </td>
-                    <td className="border-b p-2 text-center">
-                      {solicitud.ubicacion.subzona}
-                    </td>
+  {solicitud.ubicacion?.distrito || 'Sin Distrito'}
+</td>
+<td className="border-b p-2 text-center">
+  {solicitud.ubicacion?.canton || 'Sin Cantón'}
+</td>
+<td className="border-b p-2 text-center">
+  {solicitud.ubicacion?.subzona || 'Sin Subzona'}
+</td>
+
                     <td className="border-b p-2 flex gap-2 justify-center">
                       <button
                         onClick={() => handleRowClick(solicitud)}

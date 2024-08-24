@@ -8,6 +8,8 @@ import * as ImagePicker from "expo-image-picker";
 import Notificacion from "./components/Notificacion";
 import { useNavigate } from "react-router-native";
 
+const API_URL = "http://192.168.0.12:3000";
+
 export default function DenunciaScreen() {
   const [imageSource, setImageSource] = useState(null);
   const [ubicacion, setUbicacion] = useState(null);
@@ -15,11 +17,48 @@ export default function DenunciaScreen() {
   const navigate = useNavigate();
 
   const [initialRegion, setInitialRegion] = useState(null);
-  
+  const [tipos, setTipos] = useState([]);
+  const [subtipos, setSubtipos] = useState([]);
+
   const [formData, setFormData] = useState({
     tipoDenuncia: "",
+    subtipoDenuncia: "",
     descripcion: "",
+    direccion: "",
   });
+
+  useEffect(() => {
+    fetchTipos();
+  }, []);
+
+  useEffect(() => {
+    if (formData.tipoDenuncia) {
+      fetchSubtipos(formData.tipoDenuncia);
+    }
+  }, [formData.tipoDenuncia]);
+
+  const fetchTipos = async () => {
+    try {
+      const response = await fetch(`${API_URL}/subtipos/tipos`);
+      const data = await response.json();
+      const filteredTipos = data.filter(
+        (tipo) => tipo.id_tipo === 2 || tipo.id_tipo === 3
+      );
+      setTipos(filteredTipos);
+    } catch (error) {
+      console.error("Error fetching tipos:", error);
+    }
+  };
+
+  const fetchSubtipos = async (id_tipo) => {
+    try {
+      const response = await fetch(`${API_URL}/subtipos/tipos/${id_tipo}/subtipos`);
+      const data = await response.json();
+      setSubtipos(data);
+    } catch (error) {
+      console.error("Error fetching subtipos:", error);
+    }
+  };
 
   const handleSelectImage = async (option) => {
     let pickerResult;
@@ -99,20 +138,38 @@ export default function DenunciaScreen() {
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // Validar campos antes de enviar
+    if (!formData.tipoDenuncia || !formData.subtipoDenuncia || !formData.descripcion) {
+      Alert.alert("Faltan datos", "Por favor, completa todos los campos obligatorios.");
+      return;
+    }
+
     const denunciaData = {
-      ...formData,
-      ubicacion: ubicacion
-        ? {
-            latitude: ubicacion.latitude,
-            longitude: ubicacion.longitude,
-          }
-        : null,
-      imagen: imageSource ? imageSource.uri : null,
+      id_persona: 7, // Ajustar según sea necesario
+      puntoGPS: ubicacion ? `${ubicacion.latitude},${ubicacion.longitude}` : "",
+      direccion: formData.direccion,
+      id_subtipo: formData.subtipoDenuncia,
+      observacion: formData.descripcion,
     };
 
-    console.log(denunciaData);
-    // Aquí puedes enviar denunciaData al backend según sea necesario
+    try {
+      const response = await fetch(`${API_URL}/solicitud/nuevaSolicitud`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(denunciaData),
+      });
+      if (response.ok) {
+        Alert.alert("Denuncia registrada", "Tu denuncia ha sido registrada con éxito.");
+        navigate("/misDenuncias");
+      } else {
+        Alert.alert("Error", "Hubo un problema al registrar tu denuncia.");
+      }
+    } catch (error) {
+      console.error("Error al enviar denuncia:", error);
+    }
   };
 
   return (
@@ -150,33 +207,25 @@ export default function DenunciaScreen() {
                 handleFormChange("tipoDenuncia", itemValue)
               }
             >
-              <Picker.Item label="Seleccione tipo de denuncia" value="" />
-              <Picker.Item label="Robo" value="robo" />
-              <Picker.Item label="Asalto" value="asalto" />
-              <Picker.Item
-                label="Violencia doméstica"
-                value="violencia_domestica"
-              />
-              <Picker.Item label="Acoso" value="acoso" />
-              <Picker.Item label="Vandalismo" value="vandalismo" />
-              <Picker.Item label="Tráfico de drogas" value="trafico_drogas" />
-              <Picker.Item
-                label="Accidente de tráfico"
-                value="accidente_trafico"
-              />
-              <Picker.Item
-                label="Disturbio público"
-                value="disturbio_publico"
-              />
-              <Picker.Item label="Fraude" value="fraude" />
-              <Picker.Item label="Secuestro" value="secuestro" />
-              <Picker.Item label="Desaparición" value="desaparicion" />
-              <Picker.Item label="Amenaza" value="amenaza" />
-              <Picker.Item label="Hurto" value="hurto" />
-              <Picker.Item label="Violación" value="violacion" />
-              <Picker.Item label="Homicidio" value="homicidio" />
-              <Picker.Item label="Corrupción" value="corrupcion" />
-              <Picker.Item label="Otros" value="otros" />
+              <Picker.Item label="Seleccione tipo de solicitud" value="" />
+              {tipos.map((tipo) => (
+                <Picker.Item key={tipo.id_tipo} label={tipo.descripcion} value={tipo.id_tipo} />
+              ))}
+            </Picker>
+          </View>
+          <View style={styles.pickerContainer}>
+            <Picker
+              style={styles.picker}
+              selectedValue={formData.subtipoDenuncia}
+              onValueChange={(itemValue) =>
+                handleFormChange("subtipoDenuncia", itemValue)
+              }
+              enabled={subtipos.length > 0}
+            >
+              <Picker.Item label="Seleccione subtipo de solicitud" value="" />
+              {subtipos.map((subtipo) => (
+                <Picker.Item key={subtipo.id_subtipo} label={subtipo.descripcion} value={subtipo.id_subtipo} />
+              ))}
             </Picker>
           </View>
           <TextInput
@@ -185,6 +234,12 @@ export default function DenunciaScreen() {
             onChangeText={(text) => handleFormChange("descripcion", text)}
             style={styles.input}
             multiline
+          />
+          <TextInput
+            label="Dirección"
+            value={formData.direccion}
+            onChangeText={(text) => handleFormChange("direccion", text)}
+            style={styles.input}
           />
           <View style={styles.imagePickerContainer}>
             <Button
@@ -205,8 +260,7 @@ export default function DenunciaScreen() {
               Tomar Foto
             </Button>
           </View>
-          <Button
-            mode="contained"
+          <Button             mode="contained"
             onPress={handleSubmit}
             style={styles.buttonDenuncia}
           >
@@ -280,3 +334,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
+
+           

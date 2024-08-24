@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { FiCheckCircle, FiEdit, FiTrash, FiSave, FiEye } from "react-icons/fi";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
 
 const ConsultaPolicias = () => {
@@ -16,7 +16,6 @@ const ConsultaPolicias = () => {
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [barrios, setBarrios] = useState([]);
-  const [circuitos, setCircuitos] = useState([]);
   const [editingPolicia, setEditingPolicia] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [policiaToDelete, setPoliciaToDelete] = useState(null);
@@ -272,9 +271,9 @@ const ConsultaPolicias = () => {
                   <th className="border-b p-2 text-center">Nombres</th>
                   <th className="border-b p-2 text-center">Apellidos</th>
                   <th className="border-b p-2 text-center">Teléfono</th>
-                  <th className="border-b p-2 text-center">Distrito</th>
-                  <th className="border-b p-2 text-center">Cantón</th>
                   <th className="border-b p-2 text-center">Subzona</th>
+                  <th className="border-b p-2 text-center">Cantón</th>
+                  <th className="border-b p-2 text-center">Distrito</th>
                   <th className="border-b p-2 text-center">Disponibilidad</th>
                   <th className="border-b p-2 text-center">Acciones</th>
                 </tr>
@@ -344,14 +343,15 @@ const ConsultaPolicias = () => {
                       )}
                     </td>
                     <td className="border-b p-2 text-center">
-                      {policia.nombre_distrito}
+                      {policia.nombre_subzona}
                     </td>
                     <td className="border-b p-2 text-center">
                       {policia.nombre_canton}
                     </td>
                     <td className="border-b p-2 text-center">
-                      {policia.nombre_subzona}
+                      {policia.nombre_distrito}
                     </td>
+                    
                     <td className="border-b p-2 text-center">
                       <EstadoBadge
                         estado={policia.disponibilidad}
@@ -439,5 +439,3 @@ const Button = ({ text, number, icon, onClick }) => (
 );
 
 export default ConsultaPolicias;
-
-       

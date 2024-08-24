@@ -94,3 +94,29 @@ exports.deleteSubtipo = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+
+// ------------------------------------
+// nuevos
+exports.getAllTiposSolicitud = async (req, res) => {
+    try {
+        const tipos = await subtipoService.getAllTiposSolicitud();
+        if (tipos) {
+            res.status(200).json(tipos); // Devolver los tipos obtenidos
+        } else {
+            res.status(404).json({ message: 'No se encontraron tipos de solicitud' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.getSubtiposByTipoId = async (req, res) => {
+    const { id_tipo } = req.params;
+    try {
+        const subtipos = await subtipoService.getSubtiposByTipoId(id_tipo);
+        res.status(200).json(subtipos);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

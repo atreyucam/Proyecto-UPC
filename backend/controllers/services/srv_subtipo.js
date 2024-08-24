@@ -86,3 +86,29 @@ exports.deleteSubtipo = async (id) => {
     }
     return null;
 }
+
+
+// ---------------------------------------
+// tipos de solicitud 
+exports.getAllTiposSolicitud = async () => {
+    try {
+        const tipos = await TipoSolicitud.findAll({
+            attributes: ['id_tipo', 'descripcion'] // Ajustar los atributos según los campos en tu modelo
+        });
+        return tipos;
+    } catch (error) {
+        throw new Error('Error al obtener los tipos de solicitud: ' + error.message);
+    }
+};
+
+exports.getSubtiposByTipoId = async (id_tipo) => {
+    try {
+        const subtipos = await Subtipo.findAll({
+            where: { id_tipo },
+            attributes: ['id_subtipo', 'descripcion'] // Ajustar los atributos según los campos en tu modelo
+        });
+        return subtipos;
+    } catch (error) {
+        throw new Error('Error al obtener los subtipos del tipo de solicitud: ' + error.message);
+    }
+};
