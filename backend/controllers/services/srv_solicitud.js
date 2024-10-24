@@ -68,7 +68,10 @@ exports.crearBotonEmergencia = async (personaData, io) => {
         return nuevoBotonEmergencia;
     } catch (error) {
         await transaction.rollback();
-        console.error("Error al crear la solicitud de botón de emergencia:", error);
+        console.error(
+            "Error al crear la solicitud de botón de emergencia:",
+            error
+        );
         throw error;
     }
 };
@@ -173,7 +176,8 @@ exports.getSolicitudes = async () => {
 };
 
 exports.asignarPoliciaASolicitud = async (solicitudData) => {
-    const { id_solicitud, id_persona_asignador, id_persona_policia } =solicitudData;
+    const { id_solicitud, id_persona_asignador, id_persona_policia } =
+        solicitudData;
     const transaction = await sequelize.transaction();
     const id_evento = 10; // Un policia ha sido asignado a tu solicitud.
 
@@ -284,7 +288,9 @@ exports.getSolicitudById = async (id_solicitud) => {
                                             include: [
                                                 {
                                                     model: Subzona,
-                                                    attributes: ["nombre_subzona"],
+                                                    attributes: [
+                                                        "nombre_subzona",
+                                                    ],
                                                     as: "Subzona", // Asegúrate de usar el alias correcto
                                                 },
                                             ],
@@ -361,11 +367,13 @@ exports.getSolicitudById = async (id_solicitud) => {
             },
             creado_por: solicitud.creador,
             policia_asignado: solicitud.policia,
-            SolicitudEventoPersonas: solicitud.SolicitudEventoPersonas.map((sep) => ({
-                id_evento: sep.Evento.evento,
-                fecha_creacion: sep.fecha_creacion,
-                persona: sep.Persona,
-            })),
+            SolicitudEventoPersonas: solicitud.SolicitudEventoPersonas.map(
+                (sep) => ({
+                    id_evento: sep.Evento.evento,
+                    fecha_creacion: sep.fecha_creacion,
+                    persona: sep.Persona,
+                })
+            ),
             Observacions: solicitud.Observacions.map((obs) => ({
                 observacion: obs.observacion,
                 fecha: obs.fecha,
@@ -492,6 +500,8 @@ exports.agregarObservacion = async (
 };
 
 exports.crearSolicitud = async (personaData, io) => {
+    console.log("Iniciando creación de solicitud con datos:", personaData); // Verifica el input recibido
+
     const { id_persona, puntoGPS, direccion, id_subtipo, observacion } =
         personaData;
     const transaction = await sequelize.transaction();
@@ -499,6 +509,8 @@ exports.crearSolicitud = async (personaData, io) => {
     try {
         // Obtener la persona que crea la solicitud
         const persona = await Persona.findByPk(id_persona);
+        console.log("Persona encontrada:", persona);
+        console.error("Error: Persona no encontrada con el ID:", id_persona);
         if (!persona) {
             throw new Error("Persona no encontrada");
         }
@@ -512,13 +524,17 @@ exports.crearSolicitud = async (personaData, io) => {
         // Determinar el tipo de solicitud y el evento asociado
         const id_tipo = subtipo.id_tipo;
         let id_evento;
+
         if (id_tipo === 2) {
             id_evento = 2; // Denuncia ciudadana
         } else if (id_tipo === 3) {
             id_evento = 3; // Servicios comunitarios
         } else {
+            console.error("Tipo de solicitud no válido:", id_tipo);
             throw new Error("Tipo de solicitud no válido");
         }
+
+        console.log("ID de evento asignado:", id_evento);
 
         // Definir ID para estado
         const id_estado = 1; // Pendiente
@@ -535,6 +551,12 @@ exports.crearSolicitud = async (personaData, io) => {
             },
             { transaction }
         );
+
+        console.log("Antes de insertar en SolicitudEventoPersona:", {
+            id_solicitud: nuevaSolicitud.id_solicitud,
+            id_evento,
+            id_persona,
+        });
 
         // Crear la relación entre la solicitud y el evento
         await SolicitudEventoPersona.create(
@@ -625,7 +647,9 @@ exports.getSolicitudesPendientes = async () => {
                                             include: [
                                                 {
                                                     model: Subzona,
-                                                    attributes: ["nombre_subzona"],
+                                                    attributes: [
+                                                        "nombre_subzona",
+                                                    ],
                                                     as: "Subzona", // Asegúrate de usar el alias correcto
                                                 },
                                             ],
@@ -644,31 +668,33 @@ exports.getSolicitudesPendientes = async () => {
         });
 
         // Mapear las solicitudes para estructurar la respuesta
-        const solicitudesEstructuradas = solicitudesPendientes.map((solicitud) => {
-            const circuito = solicitud.Circuito;
-            const parroquia = circuito?.Parroquium;
-            const distrito = parroquia?.Distrito;
-            const canton = distrito?.cantones?.[0];
-            const subzona = canton?.Subzona;
+        const solicitudesEstructuradas = solicitudesPendientes.map(
+            (solicitud) => {
+                const circuito = solicitud.Circuito;
+                const parroquia = circuito?.Parroquium;
+                const distrito = parroquia?.Distrito;
+                const canton = distrito?.cantones?.[0];
+                const subzona = canton?.Subzona;
 
-            return {
-                id_solicitud: solicitud.id_solicitud,
-                estado: solicitud.Estado.descripcion,
-                tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
-                subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
-                creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
-                policia_asignado: solicitud.policia
-                    ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}`
-                    : "No asignado",
-                puntoGPS: solicitud.puntoGPS,
-                ubicacion: {
-                    distrito: distrito?.nombre_distrito || "Sin Distrito",
-                    canton: canton?.nombre_canton || "Sin Cantón",
-                    subzona: subzona?.nombre_subzona || "Sin Subzona",
-                },
-                fecha_creacion: solicitud.fecha_creacion.toISOString(), // Convertir la fecha a formato ISO 8601
-            };
-        });
+                return {
+                    id_solicitud: solicitud.id_solicitud,
+                    estado: solicitud.Estado.descripcion,
+                    tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
+                    subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
+                    creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
+                    policia_asignado: solicitud.policia
+                        ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}`
+                        : "No asignado",
+                    puntoGPS: solicitud.puntoGPS,
+                    ubicacion: {
+                        distrito: distrito?.nombre_distrito || "Sin Distrito",
+                        canton: canton?.nombre_canton || "Sin Cantón",
+                        subzona: subzona?.nombre_subzona || "Sin Subzona",
+                    },
+                    fecha_creacion: solicitud.fecha_creacion.toISOString(), // Convertir la fecha a formato ISO 8601
+                };
+            }
+        );
 
         return solicitudesEstructuradas;
     } catch (error) {
@@ -725,7 +751,9 @@ exports.top10SolicitudesRecientes = async () => {
                                             include: [
                                                 {
                                                     model: Subzona,
-                                                    attributes: ["nombre_subzona"],
+                                                    attributes: [
+                                                        "nombre_subzona",
+                                                    ],
                                                 },
                                             ],
                                         },

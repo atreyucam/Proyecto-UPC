@@ -20,7 +20,7 @@ import { useNavigate, useParams } from "react-router-native";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext"; // Importa el contexto de autenticación
 
-const API_URL = "http://192.168.0.12:3000"; // Asegúrate de que esta URL apunte a tu backend
+const API_URL = "http://192.168.0.13:3000"; // Asegúrate de que esta URL apunte a tu backend
 
 const DenunciaItemPoliceScreen = () => {
   const navigate = useNavigate();

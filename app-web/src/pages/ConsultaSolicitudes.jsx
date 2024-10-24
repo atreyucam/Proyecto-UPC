@@ -7,158 +7,270 @@ import io from "socket.io-client";
 
 const socket = io("http://localhost:3000"); // Conectar al servidor Socket.IO
 
-
 const ConsultaSolicitudes = () => {
-  const [solicitudes, setSolicitudes] = useState([]);
+    const [solicitudes, setSolicitudes] = useState([]);
+    const [filteredSolicitudes, setFilteredSolicitudes] = useState([]);
+    const [filtros, setFiltros] = useState({
+        estado: "",
+        tipo: "",
+        subtipo: "",
+    });
 
-  const navigate = useNavigate();
+    const [tipos, setTipos] = useState([]);
+    const [subtipos, setSubtipos] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/solicitud/");
-        setSolicitudes(response.data);
-      } catch (error) {
-        console.error("Error fetching data", error);
-      }
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(
+                    "http://localhost:3000/solicitud/"
+                );
+                setSolicitudes(response.data);
+                setFilteredSolicitudes(response.data);
+
+                // Obtener listas únicas de tipos y subtipos
+                const uniqueTipos = [
+                    ...new Set(response.data.map((s) => s.tipo)),
+                ];
+                setTipos(uniqueTipos);
+
+                const uniqueSubtipos = [
+                    ...new Set(response.data.map((s) => s.subtipo)),
+                ];
+                setSubtipos(uniqueSubtipos);
+            } catch (error) {
+                console.error("Error fetching data", error);
+            }
+        };
+
+        fetchData();
+
+        // Escuchar eventos de Socket.IO
+        socket.on("nuevaSolicitud", (nuevaSolicitud) => {
+            handleSocketUpdate(nuevaSolicitud);
+        });
+
+        socket.on("nuevoBotonEmergencia", (nuevoBotonEmergencia) => {
+            handleSocketUpdate(nuevoBotonEmergencia);
+        });
+
+        return () => {
+            socket.off("nuevaSolicitud");
+            socket.off("nuevoBotonEmergencia");
+        };
+    }, []);
+
+    const handleSocketUpdate = async (solicitud) => {
+        try {
+            const response = await axios.get(
+                `http://localhost:3000/solicitud/${solicitud.id_solicitud}`
+            );
+            const solicitudCompleta = response.data;
+            setSolicitudes((prev) => [solicitudCompleta, ...prev]);
+            setFilteredSolicitudes((prev) => [solicitudCompleta, ...prev]);
+        } catch (error) {
+            console.error("Error al obtener detalles de la solicitud", error);
+        }
     };
 
-    fetchData();
+    const handleFiltroChange = (e) => {
+        const { name, value } = e.target;
+        setFiltros((prev) => ({ ...prev, [name]: value }));
+    };
 
-    socket.on("nuevaSolicitud", async (nuevaSolicitud) => {
-      console.log("Nueva solicitud recibida:", nuevaSolicitud);
-      try {
-        // Llamada para obtener la solicitud completa por su ID
-        const response = await axios.get(`http://localhost:3000/solicitud/${nuevaSolicitud.id_solicitud}`);
-        const solicitudCompleta = response.data;
-        setSolicitudes((prevSolicitudes) => [solicitudCompleta, ...prevSolicitudes]);
-      } catch (error) {
-        console.error("Error al obtener detalles completos de la solicitud:", error);
-      }
-    });
-    
-    socket.on("nuevoBotonEmergencia", async (nuevoBotonEmergencia) => {
-      console.log("Nuevo botón de emergencia recibido:", nuevoBotonEmergencia);
-      try {
-        // Obtener detalles completos de la solicitud usando el id_solicitud
-        const response = await axios.get(`http://localhost:3000/solicitud/${nuevoBotonEmergencia.id_solicitud}`);
-        const solicitudCompleta = response.data;
-        setSolicitudes((prevSolicitudes) => [solicitudCompleta, ...prevSolicitudes]);
-      } catch (error) {
-        console.error("Error al obtener detalles completos de la solicitud:", error);
-      }
-    });
-    
+    const handleBuscarClick = () => {
+        const filtered = solicitudes.filter(
+            (solicitud) =>
+                (filtros.estado ? solicitud.estado === filtros.estado : true) &&
+                (filtros.tipo ? solicitud.tipo === filtros.tipo : true) &&
+                (filtros.subtipo ? solicitud.subtipo === filtros.subtipo : true)
+        );
+        setFilteredSolicitudes(filtered);
+    };
 
-return () => {
-  socket.off("nuevaSolicitud");
-  socket.off("nuevoBotonEmergencia");
-};
-}, []);
+    const handleLimpiarClick = () => {
+        setFiltros({ estado: "", tipo: "", subtipo: "" });
+        setFilteredSolicitudes(solicitudes);
+    };
 
+    const handleRowClick = (solicitud) => {
+        navigate(`/solicitudes/${solicitud.id_solicitud}`);
+    };
 
-  const handleRowClick = (solicitud) => {
-    navigate(`/solicitudes/${solicitud.id_solicitud}`);
-  };
+    return (
+        <div className="container mx-auto px-3 py-8">
+            <h1 className="text-2xl font-bold mb-6">Lista de Solicitudes</h1>
 
-  return (
-    <div className="container mx-auto px-3 py-8">
-      <h1 className="text-2xl font-bold mb-6">Lista de solicitudes</h1>
+            <div className="grid grid-cols-2 gap-5">
+                <div className="bg-gray-100 rounded-lg">
+                    <Button
+                        text="Solicitudes registradas"
+                        number={filteredSolicitudes.length}
+                        icon={<FiCheckCircle size={28} />}
+                        onClick={() =>
+                            console.log("Botón solicitudes presionado")
+                        }
+                    />
+                </div>
+            </div>
 
-      {/* Sección que muestra el conteo de solicitudes */}
-      <div className="grid grid-cols-2 gap-5">
-        <div className="bg-gray-100 rounded-lg">
-          <Button
-            text="Solicitudes registradas"
-            number={solicitudes.length}
-            icon={<FiCheckCircle size={28} />}
-            onClick={() => console.log("Botón solicitudes presionado")}
-          />
+            <div className="mt-8">
+                <h2 className="text-lg font-bold mb-4">Filtros</h2>
+                <div className="grid grid-cols-4 gap-4 mb-4">
+                    <select
+                        name="estado"
+                        value={filtros.estado}
+                        onChange={handleFiltroChange}
+                        className="border p-2 rounded"
+                    >
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En progreso">En progreso</option>
+                        <option value="Resuelto">Resuelto</option>
+                    </select>
+                    <select
+                        name="tipo"
+                        value={filtros.tipo}
+                        onChange={handleFiltroChange}
+                        className="border p-2 rounded"
+                    >
+                        <option value="">Tipo</option>
+                        {tipos.map((tipo) => (
+                            <option key={tipo} value={tipo}>
+                                {tipo}
+                            </option>
+                        ))}
+                    </select>
+                    <select
+                        name="subtipo"
+                        value={filtros.subtipo}
+                        onChange={handleFiltroChange}
+                        className="border p-2 rounded"
+                    >
+                        <option value="">Subtipo</option>
+                        {subtipos.map((subtipo) => (
+                            <option key={subtipo} value={subtipo}>
+                                {subtipo}
+                            </option>
+                        ))}
+                    </select>
+
+                    <div className="flex gap-4">
+                        <button
+                            className="bg-green-500 text-white px-4 py-2 rounded"
+                            onClick={handleBuscarClick}
+                        >
+                            Buscar
+                        </button>
+                        <button
+                            className="bg-red-500 text-white px-4 py-2 rounded"
+                            onClick={handleLimpiarClick}
+                        >
+                            Limpiar Filtro
+                        </button>
+                    </div>
+                </div>
+
+                <h2 className="text-lg font-bold mb-4">Solicitudes</h2>
+                {filteredSolicitudes.length > 0 ? (
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
+                            <thead>
+                                <tr>
+                                    <th className="border-b p-2">
+                                        ID Solicitud
+                                    </th>
+                                    <th className="border-b p-2">Estado</th>
+                                    <th className="border-b p-2">Tipo</th>
+                                    <th className="border-b p-2">Subtipo</th>
+                                    <th className="border-b p-2">
+                                        Fecha de Creación
+                                    </th>
+                                    <th className="border-b p-2">
+                                        Policía Asignado
+                                    </th>
+                                    <th className="border-b p-2">Distrito</th>
+                                    {/* <th className="border-b p-2">Cantón</th>
+                                    <th className="border-b p-2">Subzona</th> */}
+                                    <th className="border-b p-2">Detalle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredSolicitudes.map((solicitud) => (
+                                    <tr
+                                        key={solicitud.id_solicitud}
+                                        className="hover:bg-gray-50 cursor-pointer"
+                                        onClick={() =>
+                                            handleRowClick(solicitud)
+                                        }
+                                    >
+                                        <td className="border-b p-2 text-center">
+                                            {solicitud.id_solicitud}
+                                        </td>
+                                        <td className="border-b p-2 text-center">
+                                            <EstadoBadge
+                                                estado={solicitud.estado}
+                                                tipo="estado"
+                                            />
+                                        </td>
+                                        <td className="border-b p-2 text-center">
+                                            {solicitud.tipo}
+                                        </td>
+                                        <td className="border-b p-2 text-center">
+                                            {solicitud.subtipo}
+                                        </td>
+                                        <td className="border-b p-2 text-center">
+                                            {new Date(
+                                                solicitud.fecha_creacion
+                                            ).toLocaleString()}
+                                        </td>
+                                        <td className="border-b p-2 text-center">
+                                            {solicitud.policia_asignado}
+                                        </td>
+                                        <td className="border-b p-2 text-center">
+                                            {solicitud.ubicacion?.distrito ||
+                                                "Sin Distrito"}
+                                        </td>
+                                        {/* <td className="border-b p-2 text-center">
+                                            {solicitud.ubicacion?.canton ||
+                                                "Sin Cantón"}
+                                        </td>
+                                        <td className="border-b p-2 text-center">
+                                            {solicitud.ubicacion?.subzona ||
+                                                "Sin Subzona"}
+                                        </td> */}
+                                        <td className="border-b p-2">
+                                            <button className="bg-green-500 text-white px-2 py-1 rounded">
+                                                <FiEye />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <p className="text-center mt-4">
+                        No existen solicitudes registradas
+                    </p>
+                )}
+            </div>
         </div>
-      </div>
-
-      <div className="mt-8">
-        <h2 className="text-lg font-bold mb-4">Solicitudes</h2>
-        {solicitudes.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border-gray-200 border rounded-lg shadow-md">
-              <thead>
-                <tr>
-                  <th className="border-b p-2">ID Solicitud</th>
-                  <th className="border-b p-2">Estado</th>
-                  <th className="border-b p-2">Tipo</th>
-                  <th className="border-b p-2">Subtipo</th>
-                  <th className="border-b p-2">Fecha de Creación</th>
-                  <th className="border-b p-2">Policía Asignado</th>
-                  <th className="border-b p-2">Distrito</th>
-                  <th className="border-b p-2">Cantón</th>
-                  <th className="border-b p-2">Subzona</th>
-                  <th className="border-b p-2">Detalle</th>
-                </tr>
-              </thead>
-              <tbody>
-                {solicitudes.map((solicitud) => (
-                  <tr key={solicitud.id_solicitud} className="hover:bg-gray-50">
-                    <td className="border-b p-2 text-center">
-                      {solicitud.id_solicitud}
-                    </td>
-                    <td className="border-b p-2 text-center">
-                      <EstadoBadge estado={solicitud.estado} tipo="estado" />
-                    </td>
-                    <td className="border-b p-2 text-center">
-                      {solicitud.tipo}
-                    </td>
-                    <td className="border-b p-2 text-center">
-                      {solicitud.subtipo}
-                    </td>
-                    <td className="border-b p-2 text-center">
-                      {new Date(solicitud.fecha_creacion).toLocaleString()}
-                    </td>
-                    <td className="border-b p-2 text-center">
-                      {solicitud.policia_asignado}
-                    </td>
-                    <td className="border-b p-2 text-center">
-  {solicitud.ubicacion?.distrito || 'Sin Distrito'}
-</td>
-<td className="border-b p-2 text-center">
-  {solicitud.ubicacion?.canton || 'Sin Cantón'}
-</td>
-<td className="border-b p-2 text-center">
-  {solicitud.ubicacion?.subzona || 'Sin Subzona'}
-</td>
-
-                    <td className="border-b p-2 flex gap-2 justify-center">
-                      <button
-                        onClick={() => handleRowClick(solicitud)}
-                        className="bg-green-500 text-white px-2 py-1 rounded"
-                      >
-                        <FiEye />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-center mt-4">No existen solicitudes registradas</p>
-        )}
-      </div>
-    </div>
-  );
+    );
 };
 
 const Button = ({ text, number, icon, onClick }) => (
-  <button
-    className="bg-blue-500 text-white px-4 py-2 rounded flex items-center justify-between w-full"
-    onClick={onClick}
-  >
-    <div className="flex items-center gap-2">
-      {icon}
-      <span>{text}</span>
-    </div>
-    <span>{number}</span>
-  </button>
+    <button
+        className="bg-blue-500 text-white px-4 py-2 rounded flex items-center justify-between w-full"
+        onClick={onClick}
+    >
+        <div className="flex items-center gap-2">
+            {icon}
+            <span>{text}</span>
+        </div>
+        <span>{number}</span>
+    </button>
 );
 
 export default ConsultaSolicitudes;
