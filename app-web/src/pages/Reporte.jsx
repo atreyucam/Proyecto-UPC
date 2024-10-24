@@ -8,97 +8,375 @@ const ConsultaReportes = () => {
     const chartRef = useRef(null);
 
     const [reportes, setReportes] = useState([]);
-    const [filteredReportes, setFilteredReportes] = useState([]);
-    const [filtros, setFiltros] = useState({
-        anio: "",
-        mes: "",
-        tipo: "",
-        subtipo: "",
-    });
-
-    const [tipos, setTipos] = useState([]);
-    const [subtipos, setSubtipos] = useState([]);
     const [chartData, setChartData] = useState({ categories: [], series: [] });
     const [tipoChartData, setTipoChartData] = useState({
         categories: [],
         series: [],
     });
+    const [subtiposPorTipo, setSubtiposPorTipo] = useState([]);
 
-    // Cargar el resumen de solicitudes
+    const [filtros, setFiltros] = useState({
+        anio: new Date().getFullYear(),
+        mes: "",
+        tipo: "",
+        subtipo: "",
+        rangoMesInicio: "",
+        rangoMesFin: "",
+    });
+
+    const getMonthName = (monthNumber) => {
+        const months = [
+            "Enero",
+            "Febrero",
+            "Marzo",
+            "Abril",
+            "Mayo",
+            "Junio",
+            "Julio",
+            "Agosto",
+            "Septiembre",
+            "Octubre",
+            "Noviembre",
+            "Diciembre",
+        ];
+        return months[monthNumber - 1];
+    };
+
     useEffect(() => {
-        const fetchResumen = async () => {
+        const fetchReportes = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:3000/solicitudes/resumen",
-                    {
-                        params: {
-                            anio: filtros.anio || new Date().getFullYear(),
-                        },
-                    }
+                    "http://localhost:3000/estadisticas/solicitudesFiltradas2",
+                    { params: filtros }
                 );
 
-                generateChartData(response.data.solicitudesPorMes);
-                generateTipoChartData(response.data.solicitudesPorTipo);
+                const { solicitudes, calculosPorTipo } = response.data;
+                // Aseguramos que las variaciones sean numéricas.
+                const calculosLimpios = calculosPorTipo.map((tipo) => ({
+                    ...tipo,
+                    subtipos: tipo.subtipos.map((sub) => ({
+                        ...sub,
+                        variacion:
+                            typeof sub.variacion === "number"
+                                ? sub.variacion
+                                : parseFloat(sub.variacion) || 0,
+                    })),
+                }));
+
+                setReportes(solicitudes); // Guardamos las solicitudes en el estado
+                generateChartData(solicitudes);
+                generateTipoChartData(solicitudes);
+                setSubtiposPorTipo(calculosLimpios); // Guardamos los cálculos para las tablas
             } catch (error) {
-                console.error("Error al cargar el resumen:", error);
+                console.error("Error al cargar los datos:", error);
             }
         };
 
-        fetchResumen();
-    }, [filtros.anio]);
+        fetchReportes();
+    }, [filtros]);
 
-    // Generar los datos para el gráfico por mes
     const generateChartData = (data) => {
-        const categories = data.map((item) => `Mes ${item.mes}`);
+        const aggregatedData = data.reduce((acc, item) => {
+            acc[item.mes] =
+                (acc[item.mes] || 0) + parseInt(item.total_solicitudes);
+            return acc;
+        }, {});
+
+        const categories = Object.keys(aggregatedData).map((mes) =>
+            getMonthName(parseInt(mes))
+        );
         const series = [
-            { name: "Solicitudes", data: data.map((item) => item.cantidad) },
+            {
+                name: "Total de Solicitudes",
+                data: Object.values(aggregatedData),
+            },
         ];
 
         setChartData({ categories, series });
     };
 
-    // Generar los datos para el gráfico por tipo y mes
     const generateTipoChartData = (data) => {
-        const meses = [...new Set(data.map((item) => `Mes ${item.mes}`))];
-        const tipos = [...new Set(data.map((item) => item.tipo))];
+        const tipos = [...new Set(data.map((item) => item.tipo_descripcion))];
+        const meses = [...new Set(data.map((item) => getMonthName(item.mes)))];
 
         const series = tipos.map((tipo) => ({
             name: tipo,
             data: meses.map((mes) => {
-                const item = data.find(
-                    (d) => `Mes ${d.mes}` === mes && d.tipo === tipo
+                const solicitud = data.find(
+                    (item) =>
+                        getMonthName(item.mes) === mes &&
+                        item.tipo_descripcion === tipo
                 );
-                return item ? item.cantidad : 0;
+                return solicitud ? parseInt(solicitud.total_solicitudes) : 0;
             }),
         }));
 
         setTipoChartData({ categories: meses, series });
     };
 
-    // Manejar los cambios de filtros
     const handleFiltroChange = (e) => {
         const { name, value } = e.target;
-        setFiltros((prev) => ({ ...prev, [name]: value }));
+        setFiltros((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
     };
 
-    // Descargar el reporte en PDF
     const downloadPDF = () => {
         const doc = new jsPDF();
         doc.text("Reporte de Solicitudes", 20, 20);
 
         autoTable(doc, {
             head: [["ID", "Estado", "Tipo", "Subtipo", "Fecha", "Distrito"]],
-            body: filteredReportes.map((r) => [
+            body: reportes.map((r) => [
                 r.id_solicitud,
                 r.estado,
-                r.tipo,
-                r.subtipo,
+                r.tipo_descripcion,
+                r.subtipo_descripcion,
                 new Date(r.fecha_creacion).toLocaleString(),
                 r.ubicacion?.distrito || "Sin Distrito",
             ]),
         });
 
         doc.save("reporte-solicitudes.pdf");
+    };
+    const homicidiosIntencionales = [
+        "Asesinato",
+        "Femicidio",
+        "Homicidio",
+        "Sicariato",
+    ];
+
+    const renderTablasPorTipo = () => {
+        const { rangoMesInicio, rangoMesFin } = filtros;
+
+        if (rangoMesInicio && rangoMesFin) {
+            return (
+                <>
+                    {renderTablaHomicidiosIntencionales()}
+                    {renderTablasPorTipoConRango()}
+                </>
+            );
+        } else {
+            return (
+                <>
+                    {renderTablaHomicidiosIntencionales()}
+                    {renderTablaSimple()}
+                </>
+            );
+        }
+    };
+    const renderTablaSimple = () => {
+        const filtrados = reportes.filter(
+            (r) => !homicidiosIntencionales.includes(r.subtipo_descripcion)
+        );
+
+        if (filtrados.length === 0) {
+            return <p>No hay datos disponibles para mostrar.</p>;
+        }
+        // Verificar si hay datos disponibles en 'reportes'
+        if (!reportes || reportes.length === 0) {
+            return <p>No hay datos disponibles para mostrar.</p>;
+        }
+
+        // Agrupar solicitudes por tipo y subtipo
+        const agrupadoPorTipo = reportes.reduce((acc, solicitud) => {
+            const {
+                tipo_descripcion: tipo,
+                subtipo_descripcion: subtipo,
+                total_solicitudes,
+            } = solicitud;
+
+            if (!acc[tipo]) {
+                acc[tipo] = {
+                    tipo,
+                    subtipos: {},
+                };
+            }
+
+            // Inicializar subtipo si no existe
+            if (!acc[tipo].subtipos[subtipo]) {
+                acc[tipo].subtipos[subtipo] = 0;
+            }
+
+            // Sumar las solicitudes de cada subtipo
+            acc[tipo].subtipos[subtipo] += parseInt(total_solicitudes, 10);
+
+            return acc;
+        }, {});
+
+        // Renderizar tablas por cada tipo de solicitud
+        return Object.values(agrupadoPorTipo).map(({ tipo, subtipos }) => {
+            const totalFrecuencia = Object.values(subtipos).reduce(
+                (acc, frecuencia) => acc + frecuencia,
+                0
+            );
+
+            return (
+                <div key={tipo} className="mb-8">
+                    <h3 className="text-xl font-bold mb-4">{tipo}</h3>
+                    <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                        <thead>
+                            <tr>
+                                <th className="border p-2">Subtipo</th>
+                                <th className="border p-2">Frecuencia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Object.entries(subtipos).map(
+                                ([subtipo, frecuencia]) => (
+                                    <tr
+                                        key={subtipo}
+                                        className="hover:bg-gray-50"
+                                    >
+                                        <td className="border p-2">
+                                            {subtipo}
+                                        </td>
+                                        <td className="border p-2">
+                                            {frecuencia}
+                                        </td>
+                                    </tr>
+                                )
+                            )}
+                            <tr className="font-bold">
+                                <td className="border p-2">Total</td>
+                                <td className="border p-2">
+                                    {totalFrecuencia}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            );
+        });
+    };
+
+    const renderTablasPorTipoConRango = () => {
+        return subtiposPorTipo.map(
+            ({ tipo, subtipos, totalInicio, totalFin, variacion }) => (
+                <div key={tipo} className="mb-8">
+                    <h3 className="text-xl font-bold mb-4">{tipo}</h3>
+                    <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                        <thead>
+                            <tr>
+                                <th className="border p-2">Subtipo</th>
+                                <th className="border p-2">
+                                    Frecuencia (Mes Inicio)
+                                </th>
+                                <th className="border p-2">
+                                    Frecuencia (Mes Fin)
+                                </th>
+                                <th className="border p-2">Variación (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {subtipos.map(
+                                ({ subtipo, inicio, fin, variacion }) => (
+                                    <tr
+                                        key={subtipo}
+                                        className="hover:bg-gray-50"
+                                    >
+                                        <td className="border p-2">
+                                            {subtipo}
+                                        </td>
+                                        <td className="border p-2">{inicio}</td>
+                                        <td className="border p-2">{fin}</td>
+                                        <td
+                                            className={`border p-2 ${
+                                                !isNaN(variacion) &&
+                                                parseFloat(variacion) >= 0
+                                                    ? "text-green-500"
+                                                    : "text-red-500"
+                                            }`}
+                                        >
+                                            {isNaN(variacion)
+                                                ? "N/A"
+                                                : parseFloat(variacion).toFixed(
+                                                      2
+                                                  )}
+                                            %
+                                        </td>
+                                    </tr>
+                                )
+                            )}
+                            <tr className="font-bold">
+                                <td className="border p-2">Total</td>
+                                <td className="border p-2">{totalInicio}</td>
+                                <td className="border p-2">{totalFin}</td>
+                                <td
+                                    className={`border p-2 ${
+                                        variacion >= 0
+                                            ? "text-green-500"
+                                            : "text-red-500"
+                                    }`}
+                                >
+                                    {variacion.toFixed(2)}%
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            )
+        );
+    };
+    const renderTablaHomicidiosIntencionales = () => {
+        const homicidios = subtiposPorTipo.find(
+            (tipo) => tipo.tipo === "Homicidios Intencionales"
+        );
+
+        if (!homicidios || homicidios.subtipos.length === 0) {
+            return <p>No hay homicidios intencionales disponibles.</p>;
+        }
+
+        const { totalInicio, totalFin, variacion, subtipos } = homicidios;
+
+        return (
+            <div className="mb-8">
+                <h3 className="text-xl font-bold mb-4">
+                    Homicidios Intencionales
+                </h3>
+                <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                    <thead>
+                        <tr>
+                            <th className="border p-2">Subtipo</th>
+                            <th className="border p-2">
+                                Frecuencia (Mes Inicio)
+                            </th>
+                            <th className="border p-2">Frecuencia (Mes Fin)</th>
+                            <th className="border p-2">Variación (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {subtipos.map(({ subtipo, inicio, fin, variacion }) => (
+                            <tr key={subtipo} className="hover:bg-gray-50">
+                                <td className="border p-2">{subtipo}</td>
+                                <td className="border p-2">{inicio}</td>
+                                <td className="border p-2">{fin}</td>
+                                <td
+                                    className={`border p-2 ${
+                                        !isNaN(variacion) &&
+                                        parseFloat(variacion) >= 0
+                                            ? "text-green-500"
+                                            : "text-red-500"
+                                    }`}
+                                >
+                                    {isNaN(variacion)
+                                        ? "N/A"
+                                        : parseFloat(variacion).toFixed(2)}
+                                    %
+                                </td>
+                            </tr>
+                        ))}
+                        <tr className="font-bold">
+                            <td className="border p-2">Total</td>
+                            <td className="border p-2" colSpan={3}>
+                                {totalInicio + totalFin}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        );
     };
 
     return (
@@ -117,48 +395,24 @@ const ConsultaReportes = () => {
                 />
                 <input
                     type="number"
-                    name="mes"
-                    value={filtros.mes}
+                    name="rangoMesInicio"
+                    value={filtros.rangoMesInicio}
                     onChange={handleFiltroChange}
-                    placeholder="Mes (1-12)"
+                    placeholder="Mes Inicio"
                     className="border p-2 rounded"
                 />
-                <select
-                    name="tipo"
-                    value={filtros.tipo}
+                <input
+                    type="number"
+                    name="rangoMesFin"
+                    value={filtros.rangoMesFin}
                     onChange={handleFiltroChange}
+                    placeholder="Mes Fin"
                     className="border p-2 rounded"
-                >
-                    <option value="">Tipo</option>
-                    {tipos.map((tipo) => (
-                        <option key={tipo} value={tipo}>
-                            {tipo}
-                        </option>
-                    ))}
-                </select>
-                <select
-                    name="subtipo"
-                    value={filtros.subtipo}
-                    onChange={handleFiltroChange}
-                    className="border p-2 rounded"
-                >
-                    <option value="">Subtipo</option>
-                    {subtipos.map((subtipo) => (
-                        <option key={subtipo} value={subtipo}>
-                            {subtipo}
-                        </option>
-                    ))}
-                </select>
+                />
             </div>
 
             {/* Botones */}
             <div className="flex gap-4 mb-8">
-                <button className="bg-green-500 text-white px-4 py-2 rounded">
-                    Buscar
-                </button>
-                <button className="bg-red-500 text-white px-4 py-2 rounded">
-                    Limpiar
-                </button>
                 <button
                     className="bg-blue-500 text-white px-4 py-2 rounded"
                     onClick={downloadPDF}
@@ -167,68 +421,25 @@ const ConsultaReportes = () => {
                 </button>
             </div>
 
-            <h2>Reporte general</h2>
-            {/* Gráfico de solicitudes por mes */}
-            <div className="mb-8">
-                <Chart
-                    ref={chartRef}
-                    options={{ xaxis: { categories: chartData.categories } }}
-                    series={chartData.series}
-                    type="bar"
-                    height={350}
-                />
-            </div>
+            <h2>Reporte General</h2>
+            <Chart
+                ref={chartRef}
+                options={{ xaxis: { categories: chartData.categories } }}
+                series={chartData.series}
+                type="bar"
+                height={350}
+            />
 
-            <h2>Gráfico por tipo y mes</h2>
-            {/* Nuevo gráfico por tipo y mes */}
-            <div className="mb-8">
-                <Chart
-                    options={{
-                        xaxis: { categories: tipoChartData.categories },
-                    }}
-                    series={tipoChartData.series}
-                    type="bar"
-                    height={350}
-                />
-            </div>
+            <h2>Gráfico por Tipo y Mes</h2>
+            <Chart
+                options={{ xaxis: { categories: tipoChartData.categories } }}
+                series={tipoChartData.series}
+                type="bar"
+                height={350}
+            />
 
-            <h2>Detalle</h2>
-            {/* Tabla de resultados */}
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                    <thead>
-                        <tr>
-                            <th className="border p-2">ID</th>
-                            <th className="border p-2">Estado</th>
-                            <th className="border p-2">Tipo</th>
-                            <th className="border p-2">Subtipo</th>
-                            <th className="border p-2">Fecha</th>
-                            <th className="border p-2">Distrito</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredReportes.map((r) => (
-                            <tr
-                                key={r.id_solicitud}
-                                className="hover:bg-gray-50"
-                            >
-                                <td className="border p-2">{r.id_solicitud}</td>
-                                <td className="border p-2">{r.estado}</td>
-                                <td className="border p-2">{r.tipo}</td>
-                                <td className="border p-2">{r.subtipo}</td>
-                                <td className="border p-2">
-                                    {new Date(
-                                        r.fecha_creacion
-                                    ).toLocaleString()}
-                                </td>
-                                <td className="border p-2">
-                                    {r.ubicacion?.distrito || "Sin Distrito"}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            <h2>Detalle por Tipo de Solicitud</h2>
+            {renderTablasPorTipo()}
         </div>
     );
 };

@@ -72,3 +72,50 @@ exports.getResumenSolicitudes = async (req, res) => {
         });
     }
 };
+
+//!---------------------------------------------------------------------------
+// Obtener solicitudes filtradas por criterios
+exports.getSolicitudesFiltradasController2 = async (req, res) => {
+    try {
+        const filtros = {
+            anio: req.query.anio ? parseInt(req.query.anio, 10) : null,
+            mes: req.query.mes ? parseInt(req.query.mes, 10) : null,
+            rangoMesInicio: req.query.rangoMesInicio
+                ? parseInt(req.query.rangoMesInicio, 10)
+                : null,
+            rangoMesFin: req.query.rangoMesFin
+                ? parseInt(req.query.rangoMesFin, 10)
+                : null,
+        };
+
+        const solicitudes = await estadisticasService.getSolicitudesFiltradas2(
+            filtros
+        );
+        res.status(200).json(solicitudes);
+    } catch (error) {
+        console.error("Error al obtener solicitudes filtradas:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+};
+
+exports.getSubtiposPorTipoTablasController = async (req, res) => {
+    try {
+        const filtros = {
+            anio: req.query.anio ? parseInt(req.query.anio, 10) : null,
+            rangoMesInicio: req.query.rangoMesInicio
+                ? parseInt(req.query.rangoMesInicio, 10)
+                : null,
+            rangoMesFin: req.query.rangoMesFin
+                ? parseInt(req.query.rangoMesFin, 10)
+                : null,
+        };
+
+        const subtipos = await estadisticasService.getSubtiposPorTipoTablas(
+            filtros
+        );
+        res.status(200).json(subtipos);
+    } catch (error) {
+        console.error("Error al obtener los subtipos por tipo:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+};

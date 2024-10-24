@@ -23,5 +23,15 @@ router.get(
     estadisticasController.getSolicitudesFiltradasController
 );
 router.get("/resumen", estadisticasController.getResumenSolicitudes);
+// Ruta para obtener solicitudes filtradas
+router.get(
+    "/solicitudesFiltradas2",
+    estadisticasController.getSolicitudesFiltradasController2
+);
+
+router.get(
+    "/subtiposPorTipoTablas",
+    estadisticasController.getSubtiposPorTipoTablasController
+);
 
 module.exports = router;

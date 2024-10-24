@@ -79,8 +79,7 @@ export function DashboardNavbar() {
             <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center">
                 <div className="capitalize">
                     <Typography variant="h6" color="blue-gray">
-                        @Unidad de la Policía Comunitaria Subzona No. 6 |
-                        Distrito Riobamba
+                        @UPC Subzona No. 6 | Distrito Riobamba
                     </Typography>
                 </div>
 

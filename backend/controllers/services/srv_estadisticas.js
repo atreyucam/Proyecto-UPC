@@ -1,4 +1,4 @@
-const { Op, fn, col, literal, where } = require("sequelize");
+const { Op, fn, col, literal, where, Sequelize } = require("sequelize");
 const {
     Persona,
     Rol,
@@ -13,7 +13,7 @@ const {
 
 // Datos para estadisticas
 
-// Función para obtener contadores de policías
+// **Función para obtener contadores de policías funciona
 exports.getPoliciaCounts = async () => {
     try {
         // Obtener la cantidad total de policías
@@ -462,5 +462,373 @@ exports.getResumenSolicitudes = async (anioFiltro) => {
     } catch (error) {
         console.error("Error al obtener el resumen de solicitudes:", error);
         throw new Error("Error al obtener el resumen de solicitudes");
+    }
+};
+
+// ** filtros
+
+// exports.getSolicitudesFiltradas2 = async (filtros) => {
+//     const { anio, rangoMesInicio, rangoMesFin } = filtros;
+
+//     const whereConditions = {};
+
+//     if (anio) {
+//         whereConditions[Op.and] = where(
+//             literal('EXTRACT(YEAR FROM "fecha_creacion")'),
+//             anio
+//         );
+//     }
+
+//     if (rangoMesInicio && rangoMesFin) {
+//         whereConditions[Op.and] = where(
+//             literal('EXTRACT(MONTH FROM "fecha_creacion")'),
+//             { [Op.between]: [rangoMesInicio, rangoMesFin] }
+//         );
+//     }
+
+//     try {
+//         const solicitudes = await Solicitud.findAll({
+//             attributes: [
+//                 [literal('EXTRACT(MONTH FROM "fecha_creacion")'), "mes"],
+//                 [
+//                     fn("COUNT", col("Solicitud.id_solicitud")),
+//                     "total_solicitudes",
+//                 ],
+//                 [col("Subtipo.descripcion"), "subtipo_descripcion"],
+//                 [col("Subtipo->TipoSolicitud.descripcion"), "tipo_descripcion"],
+//                 [col("Subtipo->TipoSolicitud.id_tipo"), "tipo_id"],
+//             ],
+//             include: [
+//                 {
+//                     model: Subtipo,
+//                     attributes: [],
+//                     include: [{ model: TipoSolicitud, attributes: [] }],
+//                 },
+//             ],
+//             where: whereConditions,
+//             group: [
+//                 literal('EXTRACT(MONTH FROM "fecha_creacion")'),
+//                 "Subtipo.descripcion",
+//                 "Subtipo->TipoSolicitud.descripcion",
+//                 "Subtipo->TipoSolicitud.id_tipo",
+//             ],
+//             raw: true,
+//         });
+
+//         const calculosPorTipo = calcularFrecuenciasYVariaciones(
+//             solicitudes,
+//             rangoMesInicio,
+//             rangoMesFin
+//         );
+
+//         return { solicitudes, calculosPorTipo };
+//     } catch (error) {
+//         console.error("Error al obtener las solicitudes filtradas:", error);
+//         throw new Error("Error al obtener las solicitudes filtradas");
+//     }
+// };
+
+// // Función para calcular frecuencias y variaciones por tipo
+// const calcularFrecuenciasYVariaciones = (solicitudes, mesInicio, mesFin) => {
+//     const agrupadoPorTipo = solicitudes.reduce((acc, item) => {
+//         const tipo = item.tipo_descripcion;
+//         if (!acc[tipo]) {
+//             acc[tipo] = { subtipos: {}, totalInicio: 0, totalFin: 0 };
+//         }
+//         const mes = parseInt(item.mes);
+
+//         if (mes === mesInicio) {
+//             acc[tipo].totalInicio += parseInt(item.total_solicitudes);
+//         } else if (mes === mesFin) {
+//             acc[tipo].totalFin += parseInt(item.total_solicitudes);
+//         }
+
+//         if (!acc[tipo].subtipos[item.subtipo_descripcion]) {
+//             acc[tipo].subtipos[item.subtipo_descripcion] = {
+//                 inicio: 0,
+//                 fin: 0,
+//             };
+//         }
+
+//         if (mes === mesInicio) {
+//             acc[tipo].subtipos[item.subtipo_descripcion].inicio += parseInt(
+//                 item.total_solicitudes
+//             );
+//         } else if (mes === mesFin) {
+//             acc[tipo].subtipos[item.subtipo_descripcion].fin += parseInt(
+//                 item.total_solicitudes
+//             );
+//         }
+
+//         return acc;
+//     }, {});
+
+//     // Calcular incremento/decremento
+//     return Object.entries(agrupadoPorTipo).map(
+//         ([tipo, { subtipos, totalInicio, totalFin }]) => {
+//             const variacion =
+//                 ((totalFin - totalInicio) / (totalInicio || 1)) * 100;
+
+//             return {
+//                 tipo,
+//                 subtipos: Object.entries(subtipos).map(([subtipo, data]) => ({
+//                     subtipo,
+//                     inicio: data.inicio,
+//                     fin: data.fin,
+//                     variacion:
+//                         ((data.fin - data.inicio) / (data.inicio || 1)) * 100,
+//                 })),
+//                 totalInicio,
+//                 totalFin,
+//                 variacion,
+//             };
+//         }
+//     );
+// };
+exports.getSolicitudesFiltradas2 = async (filtros) => {
+    const { anio, rangoMesInicio, rangoMesFin } = filtros;
+
+    const whereConditions = {};
+
+    if (anio) {
+        whereConditions[Op.and] = [
+            Sequelize.where(
+                Sequelize.fn(
+                    "EXTRACT",
+                    Sequelize.literal('YEAR FROM "fecha_creacion"')
+                ),
+                anio
+            ),
+        ];
+    }
+
+    if (rangoMesInicio && rangoMesFin) {
+        whereConditions[Op.and].push(
+            Sequelize.where(
+                Sequelize.fn(
+                    "EXTRACT",
+                    Sequelize.literal('MONTH FROM "fecha_creacion"')
+                ),
+                { [Op.between]: [rangoMesInicio, rangoMesFin] }
+            )
+        );
+    }
+
+    const homicidiosIntencionales = [
+        "Asesinato",
+        "Femicidio",
+        "Homicidio",
+        "Sicariato",
+    ];
+
+    try {
+        const solicitudes = await Solicitud.findAll({
+            attributes: [
+                [literal('EXTRACT(MONTH FROM "fecha_creacion")'), "mes"],
+                [
+                    fn("COUNT", col("Solicitud.id_solicitud")),
+                    "total_solicitudes",
+                ],
+                [col("Subtipo.descripcion"), "subtipo_descripcion"],
+                [col("Subtipo->TipoSolicitud.descripcion"), "tipo_descripcion"],
+                [col("Subtipo->TipoSolicitud.id_tipo"), "tipo_id"],
+            ],
+            include: [
+                {
+                    model: Subtipo,
+                    attributes: [],
+                    include: [{ model: TipoSolicitud, attributes: [] }],
+                },
+            ],
+            where: { [Op.and]: whereConditions },
+            group: [
+                literal('EXTRACT(MONTH FROM "fecha_creacion")'),
+                "Subtipo.descripcion",
+                "Subtipo->TipoSolicitud.descripcion",
+                "Subtipo->TipoSolicitud.id_tipo",
+            ],
+            raw: true,
+        });
+
+        console.log("Solicitudes recuperadas:", solicitudes); // Verificar resultados completos.
+
+        const homicidios = solicitudes.filter((s) =>
+            homicidiosIntencionales.includes(s.subtipo_descripcion)
+        );
+
+        const restantes = solicitudes.filter(
+            (s) => !homicidiosIntencionales.includes(s.subtipo_descripcion)
+        );
+
+        const calculosPorTipo = calcularFrecuenciasYVariaciones(
+            restantes,
+            rangoMesInicio,
+            rangoMesFin
+        );
+
+        const calculoHomicidios = {
+            tipo: "Homicidios Intencionales",
+            subtipos: homicidios.map((h) => ({
+                subtipo: h.subtipo_descripcion,
+                inicio: parseInt(h.total_solicitudes, 10) || 0,
+                fin: parseInt(h.total_solicitudes, 10) || 0,
+                variacion: calcularVariacion(
+                    parseInt(h.total_solicitudes, 10) || 0,
+                    parseInt(h.total_solicitudes, 10) || 0
+                ),
+            })),
+            totalInicio: homicidios.reduce(
+                (acc, h) => acc + parseInt(h.total_solicitudes, 10) || 0,
+                0
+            ),
+            totalFin: homicidios.reduce(
+                (acc, h) => acc + parseInt(h.total_solicitudes, 10) || 0,
+                0
+            ),
+            variacion: calcularVariacion(
+                homicidios.reduce(
+                    (acc, h) => acc + parseInt(h.total_solicitudes, 10) || 0,
+                    0
+                ),
+                homicidios.reduce(
+                    (acc, h) => acc + parseInt(h.total_solicitudes, 10) || 0,
+                    0
+                )
+            ),
+        };
+
+        calculosPorTipo.push(calculoHomicidios);
+        // console.log("Solicitudes recuperadas desde la BD:", solicitudes);
+        // console.log("Condiciones de filtro:", whereConditions);
+        // console.log("Solicitudes para respuesta:", solicitudes);
+
+        return { solicitudes, calculosPorTipo };
+    } catch (error) {
+        console.error("Error al obtener las solicitudes filtradas:", error);
+        throw new Error("Error al obtener las solicitudes filtradas");
+    }
+};
+
+// const calcularVariacion = (inicio, fin) => {
+//     inicio = inicio || 0; // Aseguramos que sea al menos 0
+//     fin = fin || 0;
+//     if (inicio === 0 && fin === 0) return 0; // Sin datos
+//     if (inicio === fin) return 0; // Muestra un mensaje en lugar de 0%
+//     if (inicio === 0) return 100; // Si el inicio es 0 y hay valor en fin
+//     const variacion = ((fin - inicio) / inicio) * 100;
+//     return isNaN(variacion) ? 0 : variacion;
+// };
+const calcularVariacion = (inicio, fin) => {
+    if (inicio === 0 && fin === 0) return 0; // Sin datos
+    if (inicio === fin) return 0; // Sin variación
+    if (inicio === 0) return 100; // Inicio en 0, pero hay datos en fin
+
+    return ((fin - inicio) / inicio) * 100;
+};
+const calcularFrecuenciasYVariaciones = (solicitudes, mesInicio, mesFin) => {
+    const tipos = [...new Set(solicitudes.map((s) => s.tipo_descripcion))];
+
+    // Generamos los meses disponibles en el rango solicitado
+    const mesesDisponibles = Array.from(
+        { length: mesFin - mesInicio + 1 },
+        (_, i) => mesInicio + i
+    );
+
+    return tipos.map((tipo) => {
+        const solicitudesPorTipo = solicitudes.filter(
+            (s) => s.tipo_descripcion === tipo
+        );
+
+        const subtipos = [
+            ...new Set(solicitudesPorTipo.map((s) => s.subtipo_descripcion)),
+        ];
+
+        const subtipoData = subtipos.map((subtipo) => {
+            // Obtener las solicitudes del subtipo en el mes de inicio o retornar 0 si no hay datos
+            const inicio = solicitudesPorTipo
+                .filter(
+                    (s) =>
+                        s.subtipo_descripcion === subtipo &&
+                        parseInt(s.mes) === mesInicio
+                )
+                .reduce((acc, s) => acc + parseInt(s.total_solicitudes, 10), 0);
+
+            // Obtener las solicitudes del subtipo en el mes de fin o retornar 0 si no hay datos
+            const fin = solicitudesPorTipo
+                .filter(
+                    (s) =>
+                        s.subtipo_descripcion === subtipo &&
+                        parseInt(s.mes) === mesFin
+                )
+                .reduce((acc, s) => acc + parseInt(s.total_solicitudes, 10), 0);
+
+            const variacion = calcularVariacion(inicio, fin);
+
+            return { subtipo, inicio, fin, variacion };
+        });
+
+        const totalInicio = subtipoData.reduce((acc, s) => acc + s.inicio, 0);
+        const totalFin = subtipoData.reduce((acc, s) => acc + s.fin, 0);
+        const variacion = calcularVariacion(totalInicio, totalFin);
+
+        return {
+            tipo,
+            subtipos: subtipoData,
+            totalInicio,
+            totalFin,
+            variacion,
+        };
+    });
+};
+
+// Función para calcular la variación porcentual
+// const calcularVariacion = (inicio, fin) => {
+//     if (inicio === 0 && fin === 0) return 0;
+//     if (inicio === 0) return 100;
+//     return ((fin - inicio) / inicio) * 100;
+// };
+//
+
+// filtro de tablas
+exports.getSubtiposPorTipoTablas = async (filtros) => {
+    const { anio, rangoMesInicio, rangoMesFin } = filtros;
+
+    const whereConditions = {};
+    if (anio) {
+        whereConditions[Op.and] = literal(
+            `EXTRACT(YEAR FROM "fecha_creacion") = ${anio}`
+        );
+    }
+    if (rangoMesInicio && rangoMesFin) {
+        whereConditions[Op.and] = literal(
+            `EXTRACT(MONTH FROM "fecha_creacion") BETWEEN ${rangoMesInicio} AND ${rangoMesFin}`
+        );
+    }
+
+    try {
+        const resultados = await Solicitud.findAll({
+            attributes: [
+                [col("Subtipo.descripcion"), "subtipo"],
+                [col("Subtipo->TipoSolicitud.descripcion"), "tipo"],
+                [fn("COUNT", col("Solicitud.id_solicitud")), "frecuencia"],
+            ],
+            include: [
+                {
+                    model: Subtipo,
+                    include: [{ model: TipoSolicitud }],
+                },
+            ],
+            where: whereConditions,
+            group: [
+                "Subtipo.descripcion",
+                "Subtipo->TipoSolicitud.descripcion",
+            ],
+            raw: true,
+        });
+
+        return resultados;
+    } catch (error) {
+        console.error("Error al obtener los subtipos:", error);
+        throw new Error("Error al obtener los subtipos por tipo.");
     }
 };
