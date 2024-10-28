@@ -5,7 +5,7 @@ import { decode as atob } from "base-64";
 
 const AuthContext = createContext();
 
-const API_URL = "http://192.168.0.13:3000";
+const API_URL = "http://192.168.10.146:3000";
 
 const AuthProvider = ({ children }) => {
     const [authState, setAuthState] = useState({

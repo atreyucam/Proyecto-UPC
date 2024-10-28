@@ -13,7 +13,7 @@ const RegistroScreen = () => {
   const [subzonas, setSubzonas] = useState([]);
   const [cantones, setCantones] = useState([]);
   const [parroquias, setParroquias] = useState([]);
-  const API_URL = "http://192.168.0.13:3000";
+  const API_URL = "http:// 192.168.10.146:3000";
 
   const { control, handleSubmit, formState: { errors, isSubmitting }, watch, setValue, setError } = useForm();
 

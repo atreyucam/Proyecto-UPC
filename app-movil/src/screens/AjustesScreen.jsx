@@ -31,13 +31,13 @@ export default function AjustesScreen() {
         <View style={styles.row}>
           <Card style={styles.card} onPress={handleLogout}>
             <Card.Content>
-              <Text style={styles.title}>Cerrar Sesion</Text>
+              <Text style={styles.title}>Cerrar Sesión</Text>
               <Image
                 source={require("../../assets/logOut_icono.png")}
                 style={styles.image}
                 resizeMode="contain"
               />
-              <Text style={styles.paragraph}>Salir de la aplicacion</Text>
+              <Text style={styles.paragraph}>Salir de la aplicación</Text>
             </Card.Content>
           </Card>
           <Card
@@ -83,7 +83,7 @@ export default function AjustesScreen() {
             }}
           >
             <Card.Content>
-              <Text style={styles.title}>Informacion</Text>
+              <Text style={styles.title}>Información</Text>
               <Image
                 source={require("../../assets/informacion_home.png")}
                 style={styles.image}

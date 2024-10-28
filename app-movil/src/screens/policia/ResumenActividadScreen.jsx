@@ -13,7 +13,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { Card } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 
-const API_URL = "http://192.168.0.13:3000";
+const API_URL = "http://192.168.10.146:3000";
 
 const ResumenActividadScreen = () => {
     const [policiaData, setPoliciaData] = useState(null);

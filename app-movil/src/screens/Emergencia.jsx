@@ -15,7 +15,7 @@ import axios from "axios";
 import { AuthContext } from "../context/AuthContext"; // Importa tu contexto de autenticación
 import { useNavigate } from "react-router-native"; // Importa el hook para la navegación
 
-const API_URL = "http://192.168.0.13:3000";
+const API_URL = "http:// 192.168.10.146:3000";
 
 export default function EmergenciaScreen() {
     const { authState } = useContext(AuthContext); // Obtén la información del usuario desde el contexto

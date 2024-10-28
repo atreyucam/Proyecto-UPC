@@ -12,7 +12,7 @@ import Notificacion from "./components/Notificacion";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
-const API_URL = "http://192.168.0.13:3000"; // Asegúrate de que esta URL apunte a tu backend
+const API_URL = "http:// 192.168.10.146:3000"; // Asegúrate de que esta URL apunte a tu backend
 
 const MisDenunciasScreen = () => {
     const { authState } = useContext(AuthContext); // Obtener el estado de autenticación
