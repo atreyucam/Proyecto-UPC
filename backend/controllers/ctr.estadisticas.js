@@ -15,7 +15,7 @@ exports.getPoliciaCountsController = async (req, res) => {
 exports.getContadorSolicitudesTotal = async (req, res) => {
     try {
         const resultados =
-            await estadisticasService.getContadorSolicitudesTotal();
+        await estadisticasService.getContadorSolicitudesTotal();
         res.status(200).json(resultados);
     } catch (error) {
         console.error(
@@ -49,9 +49,7 @@ exports.getSolicitudesFiltradasController = async (req, res) => {
             subtipo: req.query.subtipo,
         };
 
-        const solicitudes = await estadisticasService.getSolicitudesFiltradas(
-            filtros
-        );
+        const solicitudes = await estadisticasService.getSolicitudesFiltradas( filtros );
         res.status(200).json(solicitudes);
     } catch (error) {
         console.error("Error al obtener solicitudes filtradas:", error);

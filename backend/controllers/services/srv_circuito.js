@@ -5,19 +5,13 @@ const { Zona,Subzona, Canton, Distrito,Parroquia, Circuito, Subcircuito } = requ
 exports.getZonasConJerarquia = async () => {
     try {
         return await Zona.findAll({
-            include: [{
-                model: Subzona,
-                include: [{
-                    model: Canton,
-                    include: [{
-                        model: Distrito,
+            include: [{ model: Subzona,
+                include: [{ model: Canton,
+                    include: [{ model: Distrito,
                         as: 'distritos',  // Usar alias 'distritos'
-                        include: [{
-                            model: Parroquia,
-                            include: [{
-                                model: Circuito,
-                                include: [{
-                                    model: Subcircuito
+                        include: [{ model: Parroquia,
+                            include: [{ model: Circuito,
+                                include: [{ model: Subcircuito
                                 }]
                             }]
                         }]

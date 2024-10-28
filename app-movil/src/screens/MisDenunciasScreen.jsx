@@ -11,8 +11,8 @@ import { useNavigate } from "react-router-native";
 import Notificacion from "./components/Notificacion";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { API_ENDPOINT } from "@env"; // Importar del .env
 
-const API_URL = "http:// 192.168.10.146:3000"; // Asegúrate de que esta URL apunte a tu backend
 
 const MisDenunciasScreen = () => {
     const { authState } = useContext(AuthContext); // Obtener el estado de autenticación
@@ -24,7 +24,7 @@ const MisDenunciasScreen = () => {
         const obtenerDenuncias = async () => {
             try {
                 const response = await axios.get(
-                    `${API_URL}/personas/ciudadano/${authState.user}`
+                    `${API_ENDPOINT}/personas/ciudadano/${authState.user}`
                 );
                 setDenuncias(response.data.solicitudes_creadas);
             } catch (error) {

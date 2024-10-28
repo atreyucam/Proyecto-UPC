@@ -12,7 +12,6 @@ const {
 } = require("../../models/db_models");
 
 // Datos para estadisticas
-
 // **Función para obtener contadores de policías funciona
 exports.getPoliciaCounts = async () => {
     try {
@@ -21,7 +20,7 @@ exports.getPoliciaCounts = async () => {
             include: [
                 {
                     model: Rol,
-                    through: { attributes: [] }, // No incluir atributos de la tabla intermedia
+                    through: { attributes: [] },
                     where: { id_rol: 3 },
                 },
             ],
@@ -32,13 +31,11 @@ exports.getPoliciaCounts = async () => {
             include: [
                 {
                     model: Rol,
-                    through: { attributes: [] }, // No incluir atributos de la tabla intermedia
+                    through: { attributes: [] },
                     where: { id_rol: 3 },
                 },
             ],
-            where: {
-                disponibilidad: "Disponible",
-            },
+            where: { disponibilidad: "Disponible" },
         });
 
         // Obtener la cantidad de policías ocupados
@@ -46,13 +43,11 @@ exports.getPoliciaCounts = async () => {
             include: [
                 {
                     model: Rol,
-                    through: { attributes: [] }, // No incluir atributos de la tabla intermedia
+                    through: { attributes: [] },
                     where: { id_rol: 3 },
                 },
             ],
-            where: {
-                disponibilidad: "Ocupado",
-            },
+            where: { disponibilidad: "Ocupado" },
         });
 
         return {

@@ -14,8 +14,8 @@ import Notificacion from "./components/Notificacion";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext"; // Importa tu contexto de autenticación
 import { useNavigate } from "react-router-native"; // Importa el hook para la navegación
-
-const API_URL = "http:// 192.168.10.146:3000";
+import { API_ENDPOINT } from "@env"; // Importar del .env
+// const API_ENDPOINT = "http://192.168.0.14:3000";
 
 export default function EmergenciaScreen() {
     const { authState } = useContext(AuthContext); // Obtén la información del usuario desde el contexto
@@ -84,7 +84,7 @@ export default function EmergenciaScreen() {
             console.log("Datos enviados:", emergenciaData);
 
             const response = await axios.post(
-                `${API_URL}/solicitud/nuevoBotonEmergencia`,
+                `${API_ENDPOINT}/solicitud/nuevoBotonEmergencia`,
                 emergenciaData
             );
 
