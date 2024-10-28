@@ -1,9 +1,10 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
-
+import { API_ENDPOINT } from "@env"; // Importar del .env
 const UserContext = createContext();
-// const API_URL = "http://10.0.2.2:3000";
-const API_URL = "http://192.168.0.13:3000";
+// const API_ENDPOINT = "http://10.0.2.2:3000";
+// const API_ENDPOINT = "http://192.168.0.13:3000";
+// const API_ENDPOINT = "http://192.168.0.14:3000";
 
 const UserProvider = ({ children }) => {
     const [userState, setUserState] = useState({
@@ -14,7 +15,7 @@ const UserProvider = ({ children }) => {
     const registroUsuario = async (userData) => {
         try {
             const response = await axios.post(
-                `${API_URL}/personas/nuevoCiudadano`,
+                `${API_ENDPOINT}/personas/nuevoCiudadano`,
                 userData
             );
             setUserState({

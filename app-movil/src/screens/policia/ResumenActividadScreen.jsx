@@ -12,8 +12,8 @@ import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
 import { Card } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
-
-const API_URL = "http://192.168.0.13:3000";
+import { API_ENDPOINT } from "@env"; // Importar del .env
+// const API_ENDPOINT = "http://192.168.0.14:3000";
 
 const ResumenActividadScreen = () => {
     const [policiaData, setPoliciaData] = useState(null);
@@ -24,7 +24,7 @@ const ResumenActividadScreen = () => {
         const fetchPoliciaData = async () => {
             try {
                 const response = await axios.get(
-                    `${API_URL}/personas/policia/${authState.user}`
+                    `${API_ENDPOINT}/personas/policia/${authState.user}`
                 );
                 setPoliciaData(response.data);
             } catch (error) {

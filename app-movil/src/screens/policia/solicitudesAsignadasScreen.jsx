@@ -10,8 +10,8 @@ import { Appbar, IconButton, TextInput, Button } from "react-native-paper";
 import { useNavigate } from "react-router-native";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
-
-const API_URL = "http://192.168.0.13:3000"; // Asegúrate de que esta URL apunte a tu backend
+import { API_ENDPOINT } from "@env"; // Importar del .env
+// const API_ENDPOINT = "http://192.168.0.14:3000"; // Asegúrate de que esta URL apunte a tu backend
 
 const SolicitudesAsignadasScreen = () => {
     const { authState } = useContext(AuthContext); // Obtener el estado de autenticación
@@ -23,7 +23,7 @@ const SolicitudesAsignadasScreen = () => {
         const obtenerSolicitudesAsignadas = async () => {
             try {
                 const response = await axios.get(
-                    `${API_URL}/personas/policia/${authState.user}`
+                    `${API_ENDPOINT}/personas/policia/${authState.user}`
                 );
                 const solicitudesEnProgreso =
                     response.data.solicitudes_asignadas.filter(

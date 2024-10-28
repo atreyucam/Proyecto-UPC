@@ -8,8 +8,8 @@ import * as ImagePicker from "expo-image-picker";
 import Notificacion from "./components/Notificacion";
 import { AuthContext } from "../context/AuthContext"; // Importa tu contexto de autenticación
 import { useNavigate } from "react-router-native";
-
-const API_URL = "http://192.168.0.13:3000";
+import { API_ENDPOINT } from "@env"; // Importar del .env
+// const API_ENDPOINT = "http://192.168.0.146:3000";
 
 export default function DenunciaScreen() {
     const { authState } = useContext(AuthContext); // Obtén la información del usuario desde el contexto
@@ -41,7 +41,7 @@ export default function DenunciaScreen() {
 
     const fetchTipos = async () => {
         try {
-            const response = await fetch(`${API_URL}/subtipos/tipos`);
+            const response = await fetch(`${API_ENDPOINT}/subtipos/tipos`);
             const data = await response.json();
             const filteredTipos = data.filter(
                 (tipo) => tipo.id_tipo === 2 || tipo.id_tipo === 3
@@ -55,7 +55,7 @@ export default function DenunciaScreen() {
     const fetchSubtipos = async (id_tipo) => {
         try {
             const response = await fetch(
-                `${API_URL}/subtipos/tipos/${id_tipo}/subtipos`
+                `${API_ENDPOINT}/subtipos/tipos/${id_tipo}/subtipos`
             );
             const data = await response.json();
             setSubtipos(data);
@@ -176,7 +176,7 @@ export default function DenunciaScreen() {
 
         try {
             const response = await fetch(
-                `${API_URL}/solicitud/nuevaSolicitud`,
+                `${API_ENDPOINT}/solicitud/nuevaSolicitud`,
                 {
                     method: "POST",
                     headers: {

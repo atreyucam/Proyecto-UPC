@@ -1,11 +1,6 @@
 const subtipoService = require('./services/srv_subtipo');
 
-/**
- * * Controlador para crear un nuevo subtipo.
- * @param {Object} req - Objeto de solicitud HTTP.
- * @param {Object} res - Objeto de respuesta HTTP.
- */
-// * Modulo en funcionamiento
+//Controlador para crear un nuevo subtipo.
 exports.createSubtipoPorTipo = async (req, res) => {
     const {id_tipo} = req.params;
     const {descripcion} = req.body;

@@ -2,10 +2,11 @@ import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { decode as atob } from "base-64";
+import { API_ENDPOINT } from "@env"; // Importar del .env
 
 const AuthContext = createContext();
 
-const API_URL = "http://192.168.0.13:3000";
+// const API_ENDPOINT = "http://192.168.0.14:3000";
 
 const AuthProvider = ({ children }) => {
     const [authState, setAuthState] = useState({
@@ -51,7 +52,7 @@ const AuthProvider = ({ children }) => {
 
     const login = async (userData) => {
         try {
-            const response = await axios.post(`${API_URL}/upc/login`, userData);
+            const response = await axios.post(`${API_ENDPOINT}/upc/login`, userData);
 
             const decodedToken = parseJwt(response.data.token);
 

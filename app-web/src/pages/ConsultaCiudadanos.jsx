@@ -21,13 +21,13 @@ const ConsultaCiudadanos = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [ciudadanoToDelete, setCiudadanoToDelete] = useState(null);
   const navigate = useNavigate();
-  const API_URL = "http://localhost:3000"; // Asegúrate de usar la misma URL base
+  const API_ENDPOINT = "http://localhost:3000"; // Asegúrate de usar la misma URL base
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ciudadanosRes = await axios.get(`${API_URL}/personas/ciudadanos`);
-        const zonasRes = await axios.get(`${API_URL}/circuitos/zonas`);
+        const ciudadanosRes = await axios.get(`${API_ENDPOINT}/personas/ciudadanos`);
+        const zonasRes = await axios.get(`${API_ENDPOINT}/circuitos/zonas`);
 
         setCiudadanos(ciudadanosRes.data.ciudadanos);
         setFilteredCiudadanos(ciudadanosRes.data.ciudadanos);
@@ -44,7 +44,7 @@ const ConsultaCiudadanos = () => {
     const fetchSubzonas = async () => {
       if (filtros.zona) {
         try {
-          const subzonasRes = await axios.get(`${API_URL}/circuitos/zonas/${filtros.zona}/subzonas`);
+          const subzonasRes = await axios.get(`${API_ENDPOINT}/circuitos/zonas/${filtros.zona}/subzonas`);
           setSubzonas(subzonasRes.data);
         } catch (error) {
           console.error("Error fetching subzonas", error);
@@ -64,7 +64,7 @@ const ConsultaCiudadanos = () => {
     const fetchCantones = async () => {
       if (filtros.subzona) {
         try {
-          const cantonesRes = await axios.get(`${API_URL}/circuitos/subzonas/${filtros.subzona}/cantones`);
+          const cantonesRes = await axios.get(`${API_ENDPOINT}/circuitos/subzonas/${filtros.subzona}/cantones`);
           setCantones(cantonesRes.data);
         } catch (error) {
           console.error("Error fetching cantones", error);
@@ -83,7 +83,7 @@ const ConsultaCiudadanos = () => {
     const fetchParroquias = async () => {
       if (filtros.canton) {
         try {
-          const parroquiasRes = await axios.get(`${API_URL}/circuitos/cantones/${filtros.canton}/distritos`);
+          const parroquiasRes = await axios.get(`${API_ENDPOINT}/circuitos/cantones/${filtros.canton}/distritos`);
           setParroquias(parroquiasRes.data);
         } catch (error) {
           console.error("Error fetching parroquias", error);
@@ -152,7 +152,7 @@ const ConsultaCiudadanos = () => {
 
   const handleSaveClick = async (ciudadano) => {
     try {
-      await axios.put(`${API_URL}/personas/${ciudadano.id_persona}`, ciudadano);
+      await axios.put(`${API_ENDPOINT}/personas/${ciudadano.id_persona}`, ciudadano);
       setCiudadanos((prevCiudadanos) =>
         prevCiudadanos.map((c) => (c.id_persona === ciudadano.id_persona ? ciudadano : c))
       );
@@ -172,7 +172,7 @@ const ConsultaCiudadanos = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/personas/${ciudadanoToDelete.id_persona}`);
+      await axios.delete(`${API_ENDPOINT}/personas/${ciudadanoToDelete.id_persona}`);
       setCiudadanos((prevCiudadanos) =>
         prevCiudadanos.filter((c) => c.id_persona !== ciudadanoToDelete.id_persona)
       );

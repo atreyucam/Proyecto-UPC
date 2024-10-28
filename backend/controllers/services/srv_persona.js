@@ -1,25 +1,11 @@
 const { Op } = require("sequelize");
-const {
-  Persona,
-  Rol,
-  Circuito,
-  sequelize,
-  Solicitud,
-  Estado,
-  Subtipo,
-  TipoSolicitud,
-  Subcircuito,
-  Parroquia,
-  Distrito,
-  Canton,
-  Subzona,
-  Zona,
-  DistritoCanton,
+const {Persona,Rol,Circuito,sequelize,Solicitud, Estado,Subtipo,TipoSolicitud,
+  Subcircuito,Parroquia,Distrito,Canton,Subzona,Zona,DistritoCanton,
 } = require("../../models/db_models");
 
 // * Funcion que permite la creacion de un Ciudadano.
 exports.createCiudadano = async (ciudadanoData) => {
-  const transaction = await sequelize.transaction(); // Iniciar transacción
+  const transaction = await sequelize.transaction(); 
 
   try {
     // Verificar que se haya proporcionado subzona y cantón
@@ -54,17 +40,14 @@ exports.createCiudadano = async (ciudadanoData) => {
       where: { descripcion: "Ciudadano" },
       transaction,
     });
-    // Asociar el rol de Ciudadano a la persona
-    await persona.addRol(rol, { transaction });
-    // Confirmar transacción
-    await transaction.commit();
-
+    
+    await persona.addRol(rol, { transaction }); // Asociar el rol de Ciudadano a la persona
+    await transaction.commit(); // Confirmar transacción
     return persona;
+
   } catch (error) {
-    // Deshacer transacción en caso de error
     await transaction.rollback();
 
-    // Manejar errores de unicidad de Sequelize
     if (error.name === "SequelizeUniqueConstraintError") {
       const field = error.errors[0].path;
       let message = "Error al crear el ciudadano.";
@@ -74,12 +57,8 @@ exports.createCiudadano = async (ciudadanoData) => {
       } else if (field === "email") {
         message = "El email ya está registrado.";
       }
-
-      console.log("Error al crear el ciudadano: ", message);
       throw new Error(message);
     }
-
-    console.log("Error al crear el ciudadano: ", error);
     throw error;
   }
 };
