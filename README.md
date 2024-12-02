@@ -4,7 +4,7 @@ Fecha de inicio: Mayo 04, 2024
 Proyecto: Software - UPC
 
 ## Participantes
-
+- Angel Fabian Melendres Sanaguano
 - Luis Israel Insuasti Rodriguez
 - Dayana Carolina Barriga Paredes 6658
 - Alexis David Rivera Guerrero
