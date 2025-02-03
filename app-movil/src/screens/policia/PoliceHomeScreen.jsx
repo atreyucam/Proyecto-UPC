@@ -1,10 +1,16 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Appbar, Card } from "react-native-paper";
+import React, { useState } from "react";
+import { View, StyleSheet, Image } from "react-native";
+import { Appbar, Card, Title, Paragraph } from "react-native-paper";
 import { useNavigate } from "react-router-native";
 
 export default function HomeScreenPolicia() {
   const navigate = useNavigate();
+  const [activeButton, setActiveButton] = useState("");
+
+  const handlePress = (buttonName, route) => {
+    setActiveButton(buttonName);
+    navigate(route);
+  };
 
   return (
     <View style={styles.container}>
@@ -13,36 +19,56 @@ export default function HomeScreenPolicia() {
         <Appbar.Action icon="bell" onPress={() => {}} />
       </Appbar.Header>
 
-      <View style={styles.content}>
-        <Card
-          style={styles.card}
-          onPress={() => navigate("/denunciasAsignadas")}
-        >
-          <Card.Content style={styles.cardContent}>
-            <Text style={styles.cardTitle}>Denuncias asignadas</Text>
-          </Card.Content>
-        </Card>
+      <View style={styles.cardsContainer}>
+        {/* Primera fila */}
+        <View style={styles.row}>
+          <Card
+            style={styles.card}
+            onPress={() => handlePress("denunciasAsignadas", "/denunciasAsignadas")}
+          >
+            <Card.Content style={styles.cardContent}>
+              <Title style={styles.cardTitle}>Denuncias asignadas</Title>
+              <Image source={require("../../../assets/denuncias.png")} style={styles.image} resizeMode="contain" />
+              <Paragraph style={styles.cardText}>Denuncias en curso</Paragraph>
+            </Card.Content>
+          </Card>
 
-        <Card style={styles.card} onPress={() => navigate("/resumenActividad")}>
-          <Card.Content style={styles.cardContent}>
-            <Text style={styles.cardTitle}>Resumen de actividad</Text>
-          </Card.Content>
-        </Card>
+          <Card
+            style={styles.card}
+            onPress={() => handlePress("resumenActividad", "/resumenActividad")}
+          >
+            <Card.Content style={styles.cardContent}>
+              <Title style={styles.cardTitle}>Resumen de actividad</Title>
+              <Image source={require("../../../assets/actividades.png")} style={styles.image} resizeMode="contain" />
+              <Paragraph style={styles.cardText}>Actividades recientes</Paragraph>
+            </Card.Content>
+          </Card>
+        </View>
 
-        <Card style={styles.card} onPress={() => navigate("/Emergencia")}>
-          <Card.Content style={styles.cardContent}>
-            <Text style={styles.cardTitle}>Botón de emergencia</Text>
-          </Card.Content>
-        </Card>
+        {/* Segunda fila */}
+        <View style={styles.row}>
+          <Card
+            style={styles.card}
+            onPress={() => handlePress("emergencia", "/Emergencia")}
+          >
+            <Card.Content style={styles.cardContent}>
+              <Title style={styles.cardTitle}>Emergencia</Title>
+              <Image source={require("../../../assets/sos_home.png")} style={styles.image} resizeMode="contain" />
+              <Paragraph style={styles.cardText}>Botón de Seguridad</Paragraph>
+            </Card.Content>
+          </Card>
 
-        <Card
-          style={styles.card}
-          onPress={() => navigate("/informacionPolicias")}
-        >
-          <Card.Content style={styles.cardContent}>
-            <Text style={styles.cardTitle}>Información policías</Text>
-          </Card.Content>
-        </Card>
+          <Card
+            style={styles.card}
+            onPress={() => handlePress("informacionPolicias", "/informacionPolicias")}
+          >
+            <Card.Content style={styles.cardContent}>
+              <Title style={styles.cardTitle}>Información</Title>
+              <Image source={require("../../../assets/informacion_home.png")} style={styles.image} resizeMode="contain" />
+              <Paragraph style={styles.cardText}>Ayuda</Paragraph>
+            </Card.Content>
+          </Card>
+        </View>
       </View>
     </View>
   );
@@ -51,23 +77,44 @@ export default function HomeScreenPolicia() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "center",
     backgroundColor: "#f5f5f5",
   },
-  content: {
+  cardsContainer: {
     flex: 1,
-    padding: 16,
     justifyContent: "center",
+    padding: 16,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
   },
   card: {
-    marginVertical: 10,
+    flex: 1,
+    margin: 5,
     borderRadius: 8,
+    backgroundColor: "#4a90e2", // Color de fondo
   },
   cardContent: {
     alignItems: "center",
+    paddingVertical: 10,
+  },
+  image: {
+    width: "100%",
+    height: 100, 
+    marginVertical: 10,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 18, 
     fontWeight: "bold",
     textAlign: "center",
+    color: "#ffffff",
+    marginBottom: 5,
+  },
+  cardText: {
+    fontSize: 14, 
+    textAlign: "center",
+    color: "#ffffff",
   },
 });
