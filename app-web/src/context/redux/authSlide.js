@@ -59,6 +59,7 @@ export const login = (email, password) => async (dispatch) => {
 
   try {
     const res = await axios.post("http://localhost:3000/upc/login", body, config);
+    
 
     if (res.data.user.roles && !res.data.user.roles.includes(2)) {
       window.location.href = "/unauthorized";
