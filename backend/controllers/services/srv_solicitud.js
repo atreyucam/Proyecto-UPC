@@ -175,7 +175,7 @@ exports.getSolicitudes = async () => {
     }
 };
 
-exports.asignarPoliciaASolicitud = async (solicitudData) => {
+exports.asignarPoliciaASolicitud = async (solicitudData, io) => {
     const { id_solicitud, id_persona_asignador, id_persona_policia } =
         solicitudData;
     const transaction = await sequelize.transaction();
@@ -232,6 +232,24 @@ exports.asignarPoliciaASolicitud = async (solicitudData) => {
         );
 
         await transaction.commit();
+
+       // Obtener la solicitud actualizada con datos completos para el frontend
+       const solicitudActualizada = await Solicitud.findByPk(id_solicitud, {
+        include: [
+            { model: Persona, as: "policia", attributes: ["nombres", "apellidos"] },
+            { model: Estado, attributes: ["descripcion"] },
+        ],
+    });
+
+    // **Emitir evento con la solicitud actualizada**
+    io.emit("actualizarSolicitud", {
+        id_solicitud: solicitudActualizada.id_solicitud,
+        estado: solicitudActualizada.Estado.descripcion,
+        policia_asignado: solicitudActualizada.policia
+            ? `${solicitudActualizada.policia.nombres} ${solicitudActualizada.policia.apellidos}`
+            : "No asignado",
+    });
+
         return { message: "Policía asignado a la solicitud correctamente." };
     } catch (error) {
         await transaction.rollback();
@@ -391,7 +409,7 @@ exports.getSolicitudById = async (id_solicitud) => {
     }
 };
 
-exports.cerrarSolicitud = async (cerrarData) => {
+exports.cerrarSolicitud = async (cerrarData, io) => {
     const { id_solicitud, observacion, estado_cierre } = cerrarData;
     const transaction = await sequelize.transaction();
     try {
@@ -452,6 +470,24 @@ exports.cerrarSolicitud = async (cerrarData) => {
         );
 
         await transaction.commit();
+
+         // Obtener la solicitud con información completa para el frontend
+         const solicitudActualizada = await Solicitud.findByPk(id_solicitud, {
+            include: [
+                { model: Estado, attributes: ["descripcion"] },
+                { model: Persona, as: "policia", attributes: ["nombres", "apellidos"] },
+            ],
+        });
+
+        // **Emitir el evento de cierre de solicitud**
+        io.emit("solicitudCerrada", {
+            id_solicitud: solicitudActualizada.id_solicitud,
+            estado: solicitudActualizada.Estado.descripcion, // Será "Resuelto" o "Falso"
+            policia_asignado: solicitudActualizada.policia
+                ? `${solicitudActualizada.policia.nombres} ${solicitudActualizada.policia.apellidos}`
+                : "No asignado",
+        });
+
         return { message: "Solicitud cerrada correctamente." };
     } catch (error) {
         await transaction.rollback();

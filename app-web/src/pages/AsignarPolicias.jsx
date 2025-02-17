@@ -1,10 +1,43 @@
-import React, { useState, useEffect } from "react";
-import { FiUserCheck, FiCheckCircle, FiSmile, FiEye } from "react-icons/fi";
-import ApexCharts from "react-apexcharts";
+import React, { useState, useEffect, useCallback  } from "react";
+import { FiUserCheck, FiCheckCircle, FiSmile, FiEye, FiPower } from "react-icons/fi";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
+import EstadoBadge from "./components/EstadoBadge"; 
+import io from "socket.io-client";
+
+const getBadgeClass = (estado) => {
+  switch (estado) {
+      case "Pendiente":
+          return "bg-blue-100 text-blue-800 hover:bg-blue-200 hover:text-blue-900";
+      case "En progreso":
+          return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 hover:text-yellow-900";
+      case "Resuelto":
+          return "bg-green-100 text-green-800 hover:bg-green-200 hover:text-green-900";
+      case "Falso":
+          return "bg-red-100 text-red-800 hover:bg-red-200 hover:text-red-900";
+      default:
+          return "bg-gray-100 text-gray-800 hover:bg-gray-200 hover:text-gray-900";
+  }
+};
+
+const Button = ({ text, number, icon, estado }) => {
+  const badgeClass = getBadgeClass(estado);
+
+  return (
+      <button className={`w-full h-full ${badgeClass} p-4 rounded-lg shadow-md flex flex-col items-start justify-between transition duration-300`}>
+          <div className="text-left flex justify-between items-center w-full">
+              <div>
+                  <span className="block text-lg font-bold">{text}</span>
+                  {number !== null && <span className="block text-lg font-bold">{number}</span>}
+              </div>
+              {icon}
+          </div>
+      </button>
+  );
+};
+
+const socket = io("http://localhost:3000"); // Conectar a Socket.IO
 
 const Home4 = () => {
   const { user } = useSelector((state) => state.auth); // Obtén el usuario del estado de Redux
@@ -14,7 +47,6 @@ const Home4 = () => {
     disponibles: 0,
     ocupados: 0,
   });
-  const [solicitudesTotales, setSolicitudesTotales] = useState({});
   const [solicitudesPendientes, setSolicitudesPendientes] = useState([]);
   const [policeData, setPoliceData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,6 +58,18 @@ const Home4 = () => {
 
   const recordsPerPage = 4;
 
+    // ✅ Función para obtener solicitudes pendientes desde la API
+    const fetchSolicitudesPendientes = useCallback(async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/solicitud/solicitudesPendientes"
+        );
+        setSolicitudesPendientes(response.data);
+      } catch (error) {
+        console.error("Error fetching solicitudes pendientes:", error);
+      }
+    }, []);
+
   useEffect(() => {
     // Fetch police stats
     axios
@@ -33,21 +77,15 @@ const Home4 = () => {
       .then((response) => setPoliceStats(response.data))
       .catch((error) => console.error("Error fetching police stats:", error));
 
-    // Fetch solicitudes totales
-    axios
-      .get("http://localhost:3000/estadisticas/contadorSolicitudesTotales")
-      .then((response) => setSolicitudesTotales(response.data))
-      .catch((error) =>
-        console.error("Error fetching solicitudes totales:", error)
-      );
-
-    // Fetch solicitudes pendientes
-    axios
-      .get("http://localhost:3000/solicitud/solicitudesPendientes")
-      .then((response) => setSolicitudesPendientes(response.data))
-      .catch((error) =>
-        console.error("Error fetching solicitudes pendientes:", error)
-      );
+    // // Fetch solicitudes pendientes
+    // const fetchSolicitudesPendientes = async () => {
+    //   try {
+    //     const response = await axios.get("http://localhost:3000/solicitud/solicitudesPendientes");
+    //     setSolicitudesPendientes(response.data);
+    //   } catch (error) {
+    //     console.error("Error fetching solicitudes pendientes:", error);
+    //   }
+    // };
 
     // Fetch police data (mock or actual API call)
     axios
@@ -55,12 +93,43 @@ const Home4 = () => {
       .then((response) => setPoliceData(response.data.policias))
       .catch((error) => console.error("Error fetching police data:", error));
 
-    // Fetch reports (si es necesario)
-    axios
-      .get("http://localhost:3000/reports")
-      .then((response) => setReports(response.data))
-      .catch((error) => console.error("Error fetching reports:", error));
-  }, []);
+      fetchSolicitudesPendientes();
+
+       // Escuchar eventos de Socket.IO
+    socket.on("nuevaSolicitud", (nuevaSolicitud) => {
+      setSolicitudesPendientes((prev) => [nuevaSolicitud, ...prev]);
+    });
+    socket.on("actualizarSolicitud", (data) => {
+      actualizarSolicitudPendiente(data);
+    });
+
+    socket.on("solicitudCerrada", (data) => {
+      eliminarSolicitudPendiente(data.id_solicitud);
+    });
+
+    return () => {
+      socket.off("nuevaSolicitud");
+    };
+
+  }, [fetchSolicitudesPendientes]);
+
+   // Función para actualizar el estado de una solicitud pendiente
+   const actualizarSolicitudPendiente = (data) => {
+    setSolicitudesPendientes((prevSolicitudes) =>
+      prevSolicitudes.map((solicitud) =>
+        solicitud.id_solicitud === data.id_solicitud
+          ? { ...solicitud, estado: data.estado }
+          : solicitud
+      )
+    );
+  };
+
+  // Función para eliminar una solicitud pendiente cuando se resuelve o se cierra
+  const eliminarSolicitudPendiente = (id_solicitud) => {
+    setSolicitudesPendientes((prevSolicitudes) =>
+      prevSolicitudes.filter((solicitud) => solicitud.id_solicitud !== id_solicitud)
+    );
+  };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -132,65 +201,6 @@ const Home4 = () => {
     setSelectedPolice(police);
   };
 
-  const indexOfLastRecord = currentPage * recordsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = policeData.slice(indexOfFirstRecord, indexOfLastRecord);
-
-  // Define chart options and series data
-  const [barOptions, setBarOptions] = useState({
-    chart: {
-      type: "bar",
-      height: 350,
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "55%",
-        endingShape: "rounded",
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      show: true,
-      width: 2,
-      colors: ["transparent"],
-    },
-    xaxis: {
-      categories: ["Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct"],
-    },
-    yaxis: {
-      title: {
-        text: "Solicitudes",
-      },
-    },
-    fill: {
-      opacity: 1,
-    },
-    tooltip: {
-      y: {
-        formatter: function (val) {
-          return val + " solicitudes";
-        },
-      },
-    },
-  });
-
-  const [barSeries, setBarSeries] = useState([
-    {
-      name: "Botón Emergencia",
-      data: [44, 55, 57, 56, 61, 58, 63, 60, 66],
-    },
-    {
-      name: "Denuncia Ciudadana",
-      data: [76, 85, 101, 98, 87, 105, 91, 114, 94],
-    },
-    {
-      name: "Servicios Comunitarios",
-      data: [35, 41, 36, 26, 45, 48, 52, 53, 41],
-    },
-  ]);
 
   const handleRowClick = (solicitud) => {
     navigate(`/solicitudes/${solicitud.id_solicitud}`);
@@ -200,7 +210,7 @@ const Home4 = () => {
     <div className="container mx-auto px-3 py-8">
       <div className="grid grid-cols-2 gap-5">
         <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-5">
+          {/* <div className="grid grid-cols-2 gap-5">
             <div className="bg-gray-100 rounded-lg">
               <Button
                 text="Policias registrados"
@@ -226,29 +236,25 @@ const Home4 = () => {
                 icon={<FiCheckCircle size={28} />}
               />
             </div>
-          </div>
+          </div> */}
 
           <div className="bg-gray-100 rounded-lg p-4">
-            <h2 className="text-lg font-bold mb-2">Total Solicitudes por Tipo</h2>
-            <ul>
-              {solicitudesTotales.byType?.map((tipo) => (
-                <li key={tipo.id_tipo}>
-                                    Tipo {tipo.id_tipo}: {tipo.count}
-                </li>
-              ))}
-            </ul>
+            <h2 className="text-lg font-bold mb-2">Asignar Policias</h2>
+    
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-4 shadow-md">
-          <h2 className="text-lg font-bold mb-4">Disponibilidad</h2>
-          <ApexCharts
-            options={barOptions}
-            series={barSeries}
-            type="bar"
-            height={350}
-          />
-        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="p-5">
+                    <Button text="Policias registrados" number={policeStats.total|| 0} icon={<FiUserCheck size={24} />} estado="Pendiente" />
+                </div>
+                <div className="p-5">
+                    <Button text="Policias disponibles" number={policeStats.disponibles || 0} icon={<FiCheckCircle size={24} />} estado="Resuelto" />
+                </div>
+                <div className="p-5">
+                    <Button text="Policias ocupados" number={policeStats.ocupados || 0} icon={<FiEye size={24} />} estado="Falso" />
+                </div>
       </div>
 
       <div className="mt-8">
@@ -433,15 +439,6 @@ const Home4 = () => {
   );
 };
 
-const Button = ({ text, number, icon }) => (
-  <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center justify-between w-full">
-    <div className="flex items-center gap-2">
-      {icon}
-      <span>{text}</span>
-    </div>
-    <span>{number}</span>
-  </button>
-);
+
 
 export default Home4;
-

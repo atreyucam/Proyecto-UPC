@@ -56,9 +56,20 @@ const ConsultaSolicitudes = () => {
             handleSocketUpdate(nuevoBotonEmergencia);
         });
 
+        socket.on("actualizarSolicitud", (data) => {
+            console.log("Solicitud actualizada:", data);
+            actualizarEstadoEnUI(data);
+        });
+
+        socket.on("solicitudCerrada", (data) => {
+            actualizarEstadoEnUI(data);
+        });
+
         return () => {
             socket.off("nuevaSolicitud");
             socket.off("nuevoBotonEmergencia");
+            socket.off("actualizarSolicitud");
+            socket.off("solicitudCerrada");
         };
     }, []);
 
@@ -74,6 +85,26 @@ const ConsultaSolicitudes = () => {
             console.error("Error al obtener detalles de la solicitud", error);
         }
     };
+
+    const actualizarEstadoEnUI = (data) => {
+        setSolicitudes((prevSolicitudes) =>
+            prevSolicitudes.map((solicitud) =>
+                solicitud.id_solicitud === data.id_solicitud
+                    ? { ...solicitud, estado: data.estado, policia_asignado: data.policia_asignado }
+                    : solicitud
+            )
+        );
+    
+        setFilteredSolicitudes((prevSolicitudes) =>
+            prevSolicitudes.map((solicitud) =>
+                solicitud.id_solicitud === data.id_solicitud
+                    ? { ...solicitud, estado: data.estado, policia_asignado: data.policia_asignado }
+                    : solicitud
+            )
+        );
+    };
+    
+    
 
     const handleFiltroChange = (e) => {
         const { name, value } = e.target;
