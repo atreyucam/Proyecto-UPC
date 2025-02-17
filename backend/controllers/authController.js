@@ -48,9 +48,10 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error en el proceso de login:', error);
-    res.status(500).json({ message: 'Error en el servidor', error });
+    console.error('Error en el proceso de login:', error.message, error.stack);
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }
+  
 };
 
 

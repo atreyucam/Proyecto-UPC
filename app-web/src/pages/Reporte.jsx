@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Chart from "react-apexcharts";
-import jsPDF from "jspdf";
+import html2canvas from "html2canvas"; // <-- Importamos html2canvas
+import jsPDF from "jspdf";             // <-- Importamos jsPDF
 import autoTable from "jspdf-autotable";
 import axios from "axios";
 
@@ -22,6 +23,12 @@ const ConsultaReportes = () => {
         subtipo: "",
         rangoMesInicio: "",
         rangoMesFin: "",
+    });
+
+    // Estado para manejar datos de "Asesinato", "Femicidio", "Homicidio" y "Sicariato"
+    const [homicidiosChartData, setHomicidiosChartData] = useState({
+        pie: { series: [], labels: [] },
+        stacked: { series: [], categories: [] },
     });
 
     const getMonthName = (monthNumber) => {
@@ -122,24 +129,35 @@ const ConsultaReportes = () => {
         }));
     };
 
-    const downloadPDF = () => {
-        const doc = new jsPDF();
-        doc.text("Reporte de Solicitudes", 20, 20);
+    // NUEVO: Función que captura el contenedor y genera el PDF con todo lo que se ve
+    const downloadPDF = async () => {
+        try {
+            // 1) Seleccionamos el contenedor que queremos "fotografiar"
+            const input = document.getElementById("report-content");
 
-        autoTable(doc, {
-            head: [["ID", "Estado", "Tipo", "Subtipo", "Fecha", "Distrito"]],
-            body: reportes.map((r) => [
-                r.id_solicitud,
-                r.estado,
-                r.tipo_descripcion,
-                r.subtipo_descripcion,
-                new Date(r.fecha_creacion).toLocaleString(),
-                r.ubicacion?.distrito || "Sin Distrito",
-            ]),
-        });
+            // 2) html2canvas genera un canvas a partir de ese contenedor
+            const canvas = await html2canvas(input);
 
-        doc.save("reporte-solicitudes.pdf");
+            // 3) Obtenemos la imagen en base64
+            const imgData = canvas.toDataURL("image/png");
+
+            // 4) Creamos el documento PDF
+            const pdf = new jsPDF("p", "pt", "a4");
+
+            // 5) Calculamos dimensiones para que la imagen ocupe el ancho del PDF
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            // 6) Insertamos la imagen en el PDF
+            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+            // 7) Descargamos
+            pdf.save("reporte-solicitudes.pdf");
+        } catch (error) {
+            console.error("Error generando PDF:", error);
+        }
     };
+
     const homicidiosIntencionales = [
         "Asesinato",
         "Femicidio",
@@ -319,6 +337,7 @@ const ConsultaReportes = () => {
             )
         );
     };
+
     const renderTablaHomicidiosIntencionales = () => {
         const homicidios = subtiposPorTipo.find(
             (tipo) => tipo.tipo === "Homicidios Intencionales"
@@ -379,8 +398,45 @@ const ConsultaReportes = () => {
         );
     };
 
+    // Calculamos datos para "Asesinato", "Femicidio", "Homicidio", "Sicariato"
+    useEffect(() => {
+        const subtiposObjetivo = ["Asesinato", "Femicidio", "Homicidio", "Sicariato"];
+        let totals = {
+            Asesinato: 0,
+            Femicidio: 0,
+            Homicidio: 0,
+            Sicariato: 0,
+        };
+
+        reportes.forEach((item) => {
+            if (subtiposObjetivo.includes(item.subtipo_descripcion)) {
+                totals[item.subtipo_descripcion] += parseInt(
+                    item.total_solicitudes,
+                    10
+                );
+            }
+        });
+
+        // Datos para el gráfico de pastel
+        const pieSeries = Object.values(totals);
+        const pieLabels = Object.keys(totals);
+
+        // Datos para el gráfico de barras apiladas
+        const stackedCategories = ["Homicidios Intencionales"];
+        const stackedSeries = Object.entries(totals).map(([subtipo, valor]) => ({
+            name: subtipo,
+            data: [valor],
+        }));
+
+        setHomicidiosChartData({
+            pie: { series: pieSeries, labels: pieLabels },
+            stacked: { series: stackedSeries, categories: stackedCategories },
+        });
+    }, [reportes]);
+
     return (
-        <div className="container mx-auto px-3 py-8">
+        
+        <div id="report-content" className="container mx-auto px-3 py-8">
             <h1 className="text-2xl font-bold mb-6">Reportes de Solicitudes</h1>
 
             {/* Filtros */}
@@ -417,7 +473,7 @@ const ConsultaReportes = () => {
                     className="bg-blue-500 text-white px-4 py-2 rounded"
                     onClick={downloadPDF}
                 >
-                    Descargar PDF
+                    Descargar PDF (Pantalla Completa)
                 </button>
             </div>
 
@@ -440,6 +496,44 @@ const ConsultaReportes = () => {
 
             <h2>Detalle por Tipo de Solicitud</h2>
             {renderTablasPorTipo()}
+
+            {/* Gráfico de Pastel */}
+            <h2>Gráfico de Pastel - Homicidios Intencionales</h2>
+            <Chart
+                options={{
+                    labels: homicidiosChartData.pie.labels,
+                }}
+                series={homicidiosChartData.pie.series}
+                type="pie"
+                height={350}
+            />
+
+            {/* Gráfico de Barras Apiladas (con Porcentajes) */}
+            <h2>Gráfico de Barras Apiladas (con Porcentajes)</h2>
+            <Chart
+                options={{
+                    chart: {
+                        stacked: true,
+                    },
+                    xaxis: {
+                        categories: homicidiosChartData.stacked.categories,
+                    },
+                    dataLabels: {
+                        enabled: true,
+                        formatter: (val, opts) => {
+                            // Calculamos el total de la categoría
+                            const total = opts.w.globals.series
+                                .map((serie) => serie[opts.dataPointIndex])
+                                .reduce((a, b) => a + b, 0);
+                            const percent = ((val / total) * 100).toFixed(2);
+                            return `${percent}%`;
+                        },
+                    },
+                }}
+                series={homicidiosChartData.stacked.series}
+                type="bar"
+                height={350}
+            />
         </div>
     );
 };

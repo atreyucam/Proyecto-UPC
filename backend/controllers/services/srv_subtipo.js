@@ -2,7 +2,7 @@ const { Subtipo, TipoSolicitud } = require('../../models/db_models');
 
 
  //Crea un nuevo subtipo en base a los tipos de solicitud disponible.
-exports.createSubtipo = async (id_tipo, descripcion) => {e
+exports.createSubtipo = async (id_tipo, descripcion) => {
     try {
         const tipo = await TipoSolicitud.findByPk(id_tipo); // Verificar si el TipoSolicitud existe
         if (!tipo) {
