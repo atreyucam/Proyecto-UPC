@@ -234,6 +234,13 @@ const Persona = sequelize.define('Persona', {
     type: DataTypes.ENUM('Masculino', 'Femenino', 'Otro'),
     allowNull: true,
   },
+  id_subzona:{
+    type: DataTypes.INTEGER,
+    references:{
+      model: Subzona,
+      key: 'id_subzona',
+    }
+  },
   id_canton: {
     type: DataTypes.INTEGER,
     references: {
