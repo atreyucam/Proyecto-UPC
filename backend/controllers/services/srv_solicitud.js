@@ -594,6 +594,7 @@ exports.crearSolicitud = async (personaData, io) => {
             id_persona,
         });
 
+            
         // Crear la relación entre la solicitud y el evento
         await SolicitudEventoPersona.create(
             {

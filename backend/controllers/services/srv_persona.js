@@ -1,4 +1,5 @@
 const { Op } = require("sequelize");
+const bcrypt = require("bcrypt");
 const {Persona,Rol,Circuito,sequelize,Solicitud, Estado,Subtipo,TipoSolicitud,
   Subcircuito,Parroquia,Distrito,Canton,Subzona,Zona,DistritoCanton,
 } = require("../../models/db_models");
@@ -705,6 +706,7 @@ exports.getCiudadanoConSolicitudes = async (id_persona) => {
         "apellidos",
         "telefono",
         "email",
+        "genero"
       ],
     });
 
@@ -719,6 +721,7 @@ exports.getCiudadanoConSolicitudes = async (id_persona) => {
       apellidos: ciudadano.apellidos,
       telefono: ciudadano.telefono,
       email: ciudadano.email,
+      genero: ciudadano.genero,
       nombre_distrito: ciudadano.Parroquium?.Distrito?.nombre_distrito ||
         ciudadano.Canton?.distritos?.[0]?.nombre_distrito || "Sin Distrito",
       nombre_canton: ciudadano.Canton?.nombre_canton || "Sin Cantón",
@@ -965,4 +968,89 @@ exports.getPoliciasDisponibles = async () => {
       console.error("Error al obtener los policías:", error.message);
       throw new Error(error.message);
   }
+};
+
+
+
+
+
+exports.getCiudadanoUser = async (id_persona) => {
+  try {
+    const ciudadano = await Persona.findByPk(id_persona, {
+      attributes: [
+        "id_persona",
+        "cedula",
+        "nombres",
+        "apellidos",
+        "telefono",
+        "email",
+        "genero"
+      ],
+    });
+
+    if (!ciudadano) {
+      throw new Error("El ciudadano especificado no existe.");
+    }
+
+    const formattedCiudadano = {
+      id_persona: ciudadano.id_persona,
+      cedula: ciudadano.cedula,
+      nombres: ciudadano.nombres,
+      apellidos: ciudadano.apellidos,
+      telefono: ciudadano.telefono,
+      email: ciudadano.email,
+      genero: ciudadano.genero,
+    };
+
+    return formattedCiudadano;
+  } catch (error) {
+    throw new Error(
+      "Error al obtener la información del ciudadano: " + error.message
+    );
+  }
+};
+
+
+exports.verificarContrasena = async ({ id_persona, contrasena }) => {
+  const persona = await Persona.findByPk(id_persona);
+  if (!persona) throw new Error("Usuario no encontrado");
+
+  console.log("🔍 Comparando contraseña:");
+  console.log("Contraseña ingresada:", contrasena);
+  console.log("Hash almacenado en BD:", persona.password);
+
+  // 🔥 Si el hash sigue siendo $2b$, reemplázalo manualmente
+  const hashParaComparar = persona.password.replace("$2b$", "$2a$");
+
+  console.log("Hash usado en comparación:", hashParaComparar);
+
+  const esValida = await bcrypt.compare(contrasena, hashParaComparar);
+  console.log("¿Es válida?", esValida); // 🔍 Ver resultado
+
+  return { valida: esValida };
+};
+
+
+exports.actualizarContrasena = async ({ id_persona, nuevaContrasena }) => {
+  const persona = await Persona.findByPk(id_persona);
+  if (!persona) throw new Error("Usuario no encontrado");
+
+  // ✅ Generar un salt asegurando compatibilidad con hashes existentes ($2a$)
+  const salt = await bcrypt.genSalt(10); // Usa 10 rondas como las contraseñas anteriores
+
+  // ✅ Hashear la contraseña con compatibilidad
+  let hashedPassword = await bcrypt.hash(nuevaContrasena, salt);
+  hashedPassword = hashedPassword.replace("$2b$", "$2a$"); // 🔥 Forzar compatibilidad
+
+  console.log("Hash generado (forzado a $2a$):", hashedPassword);
+
+  // ✅ Guardar el hash en la base de datos
+  persona.password = hashedPassword;
+  await persona.save();
+
+  // 🔍 **Verificar qué se almacena realmente en la BD**
+  const storedPersona = await Persona.findByPk(id_persona);
+  console.log("Contraseña almacenada en BD después de actualizar:", storedPersona.password);
+
+  return { mensaje: "Contraseña actualizada correctamente" };
 };

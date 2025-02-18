@@ -265,7 +265,8 @@ const Persona = sequelize.define('Persona', {
       persona.password = await bcrypt.hash(persona.password, salt);
     },
     beforeUpdate: async (persona) => {
-      if (persona.changed('password')) {
+      if (persona.changed('password') && !persona.password.startsWith("$2a$")) {
+        // Solo encripta si la contraseña no está ya encriptada
         const salt = await bcrypt.genSalt(10);
         persona.password = await bcrypt.hash(persona.password, salt);
       }

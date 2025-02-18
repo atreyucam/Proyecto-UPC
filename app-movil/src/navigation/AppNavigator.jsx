@@ -17,6 +17,7 @@ import SolicitudesAsignadasScreen from "../screens/policia/solicitudesAsignadasS
 import DenunciaItemPoliceScreen from "../screens/policia/DenunciaItemPoliceScreen";
 import ResumenActividad from "../screens/policia/ResumenActividadScreen";
 import EmergenciaScreen from "../screens/Emergencia";
+import ActualizarContrasenaScreen from "../screens/ActualizarContrasenaScreen";
 
 const AppNavigator = () => {
   const { authState } = useContext(AuthContext);
@@ -64,7 +65,7 @@ const AppNavigator = () => {
     <Routes>
       {authState.isAuthenticated ? (
         <>
-          {authState.role.includes(4) && (
+          {authState.role.includes(4) && ( // para ciudadanos
             <>
               <Route path="/" element={<HomeNavigation />} />
               <Route path="/misDenuncias" element={<MisDenunciasScreen />} />
@@ -73,6 +74,7 @@ const AppNavigator = () => {
               <Route path="/miPerfil" element={<MiPerfilScreen />} />
               <Route path="/devs" element={<DevsScreen />} />
               <Route path="/denuncia/:denunciaId" element={<DenunciaItemScreen />} />
+              <Route path="/actualizarContrasena" element={<ActualizarContrasenaScreen />} />
               <Route path="*" element={<HomeNavigation />} />
             </>
           )}
@@ -83,6 +85,7 @@ const AppNavigator = () => {
               <Route path="/denuncia/:denunciaId" element={<DenunciaItemPoliceScreen />} />
               <Route path="/resumenActividad" element={<ResumenActividad />} />
               <Route path="/Emergencia" element={<EmergenciaScreen />} />
+              <Route path="/actualizarContrasena" element={<ActualizarContrasenaScreen />} />
               <Route path="*" element={<PoliceNavigation />} />
             </>
           )}

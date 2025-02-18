@@ -36,7 +36,8 @@ const initData = async () => {
         ('Se ha cancelado la solicitud por parte del ciudadano.'),
         ('El policía asignado ha sido retirado de la solicitud por parte del administrador.'),
         ('Se ha resuelto tu solicitud.'),
-        ('Tu solicitud ha sido registrada como falsa.');
+        ('Tu solicitud ha sido registrada como falsa.'),
+        ('Se ha agregado una observacion.');
     `);
 
     // Insertar TipoSolicitud
@@ -61,7 +62,7 @@ const initData = async () => {
       INSERT INTO public."Rol"(descripcion) VALUES
         ('superAdmin'),
         ('Admin'),
-        ('Policía'),
+        ('Policia'),
         ('Ciudadano');
     `);
 

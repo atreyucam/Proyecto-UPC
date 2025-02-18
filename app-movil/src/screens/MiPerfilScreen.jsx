@@ -26,16 +26,27 @@ export default function MiPerfilScreen() {
         const cargarPerfil = async () => {
             try {
                 const response = await axios.get(
-                    `${API_ENDPOINT}/personas/${authState.user}`
+                    `${API_ENDPOINT}/personas/ciudadanoUser/${authState.user}`
                 );
                 const data = response.data;
+                console.log("Datos del usuario:", data); // <-- Agregado para depuración
 
+                setValue("cedula", data.cedula);
                 setValue("nombres", data.nombres);
                 setValue("apellidos", data.apellidos);
-                setValue("cedula", data.cedula);
                 setValue("telefono", data.telefono);
                 setValue("email", data.email);
-                setValue("genero", data.genero.toLowerCase());
+                const generoNormalizado = data.genero
+                    ? data.genero.trim().toLowerCase()
+                    : "masculino";
+                if (
+                    !["masculino", "femenino", "otro"].includes(
+                        generoNormalizado
+                    )
+                ) {
+                    console.warn(`Valor inesperado en genero: ${data.genero}`);
+                }
+                setValue("genero", generoNormalizado);
 
                 setPerfilCargado(true);
             } catch (error) {
@@ -116,6 +127,56 @@ export default function MiPerfilScreen() {
                             <>
                                 <Controller
                                     control={control}
+                                    name="cedula"
+                                    render={({
+                                        field: { onChange, onBlur, value },
+                                    }) => (
+                                        <TextInput
+                                            label="Cédula"
+                                            mode="outlined"
+                                            onBlur={onBlur}
+                                            onChangeText={onChange}
+                                            value={value}
+                                            style={styles.input}
+                                            keyboardType="phone-pad"
+                                            editable={false} // Bloquear edición de cédula
+                                        />
+                                    )}
+                                />
+                                <Controller
+                                    control={control}
+                                    name="email"
+                                    rules={{
+                                        required: "El email es obligatorio",
+                                        pattern: {
+                                            value: /\S+@\S+\.\S+/,
+                                            message:
+                                                "Correo electrónico inválido",
+                                        },
+                                    }}
+                                    render={({
+                                        field: { onChange, onBlur, value },
+                                    }) => (
+                                        <TextInput
+                                            label="Email"
+                                            mode="outlined"
+                                            onBlur={onBlur}
+                                            onChangeText={onChange}
+                                            value={value}
+                                            style={styles.input}
+                                            autoCapitalize="none"
+                                            editable={false}
+                                        />
+                                    )}
+                                />
+                                {errors.email && (
+                                    <Text style={styles.errorText}>
+                                        {errors.email.message}
+                                    </Text>
+                                )}
+
+                                <Controller
+                                    control={control}
                                     name="nombres"
                                     rules={{
                                         required: "El nombre es obligatorio",
@@ -166,25 +227,6 @@ export default function MiPerfilScreen() {
 
                                 <Controller
                                     control={control}
-                                    name="cedula"
-                                    render={({
-                                        field: { onChange, onBlur, value },
-                                    }) => (
-                                        <TextInput
-                                            label="Cédula"
-                                            mode="outlined"
-                                            onBlur={onBlur}
-                                            onChangeText={onChange}
-                                            value={value}
-                                            style={styles.input}
-                                            keyboardType="phone-pad"
-                                            editable={false} // Bloquear edición de cédula
-                                        />
-                                    )}
-                                />
-
-                                <Controller
-                                    control={control}
                                     name="telefono"
                                     rules={{
                                         required: "El teléfono es obligatorio",
@@ -214,36 +256,7 @@ export default function MiPerfilScreen() {
                                     </Text>
                                 )}
 
-                                <Controller
-                                    control={control}
-                                    name="email"
-                                    rules={{
-                                        required: "El email es obligatorio",
-                                        pattern: {
-                                            value: /\S+@\S+\.\S+/,
-                                            message:
-                                                "Correo electrónico inválido",
-                                        },
-                                    }}
-                                    render={({
-                                        field: { onChange, onBlur, value },
-                                    }) => (
-                                        <TextInput
-                                            label="Email"
-                                            mode="outlined"
-                                            onBlur={onBlur}
-                                            onChangeText={onChange}
-                                            value={value}
-                                            style={styles.input}
-                                            autoCapitalize="none"
-                                        />
-                                    )}
-                                />
-                                {errors.email && (
-                                    <Text style={styles.errorText}>
-                                        {errors.email.message}
-                                    </Text>
-                                )}
+                                
 
                                 <Controller
                                     control={control}
@@ -256,7 +269,16 @@ export default function MiPerfilScreen() {
                                     }) => (
                                         <View style={styles.pickerContainer}>
                                             <Picker
-                                                selectedValue={value}
+                                                selectedValue={
+                                                    value &&
+                                                    [
+                                                        "masculino",
+                                                        "femenino",
+                                                        "otro",
+                                                    ].includes(value)
+                                                        ? value
+                                                        : "masculino"
+                                                }
                                                 onValueChange={onChange}
                                                 style={styles.picker}
                                             >
@@ -286,64 +308,15 @@ export default function MiPerfilScreen() {
                                     </Text>
                                 )}
 
-                                <Controller
-                                    control={control}
-                                    name="password"
-                                    render={({
-                                        field: { onChange, onBlur, value },
-                                    }) => (
-                                        <TextInput
-                                            label="Nueva Contraseña (opcional)"
-                                            mode="outlined"
-                                            onBlur={onBlur}
-                                            onChangeText={(text) => {
-                                                onChange(text);
-                                                if (text !== password) {
-                                                    setValue(
-                                                        "confirmPassword",
-                                                        ""
-                                                    );
-                                                }
-                                            }}
-                                            value={value}
-                                            secureTextEntry
-                                            style={styles.input}
-                                        />
-                                    )}
-                                />
-                                {errors.password && (
-                                    <Text style={styles.errorText}>
-                                        {errors.password.message}
-                                    </Text>
-                                )}
-
-                                <Controller
-                                    control={control}
-                                    name="confirmPassword"
-                                    rules={{
-                                        validate: (value) =>
-                                            value === password ||
-                                            "Las contraseñas no coinciden",
-                                    }}
-                                    render={({
-                                        field: { onChange, onBlur, value },
-                                    }) => (
-                                        <TextInput
-                                            label="Confirmar contraseña"
-                                            mode="outlined"
-                                            onBlur={onBlur}
-                                            onChangeText={onChange}
-                                            value={value}
-                                            secureTextEntry
-                                            style={styles.input}
-                                        />
-                                    )}
-                                />
-                                {errors.confirmPassword && (
-                                    <Text style={styles.errorText}>
-                                        {errors.confirmPassword.message}
-                                    </Text>
-                                )}
+                                <Button
+                                    mode="contained"
+                                    onPress={() =>
+                                        navigate("/actualizarContrasena")
+                                    }
+                                    style={styles.button}
+                                >
+                                    Actualizar Contraseña
+                                </Button>
 
                                 <Button
                                     mode="contained"
@@ -399,9 +372,9 @@ const styles = StyleSheet.create({
     },
 
     picker: {
-        height: 40,
+        height: 50,
         width: "100%",
-        marginBottom: 10,
+        marginBottom: 0,
     },
     errorText: {
         color: "red",

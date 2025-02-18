@@ -49,17 +49,17 @@ export default function HomeScreen() {
           <Card
             style={styles.card}
             onPress={() => {
-              navigate("/misServicios");
+              navigation.navigate("Denuncia");
             }}
           >
             <Card.Content>
-              <Title>Servicios</Title>
+              <Title>Realizar solicitud</Title>
               <Image
                 source={require("../../assets/personsa_home.png")}
                 style={styles.image}
                 resizeMode="contain"
               />
-              <Paragraph>Servicios comunitarios</Paragraph>
+              <Paragraph>Denuncias y servicios</Paragraph>
             </Card.Content>
           </Card>
         </View>
@@ -82,7 +82,7 @@ export default function HomeScreen() {
             </Card.Content>
           </Card>
 
-          <Card
+          {/* <Card
             style={styles.card}
             onPress={() => {
               navigate("/informacion");
@@ -97,7 +97,7 @@ export default function HomeScreen() {
               />
               <Paragraph>Ayuda</Paragraph>
             </Card.Content>
-          </Card>
+          </Card> */}
         </View>
       </View>
     </View>

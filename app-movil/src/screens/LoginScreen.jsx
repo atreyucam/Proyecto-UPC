@@ -33,7 +33,7 @@ const LoginScreen = () => {
     <ScrollView>
       <View style={styles.container}>
         <Appbar.Header>
-          <Appbar.Content title="POLICIA APP" />
+          <Appbar.Content title="UPC-Movil" />
         </Appbar.Header>
 
         <View style={styles.formContainer}>

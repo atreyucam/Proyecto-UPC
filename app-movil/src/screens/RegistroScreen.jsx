@@ -540,9 +540,9 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     picker: {
-        height: 40,
+        height: 50,
         width: "100%",
-        marginBottom: 10,
+        marginBottom: 5,
     },
 });
 

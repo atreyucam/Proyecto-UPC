@@ -4,12 +4,12 @@ import { Picker } from "@react-native-picker/picker";
 import * as Location from "expo-location";
 import { StyleSheet, View, Image, Alert, ScrollView, Text } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import * as ImagePicker from "expo-image-picker";
+
 import Notificacion from "./components/Notificacion";
 import { AuthContext } from "../context/AuthContext"; // Importa tu contexto de autenticación
 import { useNavigate } from "react-router-native";
 import { API_ENDPOINT } from "@env"; // Importar del .env
-// const API_ENDPOINT = "http://192.168.0.146:3000";
+
 
 export default function DenunciaScreen() {
     const { authState } = useContext(AuthContext); // Obtén la información del usuario desde el contexto
@@ -212,7 +212,7 @@ export default function DenunciaScreen() {
     return (
         <View style={styles.container}>
             <Appbar.Header>
-                <Appbar.Content title="DENUNCIAS" />
+                <Appbar.Content title="Solicitudes" />
                 <IconButton
                     icon="clipboard-list"
                     color="white"
@@ -280,7 +280,7 @@ export default function DenunciaScreen() {
                         </Picker>
                     </View>
                     <TextInput
-                        label="Descripción de la denuncia"
+                        label="Agrega una observación o descripción"
                         value={formData.descripcion}
                         onChangeText={(text) =>
                             handleFormChange("descripcion", text)
@@ -289,51 +289,23 @@ export default function DenunciaScreen() {
                         multiline
                     />
                     <TextInput
-                        label="Dirección"
+                        label="Referencia de ubicación"
                         value={formData.direccion}
                         onChangeText={(text) =>
                             handleFormChange("direccion", text)
                         }
                         style={styles.input}
                     />
-                    {/* <View style={styles.imagePickerContainer}>
-                        <Button
-                            icon="camera"
-                            mode="contained"
-                            onPress={() => handleSelectImage("gallery")}
-                            style={styles.inputFoto}
-                        >
-                            Seleccionar Imagen
-                        </Button>
-
-                        <Button
-                            icon="camera"
-                            mode="contained"
-                            onPress={() => handleSelectImage("camera")}
-                            style={styles.inputFoto}
-                        >
-                            Tomar Foto
-                        </Button>
-                    </View> */}
+                    
                     <Button
                         mode="contained"
                         onPress={handleSubmit}
                         style={styles.buttonDenuncia}
                     >
-                        Emitir Denuncia
+                        Emitir solicitud
                     </Button>
 
-                    {/* <View style={{ alignItems: "center", marginTop: 20 }}>
-                        <Text style={{ textAlign: "center" }}>
-                            Tu Evidencia
-                        </Text>
-                        {imageSource && (
-                            <Image
-                                source={{ uri: imageSource.uri }}
-                                style={styles.imagePreview}
-                            />
-                        )}
-                    </View> */}
+                    
                 </View>
             </ScrollView>
         </View>

@@ -11,6 +11,7 @@ router.get('/policias', personaController.getPolicias);
 router.get('/policiasDisponibles', personaController.getPoliciasDisponibles);
 router.get('/policia/:id', personaController.getPoliciaConSolicitudes);
 router.get('/ciudadano/:id', personaController.getCiudadanoConSolicitudes);
+router.get('/ciudadanoUser/:id', personaController.getCiudadanoUser);
 
 
 // * Rutas CRUD basicos
@@ -25,5 +26,10 @@ router.delete('/:id', personaController.deletePersona);
 router.post('/nuevoCiudadano', personaController.createCiudadano);
 router.post('/nuevoAdmin', personaController.createAdmin);
 router.post('/nuevoPolicia', personaController.createPolicia);
+
+
+// actualizar password
+router.post("/verificar-contrasena/:id_persona", personaController.verificarContrasena);
+router.put("/actualizar-contrasena/:id_persona", personaController.actualizarContrasena);
 
 module.exports = router;

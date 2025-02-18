@@ -2,9 +2,7 @@ import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { API_ENDPOINT } from "@env"; // Importar del .env
 const UserContext = createContext();
-// const API_ENDPOINT = "http://10.0.2.2:3000";
-// const API_ENDPOINT = "http://192.168.0.13:3000";
-// const API_ENDPOINT = "http://192.168.0.14:3000";
+
 
 const UserProvider = ({ children }) => {
     const [userState, setUserState] = useState({

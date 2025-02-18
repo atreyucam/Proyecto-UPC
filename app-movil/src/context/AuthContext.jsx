@@ -6,8 +6,6 @@ import { API_ENDPOINT } from "@env"; // Importar del .env
 
 const AuthContext = createContext();
 
-// const API_ENDPOINT = "http://192.168.0.14:3000";
-
 const AuthProvider = ({ children }) => {
     const [authState, setAuthState] = useState({
         isAuthenticated: false,

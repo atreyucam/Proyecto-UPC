@@ -62,6 +62,7 @@ const DevsScreen = () => {
             <Title style={styles.title}>
               Escuela Superior Politécnica de Chimborazo
             </Title>
+            console.log("Otro image source:", variableImagen);
             <Image
               source={require("../../assets/logoEspoch.png")}
               style={styles.logo}
@@ -72,8 +73,9 @@ const DevsScreen = () => {
             <Paragraph style={styles.paragraph}>
               Ingenieria de softare
             </Paragraph>
-
+            console.log("Otro image source:", variableImagen);
             <Image
+            
               source={require("../../assets/logoFie.png")}
               style={styles.logo}
             />
@@ -87,8 +89,8 @@ const DevsScreen = () => {
           {developers.map((developer, index) => (
             <Card key={developer.id} style={styles.cardDev}>
               <Card.Content style={styles.cardContent}>
-                <Image source={developerImages[index]} style={styles.avatar} />
-                <Title style={styles.title}>{developer.name}</Title>
+              console.log("Image source:", developerImages[index]);
+              <Image source={typeof developerImages[index] === "number" ? require("../../assets/devs.png"): developerImages[index]} style={styles.avatar} />                <Title style={styles.title}>{developer.name}</Title>
                 <Paragraph style={styles.paragraph}>
                   {developer.email}
                 </Paragraph>
