@@ -1,17 +1,18 @@
 require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
-const database = process.env.DATABASE;
-const username = process.env.DB_USERNAME;
-const password = process.env.DB_PASSWORD;
-const host = process.env.DB_HOST;
-
-
-const sequelize = new Sequelize(database, username, password, {
-  host: host,
-  dialect: 'postgres',
-  logging: console.log,
-  define: { timestamps: false }
-});
+// Si DATABASE_URL existe, usa la base de datos en Render
+const sequelize = process.env.DATABASE_URL
+  ? new Sequelize(process.env.DATABASE_URL, {
+      dialect: 'postgres',
+      logging: console.log,
+      define: { timestamps: false }
+    })
+  : new Sequelize(process.env.DATABASE, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
+      host: process.env.DB_HOST,
+      dialect: 'postgres',
+      logging: console.log,
+      define: { timestamps: false }
+    });
 
 module.exports = { sequelize };
