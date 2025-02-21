@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+
 const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 
 const Home3 = () => {
@@ -18,7 +19,7 @@ const Home3 = () => {
     telefono: "",
     email: "",
     password: "",
-    confirmPassword: "", // Nuevo campo
+    confirmPassword: "",
     genero: "",
     idSubzona: "",
     idCanton: "",
@@ -30,7 +31,9 @@ const Home3 = () => {
   const [cantones, setCantones] = useState([]);
   const [distritos, setDistritos] = useState([]);
 
-  // Fetch data for dropdowns
+  // --------------------------
+  //   Hooks para cargar datos
+  // --------------------------
   useEffect(() => {
     const fetchSubzonas = async () => {
       try {
@@ -40,7 +43,6 @@ const Home3 = () => {
         console.error("Error fetching subzonas:", error);
       }
     };
-
     fetchSubzonas();
   }, []);
 
@@ -54,9 +56,7 @@ const Home3 = () => {
           console.error("Error fetching cantones:", error);
         }
       };
-
       fetchCantones();
-      // Reset dependent fields
       setFormData((prev) => ({
         ...prev,
         idCanton: "",
@@ -80,9 +80,7 @@ const Home3 = () => {
           setDistritos([]);
         }
       };
-
       fetchDistritos();
-      // Reset dependent fields
       setFormData((prev) => ({
         ...prev,
         idDistrito: "",
@@ -90,6 +88,9 @@ const Home3 = () => {
     }
   }, [formData.idCanton]);
 
+  // --------------------------
+  //   Manejadores de eventos
+  // --------------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -97,75 +98,76 @@ const Home3 = () => {
       [name]: value,
     }));
   };
+
   const handleAddOrEdit = async () => {
     if (formData.password !== formData.confirmPassword) {
-        setErrorMessage("Las contraseñas no coinciden. Por favor, inténtelo de nuevo.");
-        return;
+      setErrorMessage("Las contraseñas no coinciden. Por favor, inténtelo de nuevo.");
+      return;
     }
 
     const nuevoUsuario = {
-        nombres: formData.nombres,
-        apellidos: formData.apellidos,
-        cedula: formData.cedula,
-        telefono: formData.telefono,
-        email: formData.email,
-        password: formData.password,
-        genero: formData.genero,
-        id_subzona: formData.idSubzona,
-        id_canton: formData.idCanton,
-        id_distrito: formData.idDistrito,
-        roles: [formType === "policia" ? "Policia" : "Admin"],
+      nombres: formData.nombres,
+      apellidos: formData.apellidos,
+      cedula: formData.cedula,
+      telefono: formData.telefono,
+      email: formData.email,
+      password: formData.password,
+      genero: formData.genero,
+      id_subzona: formData.idSubzona,
+      id_canton: formData.idCanton,
+      id_distrito: formData.idDistrito,
+      roles: [formType === "policia" ? "Policia" : "Admin"],
     };
 
-    // Solo agregar campos opcionales si se seleccionan
+    // Solo agregar campos opcionales si se seleccionan (si los usas en el futuro)
     if (formType === "policia") {
-        if (formData.idParroquia) {
-            nuevoUsuario.id_parroquia = formData.idParroquia;
-        }
-        if (formData.idCircuito) {
-            nuevoUsuario.id_circuito = formData.idCircuito;
-        }
-        if (formData.idSubcircuito) {
-            nuevoUsuario.id_subcircuito = formData.idSubcircuito;
-        }
+      if (formData.idParroquia) {
+        nuevoUsuario.id_parroquia = formData.idParroquia;
+      }
+      if (formData.idCircuito) {
+        nuevoUsuario.id_circuito = formData.idCircuito;
+      }
+      if (formData.idSubcircuito) {
+        nuevoUsuario.id_subcircuito = formData.idSubcircuito;
+      }
     }
 
     try {
-        const url = formType === "policia" 
-            ? `${API_URL}/personas/nuevoPolicia` 
-            : `${API_URL}/personas/nuevoAdmin`;
+      const url =
+        formType === "policia"
+          ? `${API_URL}/personas/nuevoPolicia`
+          : `${API_URL}/personas/nuevoAdmin`;
 
-        await axios.post(url, nuevoUsuario);
+      await axios.post(url, nuevoUsuario);
 
-        if (formType === "policia") {
-            setPolicias([...policias, nuevoUsuario]);
-            setSuccessMessage("Policía registrado satisfactoriamente");
-        } else if (formType === "admin") {
-            setAdministradores([...administradores, nuevoUsuario]);
-            setSuccessMessage("Administrador registrado satisfactoriamente");
-        }
+      if (formType === "policia") {
+        setPolicias([...policias, nuevoUsuario]);
+        setSuccessMessage("Policía registrado satisfactoriamente");
+      } else if (formType === "admin") {
+        setAdministradores([...administradores, nuevoUsuario]);
+        setSuccessMessage("Administrador registrado satisfactoriamente");
+      }
 
-        setIsModalOpen(false);
-        setFormData({
-            nombres: "",
-            apellidos: "",
-            cedula: "",
-            telefono: "",
-            email: "",
-            password: "",
-            confirmPassword: "",
-            genero: "",
-            idSubzona: "",
-            idCanton: "",
-            idDistrito: "",
-            roles: "",
-        });
+      setIsModalOpen(false);
+      setFormData({
+        nombres: "",
+        apellidos: "",
+        cedula: "",
+        telefono: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        genero: "",
+        idSubzona: "",
+        idCanton: "",
+        idDistrito: "",
+        roles: "",
+      });
     } catch (error) {
-        setErrorMessage("Error al registrar el usuario. Inténtelo de nuevo.");
-        console.error("Error saving usuario:", error);
+      setErrorMessage("Error al registrar el usuario. Inténtelo de nuevo.");
+      console.error("Error saving usuario:", error);
     }
-};
-
+  };
 
   const handleEdit = (index, type) => {
     const usuario = type === "policia" ? policias[index] : administradores[index];
@@ -188,61 +190,74 @@ const Home3 = () => {
     setIsModalOpen(true);
   };
 
+  // --------------------------
+  //   Componente de Notificación
+  // --------------------------
   const Notification = ({ message, type }) => {
-    const notificationStyle = type === "success" ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800";
-  
-    return (
-      <div className={`p-4 my-4 ${notificationStyle} rounded`}>
-        {message}
-      </div>
-    );
+    const notificationStyle =
+      type === "success" ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800";
+    return <div className={`p-4 my-4 ${notificationStyle} rounded`}>{message}</div>;
   };
-  
 
+  // --------------------------
+  //         Render
+  // --------------------------
   return (
     <div className="container mx-auto p-4">
-      {/* Gestión de Policías */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h4 className="text-2xl font-bold">Gestión de Policías</h4>
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded"
-            onClick={() => {
-              setFormType("policia");
-              setIsModalOpen(true);
-            }}
-          >
-            Agregar Policía
-          </button>
+      {/* Contenedor flex para mostrar las "tarjetas" una al lado de la otra en pantallas grandes 
+          y apiladas en pantallas pequeñas */}
+      <div className="flex flex-wrap gap-4">
+        {/* Card: Gestión de Policías */}
+        <div className="bg-white shadow rounded p-4 flex-1 min-w-[300px]">
+          <div className="flex justify-between items-center mb-4">
+            <h4 className="text-2xl font-bold">Gestión de Policías</h4>
+            <button
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              onClick={() => {
+                setFormType("policia");
+                setIsModalOpen(true);
+                setIsEditing(false);
+              }}
+            >
+              Agregar Policía
+            </button>
+          </div>
+          {/* Aquí podrías mostrar la lista de policías si lo deseas */}
         </div>
-      </div>
 
-      {/* Gestión de Administradores */}
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h4 className="text-2xl font-bold">Gestión de Administradores</h4>
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded"
-            onClick={() => {
-              setFormType("admin");
-              setIsModalOpen(true);
-            }}
-          >
-            Agregar Administrador
-          </button>
+        {/* Card: Gestión de Administradores */}
+        <div className="bg-white shadow rounded p-4 flex-1 min-w-[300px]">
+          <div className="flex justify-between items-center mb-4">
+            <h4 className="text-2xl font-bold">Gestión de Administradores</h4>
+            <button
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              onClick={() => {
+                setFormType("admin");
+                setIsModalOpen(true);
+                setIsEditing(false);
+              }}
+            >
+              Agregar Administrador
+            </button>
+          </div>
+          {/* Aquí podrías mostrar la lista de administradores si lo deseas */}
         </div>
       </div>
 
       {/* Modal para agregar/editar usuario (Policía o Administrador) */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-40 flex justify-center items-center">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-4xl">
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-40 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg w-full max-w-4xl mx-4">
             <h5 className="text-xl font-bold mb-4">
               {isEditing
                 ? `Editar ${formType === "policia" ? "Policía" : "Administrador"}`
                 : `Agregar ${formType === "policia" ? "Policía" : "Administrador"}`}
             </h5>
-            <div className="grid grid-cols-2 gap-4">
+            {/* 
+              Ajuste del grid para que en pantallas pequeñas (por defecto) sea 1 columna,
+              y en pantallas medianas (md) o más grandes sean 2 columnas 
+            */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Nombres</label>
                 <input
@@ -378,15 +393,17 @@ const Home3 = () => {
                 </select>
               </div>
             </div>
-            <div className="flex justify-between mt-4">
+
+            {/* Botones para Cancelar/Agregar o Actualizar */}
+            <div className="flex flex-wrap gap-2 justify-between mt-4">
               <button
-                className="bg-gray-500 text-white px-4 py-2 rounded"
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                 onClick={() => setIsModalOpen(false)}
               >
                 Cancelar
               </button>
               <button
-                className="bg-green-500 text-white px-4 py-2 rounded"
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                 onClick={handleAddOrEdit}
               >
                 {isEditing ? "Actualizar" : "Agregar"}
@@ -396,13 +413,9 @@ const Home3 = () => {
         </div>
       )}
 
-{successMessage && (
-    <Notification message={successMessage} type="success" />
-)}
-{errorMessage && (
-    <Notification message={errorMessage} type="error" />
-)}
-
+      {/* Notificaciones de éxito o error */}
+      {successMessage && <Notification message={successMessage} type="success" />}
+      {errorMessage && <Notification message={errorMessage} type="error" />}
     </div>
   );
 };
