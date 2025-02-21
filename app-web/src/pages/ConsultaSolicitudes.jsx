@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
 import io from "socket.io-client";
 
-const API_URL = import.meta.env.VITE_API_URL_LOCAL;
+const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+
 const socket = io(`${API_URL}`); // Conectar al servidor Socket.IO
 
 const ConsultaSolicitudes = () => {

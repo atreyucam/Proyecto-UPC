@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import EstadoBadge from "./components/EstadoBadge"; 
 import io from "socket.io-client";
-const API_URL = import.meta.env.VITE_API_URL_LOCAL;
+const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+
 
 const getBadgeClass = (estado) => {
   switch (estado) {

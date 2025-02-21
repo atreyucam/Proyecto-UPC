@@ -21,7 +21,8 @@ const ConsultaCiudadanos = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [ciudadanoToDelete, setCiudadanoToDelete] = useState(null);
   const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_API_URL_LOCAL;
+  const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+
 
 
   useEffect(() => {

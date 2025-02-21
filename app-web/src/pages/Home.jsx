@@ -15,7 +15,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
-const API_URL = import.meta.env.VITE_API_URL_LOCAL;
+const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+
 // Función para determinar las clases de color en base al estado
 const getBadgeClass = (estado) => {
     switch (estado) {

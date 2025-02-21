@@ -4,7 +4,8 @@ import html2canvas from "html2canvas"; // <-- Importamos html2canvas
 import jsPDF from "jspdf";             // <-- Importamos jsPDF
 import autoTable from "jspdf-autotable";
 import axios from "axios";
-const API_URL = import.meta.env.VITE_API_URL_LOCAL;
+const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+
 const ConsultaReportes = () => {
     const chartRef = useRef(null);
 

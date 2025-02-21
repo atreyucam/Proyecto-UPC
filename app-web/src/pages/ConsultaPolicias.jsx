@@ -3,7 +3,8 @@ import axios from "axios";
 import { FiCheckCircle, FiEdit, FiTrash, FiSave, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
-const API_URL = import.meta.env.VITE_API_URL_LOCAL;
+const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+
 
 const ConsultaPolicias = () => {
     const [policias, setPolicias] = useState([]);

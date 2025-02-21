@@ -2,7 +2,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { setAuthToken } from "../../utils/setAuthToken";
-const API_URL = import.meta.env.VITE_API_URL_LOCAL;
+const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+
 
 const initialState = {
   token: null, // No usamos localStorage, mantenemos el token en el estado
