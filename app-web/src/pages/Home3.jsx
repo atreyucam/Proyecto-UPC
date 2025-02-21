@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
-
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 
 const Home3 = () => {
   const [successMessage, setSuccessMessage] = useState("");

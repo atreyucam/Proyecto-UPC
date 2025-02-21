@@ -2,7 +2,10 @@ import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { decode as atob } from "base-64";
-import { API_ENDPOINT } from "@env"; // Importar del .env
+import { API_ENDPOINT } from '@env';
+
+const API_URL = API_ENDPOINT;
+console.log("📌 API en uso:", API_URL);  
 
 const AuthContext = createContext();
 
