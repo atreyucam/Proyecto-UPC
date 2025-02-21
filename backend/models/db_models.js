@@ -16,6 +16,7 @@ const Zona = sequelize.define('Zona', {
   },
 }, { tableName: 'Zonas' });
 
+//-------------------------------------------------------
 // 2. Tabla Subzona
 const Subzona = sequelize.define('Subzona', {
   id_subzona: {
@@ -37,6 +38,7 @@ const Subzona = sequelize.define('Subzona', {
   },
 }, { tableName: 'Subzonas' });
 
+//-------------------------------------------------------
 // 3. Tabla Canton
 const Canton = sequelize.define('Canton', {
   id_canton: {
@@ -58,6 +60,7 @@ const Canton = sequelize.define('Canton', {
   },
 }, { tableName: 'Cantones' });
 
+//-------------------------------------------------------
 // 4. Tabla Distrito
 const Distrito = sequelize.define('Distrito', {
   id_distrito: {
@@ -70,7 +73,6 @@ const Distrito = sequelize.define('Distrito', {
     allowNull: false,
   },
 }, { tableName: 'Distritos' });
-
 
 const DistritoCanton = sequelize.define('DistritoCanton', {
   id_distrito: {
@@ -93,8 +95,7 @@ const DistritoCanton = sequelize.define('DistritoCanton', {
   },
 }, { tableName: 'DistritoCanton' });
 
-
-
+//-------------------------------------------------------
 // 5. Tabla Parroquia
 const Parroquia = sequelize.define('Parroquia', {
   id_parroquia: {
@@ -124,6 +125,7 @@ const Parroquia = sequelize.define('Parroquia', {
   },
 }, { tableName: 'Parroquias' });
 
+//-------------------------------------------------------
 // 6. Tabla Circuito
 const Circuito = sequelize.define('Circuito', {
   id_circuito: {
@@ -153,6 +155,7 @@ const Circuito = sequelize.define('Circuito', {
   },
 }, { tableName: 'Circuitos' });
 
+//-------------------------------------------------------
 // 7. Tabla Subcircuito
 const Subcircuito = sequelize.define('Subcircuito', {
   id_subcircuito: {
@@ -174,6 +177,7 @@ const Subcircuito = sequelize.define('Subcircuito', {
   },
 }, { tableName: 'Subcircuitos' });
 
+//-------------------------------------------------------
 // 8. Tabla Rol
 const Rol = sequelize.define('Rol', {
   id_rol: {
@@ -187,6 +191,7 @@ const Rol = sequelize.define('Rol', {
   },
 }, { tableName: 'Rol' });
 
+//-------------------------------------------------------
 // 9. Tabla Persona
 const Persona = sequelize.define('Persona', {
   id_persona: {
@@ -274,6 +279,7 @@ const Persona = sequelize.define('Persona', {
   }
 });
 
+//-------------------------------------------------------
 // 10. Tabla PersonaRol
 const PersonaRol = sequelize.define('PersonaRol', {
   id_persona: {
@@ -294,6 +300,7 @@ const PersonaRol = sequelize.define('PersonaRol', {
   }
 }, { tableName: 'PersonaRol' });
 
+//-------------------------------------------------------
 // 11. Tabla PersonaCircuito
 const PersonaCircuito = sequelize.define('PersonaCircuito', {
   id_persona: {
@@ -318,6 +325,7 @@ const PersonaCircuito = sequelize.define('PersonaCircuito', {
   tableName: 'PersonaCircuito',
 });
 
+//-------------------------------------------------------
 // 12. Tabla PersonaSubcircuito
 const PersonaSubcircuito = sequelize.define('PersonaSubcircuito', {
   id_persona: {
@@ -342,6 +350,7 @@ const PersonaSubcircuito = sequelize.define('PersonaSubcircuito', {
   tableName: 'PersonaSubcircuito',
 });
 
+//-------------------------------------------------------
 // 13. Tabla TipoSolicitud
 const TipoSolicitud = sequelize.define('TipoSolicitud', {
   id_tipo: {
@@ -355,6 +364,7 @@ const TipoSolicitud = sequelize.define('TipoSolicitud', {
   },
 }, { tableName: 'TipoSolicitud' });
 
+//-------------------------------------------------------
 // 14. Tabla Subtipo
 const Subtipo = sequelize.define('Subtipo', {
   id_subtipo: {
@@ -376,6 +386,7 @@ const Subtipo = sequelize.define('Subtipo', {
   },
 }, { tableName: 'Subtipo' });
 
+//-------------------------------------------------------
 // 15. Tabla Estado
 const Estado = sequelize.define('Estado', {
   id_estado: {
@@ -389,6 +400,7 @@ const Estado = sequelize.define('Estado', {
   },
 }, { tableName: 'Estado' });
 
+//-------------------------------------------------------
 // 16. Tabla Solicitud
 const Solicitud = sequelize.define('Solicitud', {
   id_solicitud: {
@@ -472,6 +484,7 @@ const Solicitud = sequelize.define('Solicitud', {
   }
 }, { tableName: 'Solicitud' });
 
+//-------------------------------------------------------
 // 17. Tabla Evento
 const Evento = sequelize.define('Evento', {
   id_evento: {
@@ -485,6 +498,7 @@ const Evento = sequelize.define('Evento', {
   },
 }, { tableName: 'Evento' });
 
+//-------------------------------------------------------
 // 18. Tabla SolicitudEventoPersona
 const SolicitudEventoPersona = sequelize.define('SolicitudEventoPersona', {
   id_solicitud: {
@@ -521,6 +535,7 @@ const SolicitudEventoPersona = sequelize.define('SolicitudEventoPersona', {
   },
 }, { tableName: 'SolicitudEventoPersona' });
 
+//-------------------------------------------------------
 // 19. Tabla TipoEvidencia
 const TipoEvidencia = sequelize.define('TipoEvidencia', {
   id_evidencia: {
@@ -534,6 +549,7 @@ const TipoEvidencia = sequelize.define('TipoEvidencia', {
   },
 }, { tableName: 'TipoEvidencia' });
 
+//-------------------------------------------------------
 // 20. Tabla SolicitudEvidencia
 const SolicitudEvidencia = sequelize.define('SolicitudEvidencia', {
   id_solicitud: {
@@ -560,6 +576,7 @@ const SolicitudEvidencia = sequelize.define('SolicitudEvidencia', {
   },
 }, { tableName: 'SolicitudEvidencia' });
 
+//-------------------------------------------------------
 // 21. Tabla Notificacion
 const Notificacion = sequelize.define('Notificacion', {
   id_notificacion: {
@@ -573,6 +590,7 @@ const Notificacion = sequelize.define('Notificacion', {
   },
 }, { tableName: 'Notificacion' });
 
+//-------------------------------------------------------
 // 22. Tabla SolicitudNotificacion
 const SolicitudNotificacion = sequelize.define('SolicitudNotificacion', {
   id_solicitud: {
@@ -595,6 +613,7 @@ const SolicitudNotificacion = sequelize.define('SolicitudNotificacion', {
   },
 }, { tableName: 'SolicitudNotificacion' });
 
+//-------------------------------------------------------
 // 23. Tabla NotificacionPersona
 const NotificacionPersona = sequelize.define('NotificacionPersona', {
   id_solicitud: {
@@ -626,6 +645,7 @@ const NotificacionPersona = sequelize.define('NotificacionPersona', {
   },
 }, { tableName: 'NotificacionPersona' });
 
+//-------------------------------------------------------
 // 24. Tabla Observacion
 const Observacion = sequelize.define('Observacion', {
   id_observacion: {
@@ -657,7 +677,6 @@ const Observacion = sequelize.define('Observacion', {
 }, { tableName: 'Observacion' });
 
 // Definir Relaciones
-// Zona -> Subzona
 Zona.hasMany(Subzona, { foreignKey: 'id_zona' });
 Subzona.belongsTo(Zona, { foreignKey: 'id_zona' });
 
