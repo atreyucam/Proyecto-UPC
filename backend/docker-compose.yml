@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_upc
+    restart: always
+    environment:
+      POSTGRES_DB: db_upc_dev
+      POSTGRES_USER: upc_admin
+      POSTGRES_PASSWORD: 140220
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    container_name: backend_upc
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://upc_admin:140220@postgres:5432/db_upc_dev
+      PORT: 3000
+      JWT_SECRET: mysecretkey
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:

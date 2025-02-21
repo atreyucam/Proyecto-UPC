@@ -1,23 +1,20 @@
-# 1. Usar una imagen oficial de Node.js
+# 1️⃣ Usa la imagen oficial de Node.js
 FROM node:18
 
-# 2. Establecer el directorio de trabajo dentro del contenedor
+# 2️⃣ Establece el directorio de trabajo
 WORKDIR /app
 
-# 3. Copiar archivos del proyecto al contenedor
+# 3️⃣ Copia los archivos necesarios
 COPY package.json package-lock.json ./
 
-# 4. Instalar dependencias
+# 4️⃣ Instala las dependencias
 RUN npm install --production
 
-# 5. Copiar el resto del código fuente
+# 5️⃣ Copia el resto del código
 COPY . .
 
-# 6. Definir variable de entorno del puerto
-ENV PORT=3000
+# 6️⃣ Expone el puerto de la aplicación
+EXPOSE 3000
 
-# 7. Exponer el puerto que usa el backend
-EXPOSE $PORT
-
-# 8. Comando para iniciar la aplicación
-CMD ["node", "server.js"]
+# 7️⃣ Ejecuta la sincronización y luego arranca el servidor
+CMD ["sh", "-c", "node config/syncDatabase.js && node config/initData.js && node server.js"]
