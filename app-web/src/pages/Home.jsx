@@ -15,7 +15,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
-
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 // Función para determinar las clases de color en base al estado
 const getBadgeClass = (estado) => {
     switch (estado) {
@@ -63,6 +63,8 @@ const Button = ({
     );
 };
 
+
+
 Button.propTypes = {
     text: PropTypes.string.isRequired,
     subText: PropTypes.string,
@@ -83,7 +85,7 @@ const Home = () => {
         const fetchStats = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:3000/estadisticas/contadorSolicitudesTotales"
+                    `${API_URL}/estadisticas/contadorSolicitudesTotales`
                 );
                 const data = response.data;
                 setStats(data);
@@ -137,7 +139,7 @@ const Home = () => {
         const fetchTopSolicitudes = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:3000/solicitud/top10solicitudes"
+                    `${API_URL}/solicitud/top10solicitudes`
                 );
                 setTopSolicitudes(response.data);
             } catch (error) {
@@ -151,7 +153,7 @@ const Home = () => {
         const fetchContadorPorTipo = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:3000/estadisticas/tiposTotales"
+                    `${API_URL}/estadisticas/tiposTotales`
                 );
                 setContadoresPorTipo(response.data);
             } catch (error) {

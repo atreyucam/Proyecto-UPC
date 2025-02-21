@@ -3,6 +3,7 @@ import axios from "axios";
 import { FiCheckCircle, FiEdit, FiTrash, FiSave, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 
 const ConsultaPolicias = () => {
     const [policias, setPolicias] = useState([]);
@@ -26,7 +27,7 @@ const ConsultaPolicias = () => {
             try {
                 // Llamada a la API para obtener los datos de los policías
                 const policiaRes = await axios.get(
-                    "http://localhost:3000/personas/policias"
+                    `${API_URL}/personas/policias`
                 );
                 setPolicias(policiaRes.data.policias);
                 setFilteredPolicias(policiaRes.data.policias);
@@ -137,7 +138,7 @@ const ConsultaPolicias = () => {
     const handleSaveClick = async (policia) => {
         try {
             await axios.put(
-                `http://localhost:3000/personas/${policia.id_persona}`,
+                `${API_URL}/personas/${policia.id_persona}`,
                 policia
             );
             setPolicias((prevPolicias) =>
@@ -164,7 +165,7 @@ const ConsultaPolicias = () => {
     const confirmDelete = () => {
         axios
             .delete(
-                `http://localhost:3000/personas/${policiaToDelete.id_persona}`
+                `${API_URL}/personas/${policiaToDelete.id_persona}`
             )
             .then(() => {
                 setPolicias(

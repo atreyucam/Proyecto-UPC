@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
 import io from "socket.io-client";
 
-const socket = io("http://localhost:3000"); // Conectar al servidor Socket.IO
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
+const socket = io(`${API_URL}`); // Conectar al servidor Socket.IO
 
 const ConsultaSolicitudes = () => {
     const [solicitudes, setSolicitudes] = useState([]);
@@ -25,7 +26,7 @@ const ConsultaSolicitudes = () => {
         const fetchData = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:3000/solicitud/"
+                    `${API_URL}/solicitud/`
                 );
                 setSolicitudes(response.data);
                 setFilteredSolicitudes(response.data);
@@ -76,7 +77,7 @@ const ConsultaSolicitudes = () => {
     const handleSocketUpdate = async (solicitud) => {
         try {
             const response = await axios.get(
-                `http://localhost:3000/solicitud/${solicitud.id_solicitud}`
+                `${API_URL}/solicitud/${solicitud.id_solicitud}`
             );
             const solicitudCompleta = response.data;
             setSolicitudes((prev) => [solicitudCompleta, ...prev]);

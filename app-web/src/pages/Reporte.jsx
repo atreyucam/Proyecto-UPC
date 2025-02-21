@@ -4,7 +4,7 @@ import html2canvas from "html2canvas"; // <-- Importamos html2canvas
 import jsPDF from "jspdf";             // <-- Importamos jsPDF
 import autoTable from "jspdf-autotable";
 import axios from "axios";
-
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 const ConsultaReportes = () => {
     const chartRef = useRef(null);
 
@@ -53,7 +53,7 @@ const ConsultaReportes = () => {
         const fetchReportes = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:3000/estadisticas/solicitudesFiltradas2",
+                    `${API_URL}estadisticas/solicitudesFiltradas2`,
                     { params: filtros }
                 );
 

@@ -1,5 +1,5 @@
 import axios from "axios";
-
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 /**
  * Maneja la actualización de una solicitud cuando llega por socket.
  * Consulta la API para obtener los detalles completos antes de actualizar el estado.
@@ -7,7 +7,7 @@ import axios from "axios";
 export const handleSocketUpdate = async (solicitud, setSolicitudes) => {
   try {
     const response = await axios.get(
-      `http://localhost:3000/solicitud/${solicitud.id_solicitud}`
+      `${API_URL}/solicitud/${solicitud.id_solicitud}`
     );
     const solicitudCompleta = response.data;
 

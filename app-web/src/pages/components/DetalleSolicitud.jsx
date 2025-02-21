@@ -4,6 +4,7 @@ import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import EstadoBadge from "./EstadoBadge";
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 
 const DetalleSolicitud = () => {
   const { id } = useParams();
@@ -15,7 +16,7 @@ const DetalleSolicitud = () => {
     const fetchSolicitud = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/solicitud/${id}`
+          `${API_URL}/solicitud/${id}`
         );
         setSolicitud(response.data);
       } catch (error) {

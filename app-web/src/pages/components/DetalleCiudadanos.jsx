@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {  FiEye } from 'react-icons/fi';
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 
 const CiudadanoDetail = () => {
   const { id } = useParams();
@@ -15,7 +16,7 @@ const CiudadanoDetail = () => {
       try {
         // Llamada a la API para obtener los detalles del ciudadano
         const response = await axios.get(
-          `http://localhost:3000/personas/ciudadano/${id}`
+          `${API_URL}/personas/ciudadano/${id}`
         );
         setCiudadano(response.data);
 

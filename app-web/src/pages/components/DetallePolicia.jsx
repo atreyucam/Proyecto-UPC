@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {FiEye } from "react-icons/fi";
 import axios from "axios";
 import EstadoBadge from "./EstadoBadge"; // Importa el componente
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 
 const PoliciaDetail = () => {
   const { id } = useParams();
@@ -13,7 +14,7 @@ const PoliciaDetail = () => {
     const fetchPolicia = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/personas/policia/${id}`
+          `${API_URL}/personas/policia/${id}`
         );
         setPolicia(response.data);
       } catch (error) {

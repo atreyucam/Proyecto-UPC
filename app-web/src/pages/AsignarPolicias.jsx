@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import EstadoBadge from "./components/EstadoBadge"; 
 import io from "socket.io-client";
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 
 const getBadgeClass = (estado) => {
   switch (estado) {
@@ -37,7 +38,7 @@ const Button = ({ text, number, icon, estado }) => {
   );
 };
 
-const socket = io("http://localhost:3000"); // Conectar a Socket.IO
+const socket = io(`${API_URL}`); // Conectar a Socket.IO
 
 const Home4 = () => {
   const { user } = useSelector((state) => state.auth); // Obtén el usuario del estado de Redux
@@ -62,7 +63,7 @@ const Home4 = () => {
     const fetchSolicitudesPendientes = useCallback(async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/solicitud/solicitudesPendientes"
+          `${API_URL}/solicitud/solicitudesPendientes`
         );
         setSolicitudesPendientes(response.data);
       } catch (error) {
@@ -73,7 +74,7 @@ const Home4 = () => {
   useEffect(() => {
     // Fetch police stats
     axios
-      .get("http://localhost:3000/estadisticas/contadorePolicias")
+      .get(`${API_URL}/estadisticas/contadorePolicias`)
       .then((response) => setPoliceStats(response.data))
       .catch((error) => console.error("Error fetching police stats:", error));
 
@@ -89,7 +90,7 @@ const Home4 = () => {
 
     // Fetch police data (mock or actual API call)
     axios
-      .get("http://localhost:3000/personas/policiasDisponibles")
+      .get(`${API_URL}/personas/policiasDisponibles`)
       .then((response) => setPoliceData(response.data.policias))
       .catch((error) => console.error("Error fetching police data:", error));
 
@@ -144,7 +145,7 @@ const Home4 = () => {
     if (selectedPolice && selectedReport && user) {
       try {
         // Enviar solicitud POST para asignar el policía
-        await axios.post("http://localhost:3000/solicitud/asignarPolicia", {
+        await axios.post(`${API_URL}/solicitud/asignarPolicia`, {
           id_solicitud: selectedReport.id_solicitud,
           id_persona_asignador: user.id_persona,
           id_persona_policia: selectedPolice.id_persona,

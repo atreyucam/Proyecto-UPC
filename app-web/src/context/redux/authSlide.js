@@ -2,6 +2,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { setAuthToken } from "../../utils/setAuthToken";
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 
 const initialState = {
   token: null, // No usamos localStorage, mantenemos el token en el estado
@@ -58,7 +59,7 @@ export const login = (email, password) => async (dispatch) => {
   const body = JSON.stringify({ email, password });
 
   try {
-    const res = await axios.post("http://localhost:3000/upc/login", body, config);
+    const res = await axios.post(`${API_URL}/upc/login`, body, config);
     
 
     if (res.data.user.roles && !res.data.user.roles.includes(2)) {
@@ -90,7 +91,7 @@ export const loadUser = () => async (dispatch, getState) => {
   }
 
   try {
-    const res = await axios.get("http://localhost:3000/upc/auth");
+    const res = await axios.get(`${API_URL}/upc/auth`);
     dispatch(userLoaded(res.data));
   } catch (err) {
     dispatch(authError());

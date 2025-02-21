@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+const API_URL = import.meta.env.VITE_API_URL_LOCAL;
 
 const Home3 = () => {
   const [successMessage, setSuccessMessage] = useState("");
@@ -33,7 +34,7 @@ const Home3 = () => {
   useEffect(() => {
     const fetchSubzonas = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/circuitos/subzonas");
+        const response = await axios.get(`${API_URL}/circuitos/subzonas`);
         setSubzonas(response.data);
       } catch (error) {
         console.error("Error fetching subzonas:", error);
@@ -47,7 +48,7 @@ const Home3 = () => {
     if (formData.idSubzona) {
       const fetchCantones = async () => {
         try {
-          const response = await axios.get(`http://localhost:3000/circuitos/subzonas/${formData.idSubzona}/cantones`);
+          const response = await axios.get(`${API_URL}/circuitos/subzonas/${formData.idSubzona}/cantones`);
           setCantones(response.data);
         } catch (error) {
           console.error("Error fetching cantones:", error);
@@ -68,7 +69,7 @@ const Home3 = () => {
     if (formData.idCanton) {
       const fetchDistritos = async () => {
         try {
-          const response = await axios.get(`http://localhost:3000/circuitos/canton/${formData.idCanton}/distrito`);
+          const response = await axios.get(`${API_URL}/circuitos/canton/${formData.idCanton}/distrito`);
           if (response.data && Array.isArray(response.data.distritos)) {
             setDistritos(response.data.distritos);
           } else {
@@ -131,8 +132,8 @@ const Home3 = () => {
 
     try {
         const url = formType === "policia" 
-            ? "http://localhost:3000/personas/nuevoPolicia" 
-            : "http://localhost:3000/personas/nuevoAdmin";
+            ? `${API_URL}/personas/nuevoPolicia` 
+            : `${API_URL}/personas/nuevoAdmin`;
 
         await axios.post(url, nuevoUsuario);
 
