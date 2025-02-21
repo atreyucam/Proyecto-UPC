@@ -4,6 +4,7 @@ import * as SecureStore from "expo-secure-store";
 import { decode as atob } from "base-64";
 import { API_ENDPOINT } from '@env';
 
+
 const API_URL = API_ENDPOINT;
 console.log("📌 API en uso:", API_URL);  
 

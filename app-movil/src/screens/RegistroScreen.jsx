@@ -7,7 +7,7 @@ import { UserContext } from "../context/UserContext";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import {API_ENDPOINT} from "@env";
-
+console.log("API_ENDPOINT:", API_ENDPOINT);
 const RegistroScreen = () => {
     const navigate = useNavigate();
     const { userState, registroUsuario } = useContext(UserContext);

@@ -3,7 +3,7 @@ import axios from "axios";
 import { API_ENDPOINT } from "@env"; // Importar del .env
 const UserContext = createContext();
 
-
+console.log("API_ENDPOINT:", API_ENDPOINT); // Debe mostrar el URL de la API
 const UserProvider = ({ children }) => {
     const [userState, setUserState] = useState({
         errorNewUser: null,
