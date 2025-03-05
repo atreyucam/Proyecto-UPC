@@ -15,7 +15,7 @@ const PoliciaDetail = () => {
     const fetchPolicia = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/personas/policia/${id}`
+          `${API_URL}/persona/policia/${id}`
         );
         setPolicia(response.data);
       } catch (error) {

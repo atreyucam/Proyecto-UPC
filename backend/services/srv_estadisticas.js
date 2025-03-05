@@ -1,15 +1,6 @@
-const { Op, fn, col, literal, where, Sequelize } = require("sequelize");
-const {
-    Persona,
-    Rol,
-    PersonaRol,
-    Circuito,
-    sequelize,
-    Solicitud,
-    Estado,
-    Subtipo,
-    TipoSolicitud,
-} = require("../../models/db_models");
+const { Op, fn, col, literal, where, Sequelize} = require("sequelize");
+const { Persona, Rol, PersonaRol, Circuito,sequelize,Solicitud,Estado,
+    Subtipo,TipoSolicitud,} = require("../models/db_models");
 
 // Datos para estadisticas
 // **Función para obtener contadores de policías funciona
@@ -460,126 +451,6 @@ exports.getResumenSolicitudes = async (anioFiltro) => {
     }
 };
 
-// ** filtros
-
-// exports.getSolicitudesFiltradas2 = async (filtros) => {
-//     const { anio, rangoMesInicio, rangoMesFin } = filtros;
-
-//     const whereConditions = {};
-
-//     if (anio) {
-//         whereConditions[Op.and] = where(
-//             literal('EXTRACT(YEAR FROM "fecha_creacion")'),
-//             anio
-//         );
-//     }
-
-//     if (rangoMesInicio && rangoMesFin) {
-//         whereConditions[Op.and] = where(
-//             literal('EXTRACT(MONTH FROM "fecha_creacion")'),
-//             { [Op.between]: [rangoMesInicio, rangoMesFin] }
-//         );
-//     }
-
-//     try {
-//         const solicitudes = await Solicitud.findAll({
-//             attributes: [
-//                 [literal('EXTRACT(MONTH FROM "fecha_creacion")'), "mes"],
-//                 [
-//                     fn("COUNT", col("Solicitud.id_solicitud")),
-//                     "total_solicitudes",
-//                 ],
-//                 [col("Subtipo.descripcion"), "subtipo_descripcion"],
-//                 [col("Subtipo->TipoSolicitud.descripcion"), "tipo_descripcion"],
-//                 [col("Subtipo->TipoSolicitud.id_tipo"), "tipo_id"],
-//             ],
-//             include: [
-//                 {
-//                     model: Subtipo,
-//                     attributes: [],
-//                     include: [{ model: TipoSolicitud, attributes: [] }],
-//                 },
-//             ],
-//             where: whereConditions,
-//             group: [
-//                 literal('EXTRACT(MONTH FROM "fecha_creacion")'),
-//                 "Subtipo.descripcion",
-//                 "Subtipo->TipoSolicitud.descripcion",
-//                 "Subtipo->TipoSolicitud.id_tipo",
-//             ],
-//             raw: true,
-//         });
-
-//         const calculosPorTipo = calcularFrecuenciasYVariaciones(
-//             solicitudes,
-//             rangoMesInicio,
-//             rangoMesFin
-//         );
-
-//         return { solicitudes, calculosPorTipo };
-//     } catch (error) {
-//         console.error("Error al obtener las solicitudes filtradas:", error);
-//         throw new Error("Error al obtener las solicitudes filtradas");
-//     }
-// };
-
-// // Función para calcular frecuencias y variaciones por tipo
-// const calcularFrecuenciasYVariaciones = (solicitudes, mesInicio, mesFin) => {
-//     const agrupadoPorTipo = solicitudes.reduce((acc, item) => {
-//         const tipo = item.tipo_descripcion;
-//         if (!acc[tipo]) {
-//             acc[tipo] = { subtipos: {}, totalInicio: 0, totalFin: 0 };
-//         }
-//         const mes = parseInt(item.mes);
-
-//         if (mes === mesInicio) {
-//             acc[tipo].totalInicio += parseInt(item.total_solicitudes);
-//         } else if (mes === mesFin) {
-//             acc[tipo].totalFin += parseInt(item.total_solicitudes);
-//         }
-
-//         if (!acc[tipo].subtipos[item.subtipo_descripcion]) {
-//             acc[tipo].subtipos[item.subtipo_descripcion] = {
-//                 inicio: 0,
-//                 fin: 0,
-//             };
-//         }
-
-//         if (mes === mesInicio) {
-//             acc[tipo].subtipos[item.subtipo_descripcion].inicio += parseInt(
-//                 item.total_solicitudes
-//             );
-//         } else if (mes === mesFin) {
-//             acc[tipo].subtipos[item.subtipo_descripcion].fin += parseInt(
-//                 item.total_solicitudes
-//             );
-//         }
-
-//         return acc;
-//     }, {});
-
-//     // Calcular incremento/decremento
-//     return Object.entries(agrupadoPorTipo).map(
-//         ([tipo, { subtipos, totalInicio, totalFin }]) => {
-//             const variacion =
-//                 ((totalFin - totalInicio) / (totalInicio || 1)) * 100;
-
-//             return {
-//                 tipo,
-//                 subtipos: Object.entries(subtipos).map(([subtipo, data]) => ({
-//                     subtipo,
-//                     inicio: data.inicio,
-//                     fin: data.fin,
-//                     variacion:
-//                         ((data.fin - data.inicio) / (data.inicio || 1)) * 100,
-//                 })),
-//                 totalInicio,
-//                 totalFin,
-//                 variacion,
-//             };
-//         }
-//     );
-// };
 exports.getSolicitudesFiltradas2 = async (filtros) => {
     const { anio, rangoMesInicio, rangoMesFin } = filtros;
 
@@ -776,13 +647,6 @@ const calcularFrecuenciasYVariaciones = (solicitudes, mesInicio, mesFin) => {
     });
 };
 
-// Función para calcular la variación porcentual
-// const calcularVariacion = (inicio, fin) => {
-//     if (inicio === 0 && fin === 0) return 0;
-//     if (inicio === 0) return 100;
-//     return ((fin - inicio) / inicio) * 100;
-// };
-//
 
 // filtro de tablas
 exports.getSubtiposPorTipoTablas = async (filtros) => {
@@ -825,5 +689,230 @@ exports.getSubtiposPorTipoTablas = async (filtros) => {
     } catch (error) {
         console.error("Error al obtener los subtipos:", error);
         throw new Error("Error al obtener los subtipos por tipo.");
+    }
+};
+
+
+
+
+
+// nuevos Filtros
+// HOME
+
+// 🔹 Obtener solicitudes por estado en un período determinado
+exports.getSolicitudesPorEstado = async (req, res) => {
+    try {
+        const { periodo } = req.query;
+        console.log("📢 Periodo recibido:", periodo);
+
+        // 📌 Verificar si la función devuelve fechas válidas
+        const { fechaInicio, fechaFin } = getFechasPorPeriodo(periodo);
+        if (!fechaInicio || !fechaFin) {
+            return res.status(400).json({ error: "Período no válido" });
+        }
+
+        // 📌 Obtener los datos del servicio
+        const resultado = await estadisticasService.getSolicitudesPorEstado(fechaInicio, fechaFin);
+        
+        res.status(200).json(resultado);
+    } catch (error) {
+        console.error("❌ Error en getSolicitudesPorEstado:", error.message);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+};
+
+// 🔹 Obtener resumen de solicitudes para las tarjetas del Home
+exports.getSolicitudesResumen = async () => {
+    try {
+        // 🔹 Contar todas las solicitudes
+        const totalSolicitudes = await Solicitud.count();
+
+        // 🔹 Contar solicitudes por estado
+        const countsByStatus = await Solicitud.findAll({
+            attributes: [
+                [sequelize.col("Estado.descripcion"), "estado"],
+                [sequelize.fn("COUNT", sequelize.col("Solicitud.id_solicitud")), "count"]
+            ],
+            include: [{ model: Estado, attributes: [] }],
+            group: ["Estado.descripcion"],
+            raw: true,
+        });
+
+        // 🔹 Mapear resultados a formato esperado
+        const resumen = {
+            total: totalSolicitudes,
+            pendientes: countsByStatus.find(s => s.estado === "Pendiente")?.count || 0,
+            en_progreso: countsByStatus.find(s => s.estado === "En progreso")?.count || 0,
+            resueltas: countsByStatus.find(s => s.estado === "Resuelto")?.count || 0,
+            falsas: countsByStatus.find(s => s.estado === "Falso")?.count || 0,
+        };
+
+        return resumen;
+    } catch (error) {
+        console.error("❌ Error en getSolicitudesResumen:", error);
+        throw error;
+    }
+};
+
+// 🔹 Obtener el número de solicitudes por tipo y mes en un período
+exports.getSolicitudesPorTipo = async (fechaInicio, fechaFin) => {
+    try {
+        const solicitudesPorTipo = await Solicitud.findAll({
+            attributes: [
+                [sequelize.fn("EXTRACT", sequelize.literal("MONTH FROM fecha_creacion")), "mes"], // ✅ Usamos EXTRACT
+                [sequelize.col("Subtipo->TipoSolicitud.descripcion"), "tipo"],
+                [sequelize.fn("COUNT", sequelize.col("Solicitud.id_solicitud")), "total"]
+            ],
+            include: [
+                {
+                    model: Subtipo,
+                    attributes: [],
+                    include: [{ model: TipoSolicitud, attributes: [] }]
+                }
+            ],
+            where: {
+                fecha_creacion: {
+                    [Op.between]: [new Date(fechaInicio), new Date(fechaFin)]
+                }
+            },
+            group: ["mes", "Subtipo->TipoSolicitud.descripcion"], // Agrupar por mes y tipo de solicitud
+            raw: true
+        });
+
+        return solicitudesPorTipo;
+    } catch (error) {
+        console.error("❌ Error al obtener solicitudes por tipo:", error);
+        throw error;
+    }
+};
+
+
+
+// 🔹 devolver la cantidad de solicitudes en cada estado (Pendiente, En Progreso, Resuelto, Falso) 
+//  dentro de un período predefinido
+exports.getSolicitudesPorEstado = async (fechaInicio, fechaFin) => {
+    try {
+        // 🔹 Contar todas las solicitudes en el periodo
+        const totalSolicitudes = await Solicitud.count({
+            where: {
+                fecha_creacion: { [Op.between]: [fechaInicio, fechaFin] }
+            }
+        });
+
+        // 🔹 Obtener conteo por estado
+        const solicitudesPorEstado = await Solicitud.findAll({
+            attributes: [
+                [sequelize.col("Estado.descripcion"), "estado"],
+                [sequelize.fn("COUNT", sequelize.col("Solicitud.id_solicitud")), "cantidad"]
+            ],
+            include: [{ model: Estado, attributes: [] }],
+            where: {
+                fecha_creacion: { [Op.between]: [fechaInicio, fechaFin] }
+            },
+            group: ["Estado.descripcion"],
+            raw: true
+        });
+
+        // 🔹 Estructura fija con valores en 0 por defecto
+        const resultado = {
+            total: totalSolicitudes,
+            pendientes: 0,
+            en_progreso: 0,
+            resueltas: 0,
+            falsas: 0,
+        };
+
+        // 🔹 Asignar valores correctamente desde la consulta
+        solicitudesPorEstado.forEach((solicitud) => {
+            switch (solicitud.estado) {
+                case "Pendiente":
+                    resultado.pendientes = parseInt(solicitud.cantidad, 10);
+                    break;
+                case "En progreso":
+                    resultado.en_progreso = parseInt(solicitud.cantidad, 10);
+                    break;
+                case "Resuelto":
+                    resultado.resueltas = parseInt(solicitud.cantidad, 10);
+                    break;
+                case "Falso":
+                    resultado.falsas = parseInt(solicitud.cantidad, 10);
+                    break;
+                default:
+                    console.warn(`⚠️ Estado desconocido encontrado: ${solicitud.estado}`);
+            }
+        });
+
+        return resultado;
+    } catch (error) {
+        console.error("❌ Error en getSolicitudesPorEstado:", error);
+        throw error;
+    }
+};
+
+
+
+// 🔹 Obtener el Top 10 de solicitudes recientes en un período
+exports.getTop10Solicitudes = async (fechaInicio, fechaFin) => {
+    try {
+        const solicitudes = await Solicitud.findAll({
+            attributes: [
+                "id_solicitud",
+                "fecha_creacion",
+            ],
+            include: [
+                {
+                    model: Estado,
+                    attributes: ["descripcion"],
+                    as: "Estado",
+                },
+                {
+                    model: Subtipo,
+                    include: [
+                        {
+                            model: TipoSolicitud,
+                            attributes: ["descripcion"],
+                            as: "TipoSolicitud",
+                        },
+                    ],
+                    attributes: ["descripcion"],
+                    as: "Subtipo",
+                },
+                {
+                    model: Persona,
+                    attributes: ["nombres", "apellidos"],
+                    as: "creador",
+                },
+                {
+                    model: Persona,
+                    attributes: ["nombres", "apellidos"],
+                    as: "policia",
+                },
+            ],
+            where: {
+                fecha_creacion: {
+                    [Op.between]: [fechaInicio, fechaFin],
+                },
+            },
+            order: [["fecha_creacion", "DESC"]],
+            limit: 10,
+            raw: true,
+            nest: true,
+        });
+
+        // Formatear la respuesta antes de enviarla
+        return solicitudes.map((solicitud) => ({
+            id_solicitud: solicitud.id_solicitud,
+            fecha_creacion: solicitud.fecha_creacion,
+            estado: solicitud.Estado.descripcion,
+            tipo: solicitud.Subtipo.TipoSolicitud.descripcion,
+            subtipo: solicitud.Subtipo.descripcion,
+            creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
+            policia_asignado: solicitud.policia?.nombres
+            ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}`
+            : "No asignado",
+    }));
+    } catch (error) {
+        console.error("❌ Error en getTop10Solicitudes:", error);
+        throw error;
     }
 };

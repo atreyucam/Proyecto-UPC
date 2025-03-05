@@ -1,25 +1,5 @@
-const personaService = require('./services/srv_persona');
-
-/**
- * * Controlador para crear una nueva persona.
- * @param {Object} req - Objeto de solicitud HTTP.
- * @param {Object} res - Objeto de respuesta HTTP.
- */
-// * Metodo en funcionamiento
-exports.createPersona = async (req, res) => {
-  try {
-    const persona = await personaService.createPersona(req.body);
-    res.status(201).json(persona);
-  } catch (error) {
-    // Verifica si el error es de unicidad
-    if (error.message === 'La cédula ya está registrada.' || error.message === 'El email ya está registrado.') {
-      return res.status(409).json({ message: error.message });
-    }
-    
-    // Otros errores
-    res.status(500).json({ message: 'Error interno del servidor.' });
-  }
-};
+const personaService = require('../services/srv_persona');
+const { crearNotificacion } = require("../services/srv_notificacion");
 
 
 /**
@@ -167,17 +147,26 @@ exports.getPoliciasDisponibles = async (req, res) => {
 
 
 
+//* NUEVAS FUNCIONES
 // funciones de prueba
 // Controlador para crear un ciudadano
 exports.createCiudadano = async (req, res) => {
   try {
-      const ciudadanoData = req.body;
-      const nuevoCiudadano = await personaService.createCiudadano(ciudadanoData);
-      res.status(201).json(nuevoCiudadano);
+    const ciudadanoData = req.body;
+    const nuevoCiudadano = await personaService.createCiudadano(ciudadanoData);
+
+    // 🔔 Enviar notificación por WebSocket
+    req.io.emit("nuevoCiudadano", nuevoCiudadano); 
+
+    // 🔔 Guardar en la tabla de notificaciones
+    await crearNotificacion(req.io, `Nuevo ciudadano registrado: ${nuevoCiudadano.nombres} ${nuevoCiudadano.apellidos}`);
+
+    res.status(201).json(nuevoCiudadano);
   } catch (error) {
-      res.status(400).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
+
 
 
 exports.createAdmin = async (req, res) => {
@@ -193,13 +182,21 @@ exports.createAdmin = async (req, res) => {
 
 exports.createPolicia = async (req, res) => {
   try {
-      const policiaData = req.body;
-      const nuevoPolicia = await personaService.createPolicia(policiaData);
-      res.status(201).json(nuevoPolicia);
+    const policiaData = req.body;
+    const nuevoPolicia = await personaService.createPolicia(policiaData);
+
+    // 🔔 Emitir evento para actualizar la lista en tiempo real
+    req.io.emit("nuevoPolicia", nuevoPolicia);
+
+    // 🔔 Guardar notificación en la base de datos
+    await crearNotificacion(req.io, `Nuevo policía registrado: ${nuevoPolicia.nombres} ${nuevoPolicia.apellidos}`);
+
+    res.status(201).json(nuevoPolicia);
   } catch (error) {
-      res.status(400).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
+
 
 
 exports.getCiudadanoUser = async (req, res) => {

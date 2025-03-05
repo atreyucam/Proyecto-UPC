@@ -16,20 +16,23 @@ router.get('/ciudadanoUser/:id', personaController.getCiudadanoUser);
 
 // * Rutas CRUD basicos
 // * En funcionamiento
-router.post('/nuevoUsuario', personaController.createPersona);
+// router.post('/nuevoUsuario', personaController.createPersona);
 router.get('/', personaController.getPersonas);
 router.get('/:id', personaController.getPersonaById);
 router.put('/:id', personaController.updatePersona);
 router.delete('/:id', personaController.deletePersona);
 
-// ! Rutas nuevas por verificar
-router.post('/nuevoCiudadano', personaController.createCiudadano);
-router.post('/nuevoAdmin', personaController.createAdmin);
-router.post('/nuevoPolicia', personaController.createPolicia);
-
 
 // actualizar password
 router.post("/verificar-contrasena/:id_persona", personaController.verificarContrasena);
 router.put("/actualizar-contrasena/:id_persona", personaController.actualizarContrasena);
+
+
+// ! Rutas nuevas por verificar
+router.post('/nuevoCiudadano', personaController.createCiudadano);
+router.post('/nuevoPolicia', personaController.createPolicia);
+router.post('/nuevoAdmin', personaController.createAdmin);
+
+
 
 module.exports = router;
