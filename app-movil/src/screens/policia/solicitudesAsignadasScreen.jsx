@@ -23,7 +23,7 @@ const SolicitudesAsignadasScreen = () => {
         const obtenerSolicitudesAsignadas = async () => {
             try {
                 const response = await axios.get(
-                    `${API_ENDPOINT}/personas/policia/${authState.user}`
+                    `${API_ENDPOINT}/persona/policia/${authState.user}`
                 );
                 const solicitudesEnProgreso =
                     response.data.solicitudes_asignadas.filter(

@@ -1,25 +1,6 @@
-const personaService = require('./services/srv_persona');
-
-/**
- * * Controlador para crear una nueva persona.
- * @param {Object} req - Objeto de solicitud HTTP.
- * @param {Object} res - Objeto de respuesta HTTP.
- */
-// * Metodo en funcionamiento
-exports.createPersona = async (req, res) => {
-  try {
-    const persona = await personaService.createPersona(req.body);
-    res.status(201).json(persona);
-  } catch (error) {
-    // Verifica si el error es de unicidad
-    if (error.message === 'La cédula ya está registrada.' || error.message === 'El email ya está registrado.') {
-      return res.status(409).json({ message: error.message });
-    }
-    
-    // Otros errores
-    res.status(500).json({ message: 'Error interno del servidor.' });
-  }
-};
+const personaService = require('../services/srv_persona');
+const { crearNotificacion } = require("../services/srv_notificacion");
+const { fetchPersonaDataFromESPOCH } = require("../services/srv_espoch");
 
 
 /**
@@ -187,6 +168,47 @@ exports.createAdmin = async (req, res) => {
       res.status(201).json(nuevoAdmin);
   } catch (error) {
       res.status(400).json({ message: error.message });
+  }
+};
+
+
+// 📌 Controlador para verificar la cédula y obtener los datos de la API de ESPOCH
+exports.verificarCedula = async (req, res) => {
+  try {
+    let { cedula } = req.params; // Obtener la cédula desde la URL
+
+    // 🔍 Eliminar espacios en blanco y asegurarse de que es un string
+    cedula = cedula.trim();
+
+    // 🔎 Imprimir en consola para depuración
+    console.log("🔎 Cédula recibida:", cedula);
+
+    // 📌 Validación: solo 10 dígitos numéricos
+    if (!/^\d{10}$/.test(cedula)) {
+      return res.status(400).json({ error: "Formato de cédula inválido" });
+    }
+
+    // 🟢 Consultar API ESPOCH
+    const personaData = await fetchPersonaDataFromESPOCH(cedula);
+
+    if (!personaData) {
+      return res.status(404).json({ error: "No se encontró información con esta cédula" });
+    }
+
+    // 🔄 Formatear datos antes de enviarlos
+    const responseData = {
+      cedula: personaData.pid_valor,
+      nombres: personaData.per_nombres,
+      apellidos: `${personaData.per_primerApellido} ${personaData.per_segundoApellido}`,
+      fecha_nacimiento: personaData.per_fechaNacimiento,
+      genero: personaData.gen_nombre,
+    };
+
+    console.log("✅ Datos enviados:", responseData);
+    res.json(responseData);
+  } catch (error) {
+    console.error("❌ Error en verificarCedula:", error.message);
+    res.status(500).json({ error: error.message });
   }
 };
 

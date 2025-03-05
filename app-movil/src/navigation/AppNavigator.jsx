@@ -86,6 +86,8 @@ const AppNavigator = () => {
               <Route path="/resumenActividad" element={<ResumenActividad />} />
               <Route path="/Emergencia" element={<EmergenciaScreen />} />
               <Route path="/actualizarContrasena" element={<ActualizarContrasenaScreen />} />
+              <Route path="/miPerfil" element={<MiPerfilScreen />} />
+              <Route path="/informacion" element={<InformacionScreen />} />
               <Route path="*" element={<PoliceNavigation />} />
             </>
           )}

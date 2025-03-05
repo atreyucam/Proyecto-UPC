@@ -46,6 +46,38 @@ exports.createCiudadano = async (ciudadanoData) => {
     await transaction.commit(); // Confirmar transacción
     return persona;
 
+    // 🏗️ Crear la nueva persona usando los datos de ESPOCH
+    const newUser = await Persona.create(
+      {
+        cedula: espochData.pid_valor,
+        nombres: espochData.per_nombres,
+        apellidos: `${espochData.per_primerApellido} ${espochData.per_segundoApellido}`,
+        genero: espochData.gen_nombre,
+        telefono: userData.telefono || null, // Solo lo llena si lo envía el usuario
+        fecha_nacimiento: espochData.per_fechaNacimiento,
+        email: userData.email,
+        password: hashedPassword,
+        id_subzona: userData.id_subzona,
+        id_canton: userData.id_canton,
+        id_parroquia: userData.id_parroquia || null,
+      },
+      { transaction }
+    );
+
+    // 🔎 Obtener rol y asociarlo al usuario
+    const rol = await Rol.findOne({ where: { descripcion: roleName }, transaction });
+    await newUser.addRol(rol, { transaction });
+
+    await transaction.commit();
+
+    // 📩 Enviar correo después de confirmar la transacción
+    try {
+      await sendVerificationEmail(newUser.email);
+    } catch (emailError) {
+      console.error("⚠️ Error al enviar el correo de verificación:", emailError);
+      // No se lanza el error porque el usuario ya está registrado, solo logueamos
+    }
+    return newUser;
   } catch (error) {
     await transaction.rollback();
 

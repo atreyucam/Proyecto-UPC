@@ -215,6 +215,10 @@ const Persona = sequelize.define('Persona', {
     type: DataTypes.STRING(100),
     allowNull: false
   },
+  fecha_nacimiento:{
+    type: DataTypes.DATEONLY,
+    allowNull: false
+  },
   telefono: {
     type: DataTypes.STRING(10),
     allowNull: false
