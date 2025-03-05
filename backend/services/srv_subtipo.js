@@ -1,4 +1,4 @@
-const { Subtipo, TipoSolicitud } = require('../../models/db_models');
+const { Subtipo, TipoSolicitud } = require('../models/db_models');
 
 
  //Crea un nuevo subtipo en base a los tipos de solicitud disponible.

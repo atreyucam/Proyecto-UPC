@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FiCheckCircle, FiEdit, FiTrash, FiSave, FiEye } from 'react-icons/fi';
 import { Link, useNavigate } from "react-router-dom";
+import socket from "../services/socket";
 
 const ConsultaCiudadanos = () => {
   const [ciudadanos, setCiudadanos] = useState([]);
@@ -28,7 +29,7 @@ const ConsultaCiudadanos = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ciudadanosRes = await axios.get(`${API_URL}/personas/ciudadanos`);
+        const ciudadanosRes = await axios.get(`${API_URL}/persona/ciudadanos`);
         const zonasRes = await axios.get(`${API_URL}/circuitos/zonas`);
 
         setCiudadanos(ciudadanosRes.data.ciudadanos);
@@ -40,6 +41,20 @@ const ConsultaCiudadanos = () => {
     };
 
     fetchData();
+  }, []);
+
+  // 📡 Escuchar eventos en tiempo real de Socket.IO
+  useEffect(() => {
+    socket.on("nuevoCiudadano", (nuevoCiudadano) => {
+      console.log("🆕 Nuevo ciudadano recibido por socket:", nuevoCiudadano);
+
+      setCiudadanos((prev) => [...prev, nuevoCiudadano]);
+      setFilteredCiudadanos((prev) => [...prev, nuevoCiudadano]);
+    });
+
+    return () => {
+      socket.off("nuevoCiudadano"); // Limpiar el evento al desmontar
+    };
   }, []);
 
   useEffect(() => {

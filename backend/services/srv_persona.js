@@ -2,49 +2,60 @@ const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
 const {Persona,Rol,Circuito,sequelize,Solicitud, Estado,Subtipo,TipoSolicitud,
   Subcircuito,Parroquia,Distrito,Canton,Subzona,Zona,DistritoCanton,
-} = require("../../models/db_models");
+} = require("../models/db_models");
+const { fetchPersonaDataFromESPOCH } = require("./srv_espoch");
+const {sendVerificationEmail} = require('./srv_auth');
 
-// * Funcion que permite la creacion de un Ciudadano.
-exports.createCiudadano = async (ciudadanoData) => {
-  const transaction = await sequelize.transaction(); 
 
+// 🚀 Función genérica para crear usuarios (ciudadano, admin, policía)
+const createUserByRole = async (userData, roleName) => {
+  const transaction = await sequelize.transaction();
   try {
-    // Verificar que se haya proporcionado subzona y cantón
-    if (!ciudadanoData.id_subzona || !ciudadanoData.id_canton) {
-      throw new Error(
-        "Un ciudadano debe estar asociado a una subzona y un cantón."
-      );
-    }
+    // 🔎 Consultar API de ESPOCH con la cédula
+    const espochData = await fetchPersonaDataFromESPOCH(userData.cedula);
+    if (!espochData) throw new Error("No se encontraron datos en ESPOCH");
 
-    // Verificar que el cantón pertenece a la subzona seleccionada
-    const canton = await Canton.findByPk(ciudadanoData.id_canton, {
+    // 📌 Verificar si la cédula ya está registrada en la base de datos
+    const existingUserByCedula = await Persona.findOne({
+      where: { cedula: userData.cedula },
       transaction,
     });
-    if (!canton || canton.id_subzona !== ciudadanoData.id_subzona) {
+
+    if (existingUserByCedula) {
+      throw new Error("La cédula ya está registrada.");
+    }
+
+    // 📌 Verificar si el email ya está registrado en la base de datos
+    const existingUserByEmail = await Persona.findOne({
+      where: { email: userData.email },
+      transaction,
+    });
+
+    if (existingUserByEmail) {
+      throw new Error("El email ya está registrado.");
+    }
+
+    // 📌 Verificar datos mínimos (subzona y cantón)
+    if (!userData.id_subzona || !userData.id_canton) {
+      throw new Error(`${roleName} debe estar asociado a una subzona y un cantón.`);
+    }
+
+    // 📌 Validar que el cantón pertenece a la subzona
+    const canton = await Canton.findByPk(userData.id_canton, { transaction });
+    if (!canton || canton.id_subzona !== userData.id_subzona) {
       throw new Error("El cantón no corresponde a la subzona seleccionada.");
     }
 
-    // Si se proporciona un id_parroquia, validar que pertenece al cantón correcto
-    if (ciudadanoData.id_parroquia) {
-      const parroquia = await Parroquia.findByPk(ciudadanoData.id_parroquia, {
-        transaction,
-      });
-      if (!parroquia || parroquia.id_canton !== ciudadanoData.id_canton) {
+    // 📌 Validar parroquia si se proporciona
+    if (userData.id_parroquia) {
+      const parroquia = await Parroquia.findByPk(userData.id_parroquia, { transaction });
+      if (!parroquia || parroquia.id_canton !== userData.id_canton) {
         throw new Error("La parroquia no corresponde al cantón seleccionado.");
       }
     }
 
-    // Crear la nueva persona con el rol de Ciudadano
-    const persona = await Persona.create(ciudadanoData, { transaction });
-    // Encontrar el rol Ciudadano
-    const rol = await Rol.findOne({
-      where: { descripcion: "Ciudadano" },
-      transaction,
-    });
-    
-    await persona.addRol(rol, { transaction }); // Asociar el rol de Ciudadano a la persona
-    await transaction.commit(); // Confirmar transacción
-    return persona;
+    // 📌 Hashear la contraseña antes de guardarla
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
 
     // 🏗️ Crear la nueva persona usando los datos de ESPOCH
     const newUser = await Persona.create(
@@ -80,284 +91,32 @@ exports.createCiudadano = async (ciudadanoData) => {
     return newUser;
   } catch (error) {
     await transaction.rollback();
-
-    if (error.name === "SequelizeUniqueConstraintError") {
-      const field = error.errors[0].path;
-      let message = "Error al crear el ciudadano.";
-
-      if (field === "cedula") {
-        message = "La cédula ya está registrada.";
-      } else if (field === "email") {
-        message = "El email ya está registrado.";
-      }
-      throw new Error(message);
-    }
     throw error;
   }
 };
 
 
-// * Funcion que permite la creacion de un Admin.
+// 🔹 Crear Ciudadano
+exports.createCiudadano = async (ciudadanoData) => {
+  return await createUserByRole(ciudadanoData, "Ciudadano");
+};
+
+// 🔹 Crear Admin
 exports.createAdmin = async (adminData) => {
-  const transaction = await sequelize.transaction(); // Iniciar transacción
-
-  try {
-    let circuito, subcircuito;
-
-    // Verificar que se haya proporcionado subzona, cantón y distrito
-    if (!adminData.id_subzona || !adminData.id_canton || !adminData.id_distrito) {
-      throw new Error("Un Admin debe estar asociado a una subzona, un cantón y un distrito.");
-    }
-
-    // Verificar que el cantón pertenece a la subzona seleccionada
-    const canton = await Canton.findOne({
-      where: { id_canton: adminData.id_canton },
-      transaction,
-    });
-    if (!canton) {
-      throw new Error("Cantón no encontrado.");
-    }
-
-    const subzonaCanton = await Canton.findOne({
-      where: {
-        id_canton: adminData.id_canton,
-        id_subzona: adminData.id_subzona,
-      },
-      transaction,
-    });
-
-    if (!subzonaCanton) {
-      throw new Error("El cantón no corresponde a la subzona seleccionada.");
-    }
-
-    // Verificar que el distrito pertenece al cantón seleccionado
-    const distrito = await Distrito.findByPk(adminData.id_distrito, { transaction });
-    if (!distrito) {
-      throw new Error("Distrito no encontrado.");
-    }
-
-    const distritoCanton = await DistritoCanton.findOne({
-      where: {
-        id_distrito: adminData.id_distrito,
-        id_canton: adminData.id_canton,
-      },
-      transaction,
-    });
-
-    if (!distritoCanton) {
-      throw new Error("El distrito no corresponde al cantón seleccionado.");
-    }
-
-    // Si se proporciona un id_parroquia, validar que pertenece al cantón correcto
-    if (adminData.id_parroquia) {
-      const parroquia = await Parroquia.findByPk(adminData.id_parroquia, { transaction });
-      if (!parroquia || parroquia.id_canton !== adminData.id_canton) {
-        throw new Error("La parroquia no corresponde al cantón seleccionado.");
-      }
-    }
-
-    // Si se selecciona un circuito, validarlo
-    if (adminData.id_circuito) {
-      circuito = await Circuito.findByPk(adminData.id_circuito, { transaction });
-      if (!circuito) {
-        throw new Error("Circuito no encontrado");
-      }
-    }
-
-    // Si se selecciona un subcircuito, validarlo
-    if (adminData.id_subcircuito) {
-      subcircuito = await Subcircuito.findByPk(adminData.id_subcircuito, { transaction });
-      if (!subcircuito) {
-        throw new Error("Subcircuito no encontrado");
-      }
-    }
-
-    // Crear la nueva persona con el rol de Admin
-    const persona = await Persona.create(adminData, { transaction });
-    // Encontrar el rol Admin
-    const rol = await Rol.findOne({ where: { descripcion: "Admin" }, transaction });
-    // Asociar el rol de Admin a la persona
-    await persona.addRol(rol, { transaction });
-
-    // Asociar circuitos y subcircuitos si corresponden
-    if (circuito) {
-      await persona.addCircuitos(circuito, { transaction });
-    }
-
-    if (subcircuito) {
-      await persona.addSubcircuitos(subcircuito, { transaction });
-    }
-
-    // Confirmar transacción
-    await transaction.commit();
-
-    return persona;
-  } catch (error) {
-    // Deshacer transacción en caso de error
-    await transaction.rollback();
-
-    // Manejar errores de unicidad de Sequelize
-    if (error.name === "SequelizeUniqueConstraintError") {
-      const field = error.errors[0].path;
-      let message = "Error al crear el administrador.";
-
-      if (field === "cedula") {
-        message = "La cédula ya está registrada.";
-      } else if (field === "email") {
-        message = "El email ya está registrado.";
-      }
-
-      console.log("Error al crear el administrador: ", message);
-      throw new Error(message);
-    }
-
-    console.log("Error al crear el administrador: ", error);
-    throw error;
-  }
+  return await createUserByRole(adminData, "Admin");
 };
 
-
-// * Funcion que permite la creacion de un Policia.
+// 🔹 Crear Policía
 exports.createPolicia = async (policiaData) => {
-  const transaction = await sequelize.transaction(); // Iniciar transacción
-
-  try {
-    let circuito, subcircuito;
-
-    // Verificar que se haya proporcionado subzona, cantón y distrito
-    if (
-      !policiaData.id_subzona ||
-      !policiaData.id_canton ||
-      !policiaData.id_distrito
-    ) {
-      throw new Error(
-        "Un policía debe estar asociado a una subzona, un cantón y un distrito."
-      );
-    }
-
-    // Verificar que el cantón pertenece a la subzona seleccionada
-    // Verificar que el cantón pertenece a la subzona seleccionada
-    const canton = await Canton.findOne({
-      where: { id_canton: policiaData.id_canton },
-      transaction,
-    });
-    if (!canton) {
-      throw new Error("Cantón no encontrado.");
-    }
-
-    const subzonaCanton = await Canton.findOne({
-      where: {
-        id_canton: policiaData.id_canton,
-        id_subzona: policiaData.id_subzona,
-      },
-      transaction,
-    });
-
-    if (!subzonaCanton) {
-      throw new Error("El cantón no corresponde a la subzona seleccionada.");
-    }
-
-    // Verificar que el distrito pertenece al cantón seleccionado
-    const distrito = await Distrito.findByPk(policiaData.id_distrito, {
-      transaction,
-    });
-    if (!distrito) {
-      throw new Error("Distrito no encontrado.");
-    }
-
-    const distritoCanton = await DistritoCanton.findOne({
-      where: {
-        id_distrito: policiaData.id_distrito,
-        id_canton: policiaData.id_canton,
-      },
-      transaction,
-    });
-
-    if (!distritoCanton) {
-      throw new Error("El distrito no corresponde al cantón seleccionado.");
-    }
-
-    // Si se proporciona un id_parroquia, validar que pertenece al cantón correcto
-    if (policiaData.id_parroquia) {
-      const parroquia = await Parroquia.findByPk(policiaData.id_parroquia, {
-        transaction,
-      });
-      if (!parroquia || parroquia.id_canton !== policiaData.id_canton) {
-        throw new Error("La parroquia no corresponde al cantón seleccionado.");
-      }
-    }
-
-    // Si el policía selecciona un circuito, validarlo
-    if (policiaData.id_circuito) {
-      circuito = await Circuito.findByPk(policiaData.id_circuito, {
-        transaction,
-      });
-      if (!circuito) {
-        throw new Error("Circuito no encontrado");
-      }
-    }
-
-    // Si el policía selecciona un subcircuito, validarlo
-    if (policiaData.id_subcircuito) {
-      subcircuito = await Subcircuito.findByPk(policiaData.id_subcircuito, {
-        transaction,
-      });
-      if (!subcircuito) {
-        throw new Error("Subcircuito no encontrado");
-      }
-    }
-
-    // Asignar la disponibilidad inicial de Policía
-    policiaData.disponibilidad = "Disponible";
-    // Crear la nueva persona con el rol de Policía
-    const persona = await Persona.create(policiaData, { transaction });
-    // Encontrar el rol Policía
-    const rol = await Rol.findOne({
-      where: { descripcion: "Policia" },
-      transaction,
-    });
-    // Asociar el rol de Policía a la persona
-    await persona.addRol(rol, { transaction });
-
-    // Asociar el distrito al policía (Se establece a través de la clave foránea en la creación)
-    // Si la relación es directa, el id_distrito ya debería estar establecido en la tabla Persona
-
-    // Asociar circuitos y subcircuitos si corresponden
-    if (circuito) {
-      await persona.addCircuitos(circuito, { transaction });
-    }
-
-    if (subcircuito) {
-      await persona.addSubcircuitos(subcircuito, { transaction });
-    }
-
-    // Confirmar transacción
-    await transaction.commit();
-
-    return persona;
-  } catch (error) {
-    // Deshacer transacción en caso de error
-    await transaction.rollback();
-
-    // Manejar errores de unicidad de Sequelize
-    if (error.name === "SequelizeUniqueConstraintError") {
-      const field = error.errors[0].path;
-      let message = "Error al crear el policía.";
-
-      if (field === "cedula") {
-        message = "La cédula ya está registrada.";
-      } else if (field === "email") {
-        message = "El email ya está registrado.";
-      }
-
-      console.log("Error al crear el policía: ", message);
-      throw new Error(message);
-    }
-
-    console.log("Error al crear el policía: ", error);
-    throw error;
-  }
+  return await createUserByRole(policiaData, "Policia");
 };
+
+
+
+
+
+
+
 
 // * Funcion que permite traer a todos los Ciudadanos Creados.
 exports.getCiudadanos = async () => {

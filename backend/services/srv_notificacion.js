@@ -62,21 +62,30 @@ exports.notificarUsuariosPorRol = async (io, rolDescripcion, titulo, mensaje) =>
     const userIds = usuarios.map((user) => user.id_persona);
     console.log(`✅ Usuarios encontrados con rol ${rolDescripcion}:`, userIds);
 
-    io.emit("nuevaNotificacion", { userIds, titulo, mensaje });
-    console.log(`📢 Notificación enviada: ${titulo} - ${mensaje}`);
+    // 📌 Guardar la notificación en la base de datos
+    const nuevaNotificacion = await Notificacion.create({
+      notificacion: mensaje,
+      fecha_tiempo_creacion: new Date(), // Guardar fecha exacta
+    });
+
+    // 📌 Emitir evento con la fecha de creación
+    io.emit("nuevaNotificacion", {
+      userIds,
+      titulo,
+      mensaje,
+      fecha_tiempo_creacion: nuevaNotificacion.fecha_tiempo_creacion, // Asegurar que se envía
+    });
+
+    console.log(`📢 Notificación enviada y guardada: ${titulo} - ${mensaje} - 📅 ${nuevaNotificacion.fecha_tiempo_creacion}`);
   } catch (error) {
     console.error(`❌ Error al enviar notificación a ${rolDescripcion}:`, error);
   }
 };
 
+
 /**
-* 🔹 Notificar a usuarios específicos
-* @param {Object} io - Instancia de Socket.IO
-* @param {Array} userIds - Lista de IDs de usuarios a notificar
-* @param {string} titulo - Título de la notificación
-* @param {string} mensaje - Contenido de la notificación
-*/
-// 🔹 Función para enviar notificación a usuarios específicos o a todos
+ * 🔹 Notificar a usuarios específicos
+ */
 exports.notificarUsuarios = async (io, userIds, titulo, mensaje) => {
   if (userIds.length > 0) {
     io.to(userIds).emit("nuevaNotificacion", { titulo, mensaje, timestamp: new Date() });
@@ -89,12 +98,15 @@ exports.notificarUsuarios = async (io, userIds, titulo, mensaje) => {
 exports.crearNotificacion = async (io, mensaje) => {
   try {
     // Guardar en la base de datos
-    const nuevaNotificacion = await Notificacion.create({ notificacion: mensaje });
+    const nuevaNotificacion = await Notificacion.create({
+      notificacion: mensaje,
+      fecha_tiempo_creacion: new Date(), // Se almacena el timestamp exacto de creación
+    });
 
     // Emitir la notificación a todos los usuarios conectados
     io.emit("nuevaNotificacion", {
       mensaje: nuevaNotificacion.notificacion,
-      timestamp: new Date(),
+      fecha_tiempo_creacion: nuevaNotificacion.fecha_tiempo_creacion,
     });
 
     console.log("🔔 Notificación enviada y guardada:", nuevaNotificacion.notificacion);

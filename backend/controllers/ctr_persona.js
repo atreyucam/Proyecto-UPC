@@ -148,17 +148,26 @@ exports.getPoliciasDisponibles = async (req, res) => {
 
 
 
+//* NUEVAS FUNCIONES
 // funciones de prueba
 // Controlador para crear un ciudadano
 exports.createCiudadano = async (req, res) => {
   try {
-      const ciudadanoData = req.body;
-      const nuevoCiudadano = await personaService.createCiudadano(ciudadanoData);
-      res.status(201).json(nuevoCiudadano);
+    const ciudadanoData = req.body;
+    const nuevoCiudadano = await personaService.createCiudadano(ciudadanoData);
+
+    // 🔔 Enviar notificación por WebSocket
+    req.io.emit("nuevoCiudadano", nuevoCiudadano);
+
+    // 🔔 Guardar en la tabla de notificaciones con fecha y tiempo
+    await crearNotificacion(req.io, `Nuevo ciudadano registrado: ${nuevoCiudadano.nombres} ${nuevoCiudadano.apellidos}`);
+
+    res.status(201).json(nuevoCiudadano);
   } catch (error) {
-      res.status(400).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
+
 
 
 exports.createAdmin = async (req, res) => {
@@ -215,13 +224,21 @@ exports.verificarCedula = async (req, res) => {
 
 exports.createPolicia = async (req, res) => {
   try {
-      const policiaData = req.body;
-      const nuevoPolicia = await personaService.createPolicia(policiaData);
-      res.status(201).json(nuevoPolicia);
+    const policiaData = req.body;
+    const nuevoPolicia = await personaService.createPolicia(policiaData);
+
+    // 🔔 Emitir evento para actualizar la lista en tiempo real
+    req.io.emit("nuevoPolicia", nuevoPolicia);
+
+    // 🔔 Guardar notificación en la base de datos con fecha y tiempo
+    await crearNotificacion(req.io, `Nuevo policía registrado: ${nuevoPolicia.nombres} ${nuevoPolicia.apellidos}`);
+
+    res.status(201).json(nuevoPolicia);
   } catch (error) {
-      res.status(400).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
+
 
 
 exports.getCiudadanoUser = async (req, res) => {

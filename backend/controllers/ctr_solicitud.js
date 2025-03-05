@@ -1,4 +1,4 @@
-const solicitudService = require("./services/srv_solicitud");
+const solicitudService = require("../services/srv_solicitud");
 
 exports.crearBotonEmergencia = async (req, res) => {
   try {

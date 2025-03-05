@@ -51,10 +51,10 @@ const initData = async () => {
     // Insertar Estado
     await sequelize.query(`
       INSERT INTO public."Estado"(descripcion) VALUES
-        ('Pendiente'),
-        ('En progreso'),
-        ('Resuelto'),
-        ('Falso');
+        ('pendiente'),
+        ('en progreso'),
+        ('resuelto'),
+        ('falso');
     `);
 
     // Insertar Roles
