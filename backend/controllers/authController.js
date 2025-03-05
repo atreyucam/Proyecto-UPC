@@ -66,3 +66,26 @@ exports.getAuthenticatedUser = async (req, res) => {
     res.status(401).json({ message: error.message });
   }
 };
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    await authService.forgotPassword(email);
+    return res.json({ message: 'Se ha enviado un código de recuperación a tu correo' });
+  } catch (error) {
+    console.error('Error en forgotPassword:', error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// Endpoint para restablecer la contraseña usando el código
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+    await authService.resetPassword(email, code, newPassword);
+    return res.json({ message: 'Contraseña actualizada exitosamente' });
+  } catch (error) {
+    console.error('Error en resetPassword:', error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
