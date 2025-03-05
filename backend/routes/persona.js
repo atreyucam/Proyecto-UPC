@@ -33,6 +33,8 @@ router.post('/nuevoCiudadano', personaController.createCiudadano);
 router.post('/nuevoPolicia', personaController.createPolicia);
 router.post('/nuevoAdmin', personaController.createAdmin);
 
+// consuta
+router.get("/verificarCedula/:cedula", personaController.verificarCedula);
 
 
 module.exports = router;

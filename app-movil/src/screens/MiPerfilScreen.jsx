@@ -4,21 +4,18 @@ import { TextInput, Button, Appbar, IconButton } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-native";
 import { AuthContext } from "../context/AuthContext";
-import { Picker } from "@react-native-picker/picker";
-import Notificacion from "./components/Notificacion";
 import axios from "axios";
-import { API_ENDPOINT } from "@env"; // Importar del .env
-// const API_ENDPOINT = "http://192.168.0.14:3000"; // Asegúrate de que esta URL apunte a tu backend
+import { API_ENDPOINT } from "@env";
 
 export default function MiPerfilScreen() {
     const { authState } = useContext(AuthContext);
     const navigate = useNavigate();
     const [perfilCargado, setPerfilCargado] = useState(false);
+
     const {
         control,
         handleSubmit,
         formState: { errors, isSubmitting },
-        watch,
         setValue,
     } = useForm();
 
@@ -26,27 +23,17 @@ export default function MiPerfilScreen() {
         const cargarPerfil = async () => {
             try {
                 const response = await axios.get(
-                    `${API_ENDPOINT}/personas/ciudadanoUser/${authState.user}`
+                    `${API_ENDPOINT}/persona/ciudadanoUser/${authState.user}`
                 );
                 const data = response.data;
-                console.log("Datos del usuario:", data); // <-- Agregado para depuración
+                console.log("Datos del usuario:", data);
 
                 setValue("cedula", data.cedula);
                 setValue("nombres", data.nombres);
                 setValue("apellidos", data.apellidos);
                 setValue("telefono", data.telefono);
                 setValue("email", data.email);
-                const generoNormalizado = data.genero
-                    ? data.genero.trim().toLowerCase()
-                    : "masculino";
-                if (
-                    !["masculino", "femenino", "otro"].includes(
-                        generoNormalizado
-                    )
-                ) {
-                    console.warn(`Valor inesperado en genero: ${data.genero}`);
-                }
-                setValue("genero", generoNormalizado);
+                setValue("genero", data.genero ? data.genero.trim() : "");
 
                 setPerfilCargado(true);
             } catch (error) {
@@ -70,10 +57,8 @@ export default function MiPerfilScreen() {
                 apellidos: data.apellidos,
                 telefono: data.telefono,
                 email: data.email,
-                genero: data.genero,
             };
 
-            // Incluir la contraseña solo si el usuario desea cambiarla
             if (data.password) {
                 actualizacionData.password = data.password;
             }
@@ -100,8 +85,6 @@ export default function MiPerfilScreen() {
         }
     };
 
-    const password = watch("password", "");
-
     return (
         <View style={styles.container}>
             <Appbar.Header>
@@ -119,219 +102,142 @@ export default function MiPerfilScreen() {
                     onPress={() => navigate("/")}
                 />
             </Appbar.Header>
+
             <ScrollView>
-                <View style={styles.container}>
-                    <View style={styles.formContainer}>
-                        <Text style={styles.title}>Mi Perfil</Text>
-                        {perfilCargado ? (
-                            <>
-                                <Controller
-                                    control={control}
-                                    name="cedula"
-                                    render={({
-                                        field: { onChange, onBlur, value },
-                                    }) => (
-                                        <TextInput
-                                            label="Cédula"
-                                            mode="outlined"
-                                            onBlur={onBlur}
-                                            onChangeText={onChange}
-                                            value={value}
-                                            style={styles.input}
-                                            keyboardType="phone-pad"
-                                            editable={false} // Bloquear edición de cédula
-                                        />
-                                    )}
-                                />
-                                <Controller
-                                    control={control}
-                                    name="email"
-                                    rules={{
-                                        required: "El email es obligatorio",
-                                        pattern: {
-                                            value: /\S+@\S+\.\S+/,
-                                            message:
-                                                "Correo electrónico inválido",
-                                        },
-                                    }}
-                                    render={({
-                                        field: { onChange, onBlur, value },
-                                    }) => (
-                                        <TextInput
-                                            label="Email"
-                                            mode="outlined"
-                                            onBlur={onBlur}
-                                            onChangeText={onChange}
-                                            value={value}
-                                            style={styles.input}
-                                            autoCapitalize="none"
-                                            editable={false}
-                                        />
-                                    )}
-                                />
-                                {errors.email && (
-                                    <Text style={styles.errorText}>
-                                        {errors.email.message}
-                                    </Text>
+                <View style={styles.formContainer}>
+                    <Text style={styles.title}>Mi Perfil</Text>
+
+                    {!perfilCargado ? (
+                        <Text>Cargando perfil...</Text>
+                    ) : (
+                        <>
+                            {/* Campos deshabilitados */}
+                            <Controller
+                                control={control}
+                                name="cedula"
+                                render={({ field: { value } }) => (
+                                    <TextInput
+                                        label="Cédula"
+                                        mode="outlined"
+                                        value={value}
+                                        style={styles.input}
+                                        disabled
+                                    />
                                 )}
-
-                                <Controller
-                                    control={control}
-                                    name="nombres"
-                                    rules={{
-                                        required: "El nombre es obligatorio",
-                                    }}
-                                    render={({
-                                        field: { onChange, onBlur, value },
-                                    }) => (
-                                        <TextInput
-                                            label="Nombres"
-                                            mode="outlined"
-                                            onBlur={onBlur}
-                                            onChangeText={onChange}
-                                            value={value}
-                                            style={styles.input}
-                                        />
-                                    )}
-                                />
-                                {errors.nombres && (
-                                    <Text style={styles.errorText}>
-                                        {errors.nombres.message}
-                                    </Text>
+                            />
+                            <Controller
+                                control={control}
+                                name="nombres"
+                                render={({ field: { value } }) => (
+                                    <TextInput
+                                        label="Nombres"
+                                        mode="outlined"
+                                        value={value}
+                                        style={styles.input}
+                                        disabled
+                                    />
                                 )}
-
-                                <Controller
-                                    control={control}
-                                    name="apellidos"
-                                    rules={{
-                                        required: "El apellido es obligatorio",
-                                    }}
-                                    render={({
-                                        field: { onChange, onBlur, value },
-                                    }) => (
-                                        <TextInput
-                                            label="Apellidos"
-                                            mode="outlined"
-                                            onBlur={onBlur}
-                                            onChangeText={onChange}
-                                            value={value}
-                                            style={styles.input}
-                                        />
-                                    )}
-                                />
-                                {errors.apellidos && (
-                                    <Text style={styles.errorText}>
-                                        {errors.apellidos.message}
-                                    </Text>
+                            />
+                            <Controller
+                                control={control}
+                                name="apellidos"
+                                render={({ field: { value } }) => (
+                                    <TextInput
+                                        label="Apellidos"
+                                        mode="outlined"
+                                        value={value}
+                                        style={styles.input}
+                                        disabled
+                                    />
                                 )}
-
-                                <Controller
-                                    control={control}
-                                    name="telefono"
-                                    rules={{
-                                        required: "El teléfono es obligatorio",
-                                        pattern: {
-                                            value: /^\d{10}$/,
-                                            message:
-                                                "Número de teléfono inválido",
-                                        },
-                                    }}
-                                    render={({
-                                        field: { onChange, onBlur, value },
-                                    }) => (
-                                        <TextInput
-                                            label="Teléfono"
-                                            mode="outlined"
-                                            onBlur={onBlur}
-                                            onChangeText={onChange}
-                                            value={value}
-                                            style={styles.input}
-                                            keyboardType="phone-pad"
-                                        />
-                                    )}
-                                />
-                                {errors.telefono && (
-                                    <Text style={styles.errorText}>
-                                        {errors.telefono.message}
-                                    </Text>
+                            />
+                            <Controller
+                                control={control}
+                                name="genero"
+                                render={({ field: { value } }) => (
+                                    <TextInput
+                                        label="Género"
+                                        mode="outlined"
+                                        value={value}
+                                        style={styles.input}
+                                        disabled
+                                    />
                                 )}
+                            />
 
-                                
-
-                                <Controller
-                                    control={control}
-                                    name="genero"
-                                    rules={{
-                                        required: "El género es obligatorio",
-                                    }}
-                                    render={({
-                                        field: { onChange, value },
-                                    }) => (
-                                        <View style={styles.pickerContainer}>
-                                            <Picker
-                                                selectedValue={
-                                                    value &&
-                                                    [
-                                                        "masculino",
-                                                        "femenino",
-                                                        "otro",
-                                                    ].includes(value)
-                                                        ? value
-                                                        : "masculino"
-                                                }
-                                                onValueChange={onChange}
-                                                style={styles.picker}
-                                            >
-                                                <Picker.Item
-                                                    label="Seleccione su género"
-                                                    value=""
-                                                />
-                                                <Picker.Item
-                                                    label="Masculino"
-                                                    value="masculino"
-                                                />
-                                                <Picker.Item
-                                                    label="Femenino"
-                                                    value="femenino"
-                                                />
-                                                <Picker.Item
-                                                    label="Otro"
-                                                    value="otro"
-                                                />
-                                            </Picker>
-                                        </View>
-                                    )}
-                                />
-                                {errors.genero && (
-                                    <Text style={styles.errorText}>
-                                        {errors.genero.message}
-                                    </Text>
+                            {/* Campos editables */}
+                            <Controller
+                                control={control}
+                                name="telefono"
+                                rules={{
+                                    required: "El teléfono es obligatorio",
+                                    pattern: {
+                                        value: /^\d{10}$/,
+                                        message: "Número de teléfono inválido",
+                                    },
+                                }}
+                                render={({ field: { onChange, onBlur, value } }) => (
+                                    <TextInput
+                                        label="Teléfono"
+                                        mode="outlined"
+                                        onBlur={onBlur}
+                                        onChangeText={onChange}
+                                        value={value}
+                                        style={styles.input}
+                                        keyboardType="phone-pad"
+                                    />
                                 )}
+                            />
+                            {errors.telefono && (
+                                <Text style={styles.errorText}>{errors.telefono.message}</Text>
+                            )}
 
-                                <Button
-                                    mode="contained"
-                                    onPress={() =>
-                                        navigate("/actualizarContrasena")
-                                    }
-                                    style={styles.button}
-                                >
-                                    Actualizar Contraseña
-                                </Button>
+                            <Controller
+                                control={control}
+                                name="email"
+                                rules={{
+                                    required: "El email es obligatorio",
+                                    pattern: {
+                                        value: /\S+@\S+\.\S+/,
+                                        message: "Correo electrónico inválido",
+                                    },
+                                }}
+                                render={({ field: { onChange, onBlur, value } }) => (
+                                    <TextInput
+                                        label="Email"
+                                        mode="outlined"
+                                        onBlur={onBlur}
+                                        onChangeText={onChange}
+                                        value={value}
+                                        style={styles.input}
+                                        autoCapitalize="none"
+                                    />
+                                )}
+                            />
+                            {errors.email && (
+                                <Text style={styles.errorText}>{errors.email.message}</Text>
+                            )}
 
-                                <Button
-                                    mode="contained"
-                                    onPress={handleSubmit(onSubmit)}
-                                    disabled={isSubmitting}
-                                    style={styles.button}
-                                    loading={isSubmitting}
-                                >
-                                    Actualizar
-                                </Button>
-                            </>
-                        ) : (
-                            <Text>Cargando perfil...</Text>
-                        )}
-                    </View>
+                            {/* Botones */}
+                            <Button
+                                mode="contained"
+                                onPress={() => navigate("/actualizarContrasena")}
+                                style={styles.button}
+                            >
+                                Actualizar Contraseña
+                            </Button>
+
+                            <Button
+                                mode="contained"
+                                onPress={handleSubmit(onSubmit)}
+                                disabled={isSubmitting}
+                                style={styles.button}
+                                loading={isSubmitting}
+                            >
+                                Actualizar
+                            </Button>
+                        </>
+                    )}
                 </View>
             </ScrollView>
         </View>
@@ -364,20 +270,5 @@ const styles = StyleSheet.create({
     button: {
         marginTop: 10,
     },
-    pickerContainer: {
-        borderWidth: 1,
-        borderColor: "#78288c",
-        borderRadius: 4,
-        marginBottom: 10,
-    },
-
-    picker: {
-        height: 50,
-        width: "100%",
-        marginBottom: 0,
-    },
-    errorText: {
-        color: "red",
-        marginBottom: 16,
-    },
 });
+

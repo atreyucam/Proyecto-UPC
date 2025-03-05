@@ -22,7 +22,7 @@ export default function ActualizarContrasenaScreen() {
             });
     
             const response = await axios.post(
-                `${API_ENDPOINT}/personas/verificar-contrasena/${authState.user}`,
+                `${API_ENDPOINT}/persona/verificar-contrasena/${authState.user}`,
                 {
                     contrasena: contrasenaActual
                 }
@@ -50,7 +50,7 @@ export default function ActualizarContrasenaScreen() {
 
     try {
         const response = await axios.put(
-            `${API_ENDPOINT}/personas/actualizar-contrasena/${authState.user}`, // <-- Aquí pasamos el ID en la URL
+            `${API_ENDPOINT}/persona/actualizar-contrasena/${authState.user}`, // <-- Aquí pasamos el ID en la URL
             { nuevaContrasena }, // <-- Solo enviamos la nueva contraseña en el body
             { headers: { "Content-Type": "application/json" } }
         );
