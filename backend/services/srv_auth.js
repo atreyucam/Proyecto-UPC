@@ -142,10 +142,10 @@ exports.resetPassword = async ({ email, resetToken, newPassword }) => {
 
 exports.getAuthenticatedUser = async (token) => {
   try {
-    console.log("📢 Token recibido para verificar:", token);
+    // console.log("📢 Token recibido para verificar:", token);
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("✅ Token decodificado:", decoded);
+    // console.log("✅ Token decodificado:", decoded);
 
     const user = await Persona.findByPk(decoded.id_persona, {
       attributes: ["id_persona", "email"],

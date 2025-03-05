@@ -1,5 +1,6 @@
 const admin = require("firebase-admin");
-const { Persona, Rol } = require("../models/db_models");
+const { Persona, Rol, Notificacion } = require("../models/db_models");
+const { Op } = require("sequelize");
 
 // 🔹 Inicializar Firebase Admin SDK
 const serviceAccount = require("../config/firebase/serviceAccountKey.json");
@@ -87,8 +88,60 @@ exports.notificarUsuariosPorRol = async (io, rolDescripcion, titulo, mensaje) =>
 * @param {string} titulo - Título de la notificación
 * @param {string} mensaje - Contenido de la notificación
 */
+// 🔹 Función para enviar notificación a usuarios específicos o a todos
 exports.notificarUsuarios = async (io, userIds, titulo, mensaje) => {
   if (userIds.length > 0) {
-      io.emit("nuevaNotificacion", { userIds, titulo, mensaje });
+    io.to(userIds).emit("nuevaNotificacion", { titulo, mensaje, timestamp: new Date() });
+  } else {
+    io.emit("nuevaNotificacion", { titulo, mensaje, timestamp: new Date() });
+  }
+};
+
+// 🔹 Crear y emitir una notificación
+exports.crearNotificacion = async (io, mensaje) => {
+  try {
+    // Guardar en la base de datos
+    const nuevaNotificacion = await Notificacion.create({ notificacion: mensaje });
+
+    // Emitir la notificación a todos los usuarios conectados
+    io.emit("nuevaNotificacion", {
+      mensaje: nuevaNotificacion.notificacion,
+      timestamp: new Date(),
+    });
+
+    console.log("🔔 Notificación enviada y guardada:", nuevaNotificacion.notificacion);
+    return nuevaNotificacion;
+  } catch (error) {
+    console.error("❌ Error al crear la notificación:", error);
+  }
+};
+
+// 🔹 Obtener todas las notificaciones recientes
+exports.obtenerNotificaciones = async () => {
+  try {
+    const notificaciones = await Notificacion.findAll({
+      order: [["id_notificacion", "DESC"]],
+    });
+    return notificaciones;
+  } catch (error) {
+    console.error("❌ Error al obtener las notificaciones:", error);
+  }
+};
+
+// 🔹 Limpiar notificaciones antiguas (cron job)
+exports.eliminarNotificacionesExpiradas = async () => {
+  try {
+    const fechaLimite = new Date();
+    fechaLimite.setDate(fechaLimite.getDate() - NOTIFICACION_EXPIRACION_DIAS);
+
+    const eliminadas = await Notificacion.destroy({
+      where: {
+        createdAt: { [Op.lt]: fechaLimite },
+      },
+    });
+
+    console.log(`🗑️ Notificaciones antiguas eliminadas: ${eliminadas}`);
+  } catch (error) {
+    console.error("❌ Error eliminando notificaciones expiradas:", error);
   }
 };

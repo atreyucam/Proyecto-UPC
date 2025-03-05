@@ -3,6 +3,7 @@ import axios from "axios";
 import { FiCheckCircle, FiEdit, FiTrash, FiSave, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
+import socket from "../services/socket"; // 📡 Importar socket.io
 const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
 
 
@@ -49,6 +50,19 @@ const ConsultaPolicias = () => {
 
         fetchData();
     }, []);
+     // 📡 Escuchar evento de Socket.IO para actualizar la lista en tiempo real
+  useEffect(() => {
+    socket.on("nuevoPolicia", (nuevoPolicia) => {
+      console.log("👮‍♂️ Nuevo policía recibido por socket:", nuevoPolicia);
+
+      setPolicias((prev) => [...prev, nuevoPolicia]);
+      setFilteredPolicias((prev) => [...prev, nuevoPolicia]);
+    });
+
+    return () => {
+      socket.off("nuevoPolicia"); // Limpiar el evento al desmontar
+    };
+  }, []);
 
     useEffect(() => {
         if (filtros.provincia) {

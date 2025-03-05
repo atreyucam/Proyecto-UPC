@@ -5,6 +5,7 @@ const http = require("http");
 const { sequelize } = require("./config/database");
 const syncDatabase = require("./config/syncDatabase");
 const setupSocket = require("./config/socket"); // Configuración modular de socket.io
+const setupCronJobs = require("./config/cronJobs");
 
 // * Rutas en funcionamiento
 const authRoutes = require("./routes/auth");
@@ -39,6 +40,7 @@ app.use("/estadisticas", estadisticasRoutes);
 app.use("/auth", authRoutes);
 app.use("/persona", personaRoutes);
 app.use("/solicitud", solicitudRoutes);
+setupCronJobs();
 
 // 📌 Iniciar Servidor
 server.listen(port, "0.0.0.0", async () => {
