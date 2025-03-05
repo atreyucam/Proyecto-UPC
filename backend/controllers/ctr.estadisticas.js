@@ -1,4 +1,5 @@
-const estadisticasService = require("./services/srv_estadisticas");
+const estadisticasService = require("../services/srv_estadisticas");
+const { getFechasPorPeriodo } = require("../utils/dateUtils");
 
 // Función para manejar la solicitud de contadores de policías
 exports.getPoliciaCountsController = async (req, res) => {
@@ -114,6 +115,94 @@ exports.getSubtiposPorTipoTablasController = async (req, res) => {
         res.status(200).json(subtipos);
     } catch (error) {
         console.error("Error al obtener los subtipos por tipo:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+};
+
+
+
+
+// nuevos
+// HOME
+// 🔹 Controlador para obtener el resumen de solicitudes
+exports.getSolicitudesResumen = async (req, res) => {
+    try {
+        const resumen = await estadisticasService.getSolicitudesResumen();
+        res.status(200).json(resumen);
+    } catch (error) {
+        console.error("❌ Error en getSolicitudesResumen:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+};
+
+// 🔹 Obtener solicitudes por tipo en un período determinado
+exports.getSolicitudesPorTipo = async (req, res) => {
+    try {
+        const { periodo } = req.query;
+        console.log("📢 Periodo recibido:", periodo);
+        const { fechaInicio, fechaFin } = getFechasPorPeriodo(periodo);
+
+        const solicitudes = await estadisticasService.getSolicitudesPorTipo(fechaInicio, fechaFin);
+
+        // Formatear los datos para devolverlos organizados por mes
+        const resultado = {};
+
+        solicitudes.forEach(({ mes, tipo, total }) => {
+            const nombreMes = obtenerNombreMes(mes);
+            if (!resultado[nombreMes]) resultado[nombreMes] = [];
+
+            resultado[nombreMes].push({
+                tipo,
+                total
+            });
+        });
+
+        res.status(200).json(resultado);
+    } catch (error) {
+        console.error("❌ Error en getSolicitudesPorTipo:", error.message);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+};
+
+// 🔹 Función auxiliar para obtener el nombre del mes
+const obtenerNombreMes = (numeroMes) => {
+    const meses = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+    return meses[numeroMes - 1]; // Restamos 1 porque los meses en PostgreSQL empiezan en 1
+};
+
+
+// 🔹 Obtener solicitudes por estado en un período determinado
+exports.getSolicitudesPorEstado = async (req, res) => {
+    try {
+        const { periodo } = req.query;
+        console.log("📢 Periodo recibido:", periodo);
+        const { fechaInicio, fechaFin } = getFechasPorPeriodo(periodo);
+        console.log("📢 fechas:", fechaInicio, " y ", fechaFin);
+
+        const resultado = await estadisticasService.getSolicitudesPorEstado(fechaInicio, fechaFin);
+        res.status(200).json(resultado);
+    } catch (error) {
+        console.error("❌ Error en getSolicitudesPorEstado:", error.message);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+};
+
+// 🔹 Obtener el Top 10 de solicitudes recientes en un período
+exports.getTop10Solicitudes = async (req, res) => {
+    try {
+        const { periodo } = req.query;
+        console.log("📢 Periodo recibido:", periodo);
+
+        const { fechaInicio, fechaFin } = getFechasPorPeriodo(periodo);
+        console.log("📢 Fechas:", fechaInicio, " - ", fechaFin);
+
+        const resultado = await estadisticasService.getTop10Solicitudes(fechaInicio, fechaFin);
+        res.status(200).json(resultado);
+    } catch (error) {
+        console.error("❌ Error en getTop10Solicitudes:", error.message);
         res.status(500).json({ error: "Error interno del servidor" });
     }
 };

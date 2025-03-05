@@ -28,7 +28,7 @@ const ConsultaCiudadanos = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ciudadanosRes = await axios.get(`${API_URL}/personas/ciudadanos`);
+        const ciudadanosRes = await axios.get(`${API_URL}/persona/ciudadanos`);
         const zonasRes = await axios.get(`${API_URL}/circuitos/zonas`);
 
         setCiudadanos(ciudadanosRes.data.ciudadanos);

@@ -54,7 +54,7 @@ const AuthProvider = ({ children }) => {
 
     const login = async (userData) => {
         try {
-            const response = await axios.post(`${API_ENDPOINT}/upc/login`, userData);
+            const response = await axios.post(`${API_ENDPOINT}/auth/login`, userData);
 
             const decodedToken = parseJwt(response.data.token);
 

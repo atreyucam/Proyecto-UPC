@@ -1,5 +1,5 @@
 
-const { Zona,Subzona, Canton, Distrito,Parroquia, Circuito, Subcircuito } = require('../../models/db_models');
+const { Zona,Subzona, Canton, Distrito,Parroquia, Circuito, Subcircuito } = require('../models/db_models');
 
 // Servicio para obtener todas las zonas con toda la jerarquía
 exports.getZonasConJerarquia = async () => {

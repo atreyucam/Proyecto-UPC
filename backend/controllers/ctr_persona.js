@@ -1,25 +1,4 @@
-const personaService = require('./services/srv_persona');
-
-/**
- * * Controlador para crear una nueva persona.
- * @param {Object} req - Objeto de solicitud HTTP.
- * @param {Object} res - Objeto de respuesta HTTP.
- */
-// * Metodo en funcionamiento
-exports.createPersona = async (req, res) => {
-  try {
-    const persona = await personaService.createPersona(req.body);
-    res.status(201).json(persona);
-  } catch (error) {
-    // Verifica si el error es de unicidad
-    if (error.message === 'La cédula ya está registrada.' || error.message === 'El email ya está registrado.') {
-      return res.status(409).json({ message: error.message });
-    }
-    
-    // Otros errores
-    res.status(500).json({ message: 'Error interno del servidor.' });
-  }
-};
+const personaService = require('../services/srv_persona');
 
 
 /**
@@ -167,6 +146,7 @@ exports.getPoliciasDisponibles = async (req, res) => {
 
 
 
+//* NUEVAS FUNCIONES
 // funciones de prueba
 // Controlador para crear un ciudadano
 exports.createCiudadano = async (req, res) => {

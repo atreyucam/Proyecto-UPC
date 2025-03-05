@@ -13,7 +13,7 @@ const UserProvider = ({ children }) => {
     const registroUsuario = async (userData) => {
         try {
             const response = await axios.post(
-                `${API_ENDPOINT}/personas/nuevoCiudadano`,
+                `${API_ENDPOINT}/persona/nuevoCiudadano`,
                 userData
             );
             setUserState({

@@ -1,4 +1,4 @@
-const subtipoService = require('./services/srv_subtipo');
+const subtipoService = require('../services/srv_subtipo');
 
 //Controlador para crear un nuevo subtipo.
 exports.createSubtipoPorTipo = async (req, res) => {

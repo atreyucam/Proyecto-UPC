@@ -28,7 +28,7 @@ const ConsultaPolicias = () => {
             try {
                 // Llamada a la API para obtener los datos de los policías
                 const policiaRes = await axios.get(
-                    `${API_URL}/personas/policias`
+                    `${API_URL}/persona/policias`
                 );
                 setPolicias(policiaRes.data.policias);
                 setFilteredPolicias(policiaRes.data.policias);
