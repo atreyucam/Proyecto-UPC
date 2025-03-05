@@ -58,16 +58,7 @@ export default function HomeScreenPolicia() {
             </Card.Content>
           </Card>
 
-          <Card
-            style={styles.card}
-            onPress={() => handlePress("informacionPolicias", "/informacionPolicias")}
-          >
-            <Card.Content style={styles.cardContent}>
-              <Title style={styles.cardTitle}>Información</Title>
-              <Image source={require("../../../assets/informacion_home.png")} style={styles.image} resizeMode="contain" />
-              <Paragraph style={styles.cardText}>Ayuda</Paragraph>
-            </Card.Content>
-          </Card>
+         
         </View>
       </View>
     </View>

@@ -65,6 +65,7 @@ const createUserByRole = async (userData, roleName) => {
         apellidos: `${espochData.per_primerApellido} ${espochData.per_segundoApellido}`,
         genero: espochData.gen_nombre,
         telefono: userData.telefono || null, // Solo lo llena si lo envía el usuario
+        fecha_nacimiento: espochData.per_fechaNacimiento,
         email: userData.email,
         password: hashedPassword,
         id_subzona: userData.id_subzona,
