@@ -113,9 +113,9 @@ const DenunciaItemPoliceScreen = () => {
 
     const getEstadoOptionStyles = (estado) => {
         if (estadoCierre === estado) {
-            if (estado === "Resuelto") {
+            if (estado === "resuelto") {
                 return { ...styles.estadoOption, ...styles.buttonResolved };
-            } else if (estado === "Falso") {
+            } else if (estado === "falso") {
                 return { ...styles.estadoOption, ...styles.buttonFalse };
             }
         }
@@ -181,8 +181,8 @@ const DenunciaItemPoliceScreen = () => {
 
                 <View style={styles.seccionContainer}>
                     <Text style={styles.seccionTitulo}>Acciones</Text>
-                    {denuncia.estado === "Resuelto" ||
-                    denuncia.estado === "Falso" ? (
+                    {denuncia.estado === "resuelto" ||
+                    denuncia.estado === "falso" ? (
                         <Button
                             mode="contained"
                             style={[styles.actionButton]}
@@ -190,7 +190,7 @@ const DenunciaItemPoliceScreen = () => {
                         >
                             Agregar Observación
                         </Button>
-                    ) : denuncia.estado === "En progreso" ? (
+                    ) : denuncia.estado === "en progreso" ? (
                         <>
                             <Button
                                 mode="contained"

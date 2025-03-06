@@ -27,7 +27,7 @@ const SolicitudesAsignadasScreen = () => {
                 );
                 const solicitudesEnProgreso =
                     response.data.solicitudes_asignadas.filter(
-                        (solicitud) => solicitud.estado === "En progreso"
+                        (solicitud) => solicitud.estado === "en progreso"
                     );
                 setSolicitudes(solicitudesEnProgreso);
             } catch (error) {
