@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import Home3 from "./pages/Home3";
+import RegistroPolicia from "./pages/RegistroPolicia";
 import AsignarPolicias from "./pages/AsignarPolicias";
 import ConsultaSolicitudes from "./pages/ConsultaSolicitudes";
 import ConsultaPolicias from "./pages/ConsultaPolicias";
@@ -35,7 +35,7 @@ function App() {
         {/* Rutas protegidas */}
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<Home />} />
-          <Route path="/3" element={<Home3 />} />
+          <Route path="/RegistroPolicia" element={<RegistroPolicia />} />
           <Route path="/AsignarPolicias" element={<AsignarPolicias />} />
           <Route path="/ConsultaPolicias" element={<ConsultaPolicias />} />
           <Route path="/policias/:id" element={<DetallePolicia />} />

@@ -255,19 +255,19 @@ exports.getSolicitudById = async (id_solicitud) => {
     }
 };
 
+// * Funcional
 exports.getSolicitudesPendientes = async () => {
     try {
-        // Obtener las solicitudes con estado "Pendiente", con información asociada, ordenadas por fecha de creación descendente
         const solicitudesPendientes = await Solicitud.findAll({
             include: [
                 {
                     model: Persona,
-                    as: "creador",
+                    as: "creador", // 👈 Relación correcta para el creador
                     attributes: ["nombres", "apellidos"],
                 },
                 {
                     model: Persona,
-                    as: "policia",
+                    as: "policia", // 👈 Relación correcta para el policía asignado
                     attributes: ["nombres", "apellidos"],
                 },
                 {
@@ -276,43 +276,34 @@ exports.getSolicitudesPendientes = async () => {
                         {
                             model: TipoSolicitud,
                             attributes: ["descripcion"],
-                            as: "TipoSolicitud", // Asegúrate de usar el alias correcto
                         },
                     ],
                     attributes: ["descripcion"],
-                    as: "Subtipo", // Asegúrate de usar el alias correcto
                 },
                 {
                     model: Estado,
                     attributes: ["descripcion"],
-                    as: "Estado", // Asegúrate de usar el alias correcto
                 },
                 {
                     model: Circuito,
                     attributes: ["nombre_circuito"],
-                    as: "Circuito", // Asegúrate de usar el alias correcto
                     include: [
                         {
                             model: Parroquia,
                             attributes: ["nombre_parroquia"],
-                            as: "Parroquium", // Asegúrate de usar el alias correcto
                             include: [
                                 {
                                     model: Distrito,
                                     attributes: ["nombre_distrito"],
-                                    as: "Distrito", // Asegúrate de usar el alias correcto
                                     include: [
                                         {
                                             model: Canton,
                                             attributes: ["nombre_canton"],
-                                            as: "cantones", // Usar el alias definido en el ORM
+                                            as: "cantones", // 👈 Alias correcto
                                             include: [
                                                 {
                                                     model: Subzona,
-                                                    attributes: [
-                                                        "nombre_subzona",
-                                                    ],
-                                                    as: "Subzona", // Asegúrate de usar el alias correcto
+                                                    attributes: ["nombre_subzona"],
                                                 },
                                             ],
                                         },
@@ -324,47 +315,46 @@ exports.getSolicitudesPendientes = async () => {
                 },
             ],
             where: {
-                "$Estado.descripcion$": "Pendiente", // Filtrar por estado "Pendiente"
+                "$Estado.descripcion$": "pendiente", // Filtrar por estado "Pendiente"
             },
-            order: [["fecha_creacion", "DESC"]], // Ordenar por fecha_creacion descendente
+            order: [["fecha_creacion", "DESC"]],
         });
 
-        // Mapear las solicitudes para estructurar la respuesta
-        const solicitudesEstructuradas = solicitudesPendientes.map(
-            (solicitud) => {
-                const circuito = solicitud.Circuito;
-                const parroquia = circuito?.Parroquium;
-                const distrito = parroquia?.Distrito;
-                const canton = distrito?.cantones?.[0];
-                const subzona = canton?.Subzona;
-
-                return {
-                    id_solicitud: solicitud.id_solicitud,
-                    estado: solicitud.Estado.descripcion,
-                    tipo: solicitud.Subtipo.TipoSolicitud.descripcion, // Agregar tipo de solicitud
-                    subtipo: solicitud.Subtipo.descripcion, // Agregar subtipo
-                    creado_por: `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`,
-                    policia_asignado: solicitud.policia
-                        ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}`
-                        : "No asignado",
-                    puntoGPS: solicitud.puntoGPS,
-                    ubicacion: {
-                        distrito: distrito?.nombre_distrito || "Sin Distrito",
-                        canton: canton?.nombre_canton || "Sin Cantón",
-                        subzona: subzona?.nombre_subzona || "Sin Subzona",
-                    },
-                    fecha_creacion: solicitud.fecha_creacion.toISOString(), // Convertir la fecha a formato ISO 8601
-                };
-            }
-        );
-
-        return solicitudesEstructuradas;
+        // ✅ Mapear los datos con accesos correctos
+        return solicitudesPendientes.map((solicitud) => ({
+            id_solicitud: solicitud.id_solicitud,
+            estado: solicitud.Estado?.descripcion || "Desconocido",
+            tipo: solicitud.Subtipo?.TipoSolicitud?.descripcion || "Desconocido",
+            subtipo: solicitud.Subtipo?.descripcion || "Desconocido",
+            creado_por: solicitud.creador
+                ? `${solicitud.creador.nombres} ${solicitud.creador.apellidos}`
+                : "No registrado",
+            policia_asignado: solicitud.policia
+                ? `${solicitud.policia.nombres} ${solicitud.policia.apellidos}`
+                : "No asignado",
+            puntoGPS: solicitud.puntoGPS || "No disponible",
+            ubicacion: {
+                distrito:
+                    solicitud.Circuito?.Parroquia?.Distrito?.nombre_distrito ||
+                    "Sin Distrito",
+                canton:
+                    solicitud.Circuito?.Parroquia?.Distrito?.cantones?.[0]
+                        ?.nombre_canton || "Sin Cantón",
+                subzona:
+                    solicitud.Circuito?.Parroquia?.Distrito?.cantones?.[0]
+                        ?.Subzona?.nombre_subzona || "Sin Subzona",
+            },
+            fecha_creacion: solicitud.fecha_creacion
+                ? solicitud.fecha_creacion.toISOString()
+                : "Fecha no disponible",
+        }));
     } catch (error) {
         throw new Error(
             "Error al obtener las solicitudes pendientes: " + error.message
         );
     }
 };
+
 
 exports.top10SolicitudesRecientes = async () => {
     try {
@@ -463,7 +453,7 @@ exports.top10SolicitudesRecientes = async () => {
     }
 };
 
-
+// * funcional
 // 🔹 Crear un Botón de Emergencia
 exports.crearBotonEmergencia = async (personaData, io) => {
     const { id_persona, puntoGPS } = personaData;
@@ -524,7 +514,7 @@ exports.crearBotonEmergencia = async (personaData, io) => {
 };
 
 
-
+// * Funcional
 // 🔹 Crear una nueva solicitud (Denuncia Ciudadana o Servicio Comunitario)
 exports.crearSolicitud = async (personaData, io) => {
     const { id_persona, puntoGPS, direccion, id_subtipo, observacion } = personaData;

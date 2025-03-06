@@ -71,6 +71,7 @@ const createUserByRole = async (userData, roleName) => {
         id_subzona: userData.id_subzona,
         id_canton: userData.id_canton,
         id_parroquia: userData.id_parroquia || null,
+        disponibilidad: roleName === "Policia" ? "Disponible" : null, // 🔹 Solo policías inician como "Disponible"
       },
       { transaction }
     );

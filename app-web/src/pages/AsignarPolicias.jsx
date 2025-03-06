@@ -91,7 +91,7 @@ const Home4 = () => {
 
     // Fetch police data (mock or actual API call)
     axios
-      .get(`${API_URL}/personas/policiasDisponibles`)
+      .get(`${API_URL}/persona/policiasDisponibles`)
       .then((response) => setPoliceData(response.data.policias))
       .catch((error) => console.error("Error fetching police data:", error));
 

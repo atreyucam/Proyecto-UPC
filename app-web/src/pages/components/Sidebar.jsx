@@ -59,7 +59,7 @@ const Sidebar = () => {
                         </li>
 
                         <li>
-                            <NavLink to="/3">
+                            <NavLink to="/RegistroPolicia">
                                 {({ isActive }) => (
                                     <Button
                                         className={`flex items-center gap-4 px-4 py-2 capitalize fullWidth ${
@@ -74,7 +74,7 @@ const Sidebar = () => {
                                             color="inherit"
                                             className="font-medium capitalize"
                                         >
-                                            Solicitud
+                                            Registro de usuarios
                                         </Typography>
                                     </Button>
                                 )}
