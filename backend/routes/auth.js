@@ -10,10 +10,10 @@ router.get('/authUser', authController.getAuthenticatedUser);
 
 // nuevas rutas
 
-router.post('/verify-email', authController.verifyEmail);
-router.post("/send-verification", authController.sendVerificationEmail);
-router.post("/verify-otp", authController.verifyOTP);
-router.post('/forgot-password', authController.sendPasswordResetEmail);
+// router.post('/verify-email', authController.verifyEmail);
+// router.post("/send-verification", authController.sendVerificationEmail);
+// router.post("/verify-otp", authController.verifyOTP);
+router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 
 module.exports = router;
