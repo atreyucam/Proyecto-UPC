@@ -51,10 +51,10 @@ const initData = async () => {
     // Insertar Estado
     await sequelize.query(`
       INSERT INTO public."Estado"(descripcion) VALUES
-        ('Pendiente'),
-        ('En progreso'),
-        ('Resuelto'),
-        ('Falso');
+        ('pendiente'),
+        ('en progreso'),
+        ('resuelto'),
+        ('falso');
     `);
 
     // Insertar Roles
@@ -142,8 +142,8 @@ console.log("Subtipos de solicitud insertados correctamente.");
       const hashedPassword = await bcrypt.hash("admin123", 10);
 
       await sequelize.query(`
-        INSERT INTO public."Persona" (cedula, nombres, apellidos, telefono, email, password, genero, id_subzona, id_canton, id_distrito)
-        VALUES ('1801544873', 'Alex Jonathan', 'Camacho Montenegro', '0996126404', 'alex.camacho@gmail.com', :password, 'Masculino', 1, 1, 1);
+        INSERT INTO public."Persona" (cedula, nombres, apellidos, fecha_Nacimiento, telefono, email, password, genero, id_subzona, id_canton, id_distrito)
+        VALUES ('1801544872', 'Alex Jonathan', 'Camacho Montenegro','1998-08-11T05:00:00.000Z', '0996126404', 'alex.camacho@gmail.com', :password, 'MASCULINO', 1, 1, 1);
       `, { replacements: { password: hashedPassword } });
 
       await sequelize.query(`

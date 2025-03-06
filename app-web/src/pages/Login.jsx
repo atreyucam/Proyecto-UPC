@@ -30,11 +30,10 @@ const Home2 = () => {
 
   // UseEffect para manejar la navegación después del login
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      console.log("Redirigiendo al home después de un login exitoso");
-      navigate("/home");
+    if (isAuthenticated) {
+      navigate("/home"); // 🔥 Ya no espera a que cargue, solo redirige si está autenticado
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [isAuthenticated, navigate]);
 
   return (
     <section className="flex justify-center items-center h-screen bg-gray-100 relative">

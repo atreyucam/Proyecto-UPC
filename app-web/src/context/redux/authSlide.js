@@ -1,19 +1,21 @@
-
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { setAuthToken } from "../../utils/setAuthToken";
+
 const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
 
-
 const initialState = {
-  token: null, // No usamos localStorage, mantenemos el token en el estado
-  isAuthenticated: null,
-  loading: true,
-  user: null,
-  expirationTime: null,  // Añadido: para almacenar el tiempo de expiración
+  token: "SIMULATED_TOKEN",  // 🔥 Simula que ya hay un token válido
+  isAuthenticated: true,      // 🔥 Fuerza autenticación
+  loading: false,
+  user: { 
+    id: 1, 
+    email: "alex.camacho@gmail.com", 
+    roles: [2]  // 🔥 Asegurar que el usuario tenga el rol correcto
+  },
+  expirationTime: null,
 };
 
-console.log("s");
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -22,7 +24,8 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.isAuthenticated = true;
       state.loading = false;
-      state.expirationTime = action.payload.expirationTime;  // Añadido
+      state.user = action.payload.user;
+      state.expirationTime = action.payload.expirationTime;
     },
     userLoaded(state, action) {
       state.user = action.payload;
@@ -34,14 +37,14 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.loading = false;
       state.user = null;
-      state.expirationTime = null;  // Añadido
+      state.expirationTime = null;
     },
     logout(state) {
       state.token = null;
       state.isAuthenticated = false;
       state.loading = false;
       state.user = null;
-      state.expirationTime = null;  // Añadido
+      state.expirationTime = null;
     },
   },
 });
@@ -50,49 +53,38 @@ export const { loginSuccess, userLoaded, authError, logout } = authSlice.actions
 
 export default authSlice.reducer;
 
+// 🔹 Esta función de login sigue funcionando si se quiere probar el login real
 export const login = (email, password) => async (dispatch) => {
   const config = {
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
   };
 
   const body = JSON.stringify({ email, password });
 
   try {
-    const res = await axios.post(`${API_URL}/upc/login`, body, config);
-    
+    const res = await axios.post(`${API_URL}/auth/login`, body, config);
 
     if (res.data.user.roles && !res.data.user.roles.includes(2)) {
       window.location.href = "/unauthorized";
       return;
     }
 
-    setAuthToken(res.data.token); 
-    dispatch(loginSuccess({ token: res.data.token, expirationTime: res.data.expiresIn }));
+    setAuthToken(res.data.token);
+    dispatch(loginSuccess({ token: res.data.token, user: res.data.user, expirationTime: res.data.expiresIn }));
     dispatch(loadUser());
   } catch (err) {
-    if (err.response && err.response.status === 404) {
-      alert("Usuario no encontrado. Por favor verifica tu email.");
-    } else if (err.response && err.response.status === 401) {
-      alert("Contraseña incorrecta. Inténtalo de nuevo.");
-    } else {
-      dispatch(authError());
-    }
+    dispatch(authError());
   }
 };
 
 export const loadUser = () => async (dispatch, getState) => {
   const token = getState().auth.token;
-
-  if (token) {
-    setAuthToken(token); 
-  } else {
-    return;
-  }
+  if (!token) return;
 
   try {
-    const res = await axios.get(`${API_URL}/upc/auth`);
+    const res = await axios.get(`${API_URL}/auth/authUser`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     dispatch(userLoaded(res.data));
   } catch (err) {
     dispatch(authError());
@@ -100,6 +92,6 @@ export const loadUser = () => async (dispatch, getState) => {
 };
 
 export const logoutUser = () => (dispatch) => {
-  setAuthToken(null); // Elimina el token de Axios
+  setAuthToken(null);
   dispatch(logout());
 };

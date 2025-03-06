@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { Persona, Rol, PersonaRol } = require('../models/db_models'); // Asegúrate de tener los modelos correctos
 
-const authService = require('./services/srv_auth');
+const authService = require('../services/srv_auth');
 const nodemailer = require("nodemailer");
 
 const verificationCodes = {};
@@ -63,64 +63,78 @@ exports.resetPassword = async (req, res) => {
 };
 
 
+
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    const persona = await Persona.findOne({
-      where: { email },
-      include: {
-        model: Rol,
-        through: PersonaRol,
-        attributes: ['id_rol', 'descripcion']
-      }
-    });
+    const { email, password } = req.body;
+    console.log("📩 Recibiendo solicitud de login:");
+    console.log("Email:", email);
+    console.log("Contraseña ingresada:", password);
 
-    if (!persona) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
-    }
-
-    const validPassword = await bcrypt.compare(password, persona.password);
-
-    if (!validPassword) {
-      return res.status(401).json({ message: 'Contraseña incorrecta' });
-    }
-
-    const roles = persona.Rols.map(rol => rol.id_rol); // Obtener todos los roles del usuario
-
-    // Generar token JWT
-    const expiresIn = 3600; // 1 hora en segundos
-    const token = jwt.sign(
-      { id_persona: persona.id_persona, roles }, 
-      process.env.JWT_SECRET, 
-      { expiresIn }
-    );
-    const expirationTime = Date.now() + expiresIn * 1000; // Tiempo de expiración en milisegundos
-    res.json({
-      token,
-      expiresIn: expirationTime, // Devuelve el tiempo exacto en que expira el token
-      user: {
-        id_persona: persona.id_persona,
-        email: persona.email,
-        roles
-      }
-    });
+    const response = await authService.login(email, password);
+    res.status(200).json(response);
   } catch (error) {
-    console.error('Error en el proceso de login:', error.message, error.stack);
-    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+    res.status(401).json({ message: error.message });
   }
-  
 };
 
 
 
 
+// 🔹 Nuevos métodos
+
+exports.sendVerificationEmail = async (req, res) => {
+  try {
+    const response = await authService.sendVerificationEmail(req.body.email);
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+exports.verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const response = await authService.verifyEmail(email, otp);
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.body;
+    const response = await authService.verifyEmail(token);
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+exports.sendPasswordResetEmail = async (req, res) => {
+  try {
+    const response = await authService.sendPasswordResetEmail(req.body.email);
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+
+
 exports.getAuthenticatedUser = async (req, res) => {
   try {
-    const token = req.header('Authorization').replace('Bearer ', '');
+    const token = req.header("Authorization")?.replace("Bearer ", "");
+    console.log("📢 Token recibido en backend:", token);
+
+    if (!token) throw new Error("No se proporcionó un token");
+
     const user = await authService.getAuthenticatedUser(token);
     res.json(user);
   } catch (error) {
+    console.error("❌ Error en getAuthenticatedUser:", error.message);
     res.status(401).json({ message: error.message });
   }
 };

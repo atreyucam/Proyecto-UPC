@@ -215,6 +215,10 @@ const Persona = sequelize.define('Persona', {
     type: DataTypes.STRING(100),
     allowNull: false
   },
+  fecha_nacimiento:{
+    type: DataTypes.DATEONLY,
+    allowNull: false
+  },
   telefono: {
     type: DataTypes.STRING(10),
     allowNull: false
@@ -227,6 +231,19 @@ const Persona = sequelize.define('Persona', {
       isEmail: true
     }
   },
+  verified:{
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  verificationCode: {
+    type: DataTypes.STRING(6),
+    allowNull: true
+  },
+  verificationExpires: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
   password: {
     type: DataTypes.STRING(100),
     allowNull: false
@@ -236,7 +253,7 @@ const Persona = sequelize.define('Persona', {
     allowNull: true,
   },
   genero: {
-    type: DataTypes.ENUM('Masculino', 'Femenino', 'Otro'),
+    type: DataTypes.ENUM('MASCULINO', 'FEMENINO', 'OTRO'),
     allowNull: true,
   },
   id_subzona:{
@@ -265,10 +282,6 @@ const Persona = sequelize.define('Persona', {
 }, {
   tableName: 'Persona',
   hooks: {
-    beforeCreate: async (persona) => {
-      const salt = await bcrypt.genSalt(10);
-      persona.password = await bcrypt.hash(persona.password, salt);
-    },
     beforeUpdate: async (persona) => {
       if (persona.changed('password') && !persona.password.startsWith("$2a$")) {
         // Solo encripta si la contraseña no está ya encriptada
@@ -587,6 +600,11 @@ const Notificacion = sequelize.define('Notificacion', {
   notificacion: {
     type: DataTypes.STRING(100),
     allowNull: false,
+  },
+  fecha_tiempo_creacion: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW, // Se almacena la fecha y hora actual automáticamente
   },
 }, { tableName: 'Notificacion' });
 

@@ -8,7 +8,7 @@ router.post('/login', authController.login);
 
 // Ruta para obtener el usuario autenticado
 router.get('/auth', authenticateJWT, authController.getAuthenticatedUser);
+
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
-
 module.exports = router;

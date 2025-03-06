@@ -34,4 +34,18 @@ router.get(
     estadisticasController.getSubtiposPorTipoTablasController
 );
 
+
+
+
+
+
+// Nuevos datos.
+// 🔹 Endpoint para obtener el resumen de solicitudes
+router.get("/solicitudes-resumen", estadisticasController.getSolicitudesResumen);
+router.get("/solicitudes-por-tipo", estadisticasController.getSolicitudesPorTipo);
+router.get("/solicitudesPorEstado", estadisticasController.getSolicitudesPorEstado);
+router.get("/top10Solicitudes", estadisticasController.getTop10Solicitudes);
+
+
+
 module.exports = router;

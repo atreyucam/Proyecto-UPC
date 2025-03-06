@@ -17,7 +17,7 @@ const CiudadanoDetail = () => {
       try {
         // Llamada a la API para obtener los detalles del ciudadano
         const response = await axios.get(
-          `${API_URL}/personas/ciudadano/${id}`
+          `${API_URL}/persona/ciudadano/${id}`
         );
         setCiudadano(response.data);
 
@@ -128,28 +128,37 @@ const CiudadanoDetail = () => {
             </tr>
           </thead>
           <tbody>
-            {historial.map((solicitud) => (
-              <tr
-                key={solicitud.id_solicitud}
-                className="text-center cursor-pointer hover:bg-gray-200"
-                onClick={() => handleHistorialClick(solicitud.id_solicitud)}
-              >
-                <td className="border-b p-2">{solicitud.id_solicitud}</td>
-                <td className="border-b p-2">{solicitud.estado}</td>
-                <td className="border-b p-2">{solicitud.subtipo}</td>
-                <td className="border-b p-2">{solicitud.tipo_solicitud}</td>
-                <td className="border-b p-2">{solicitud.fecha_creacion.toLocaleString()}</td>
-                <td className="border-b p-2">{solicitud.puntoGPS}</td>
-                <td className="border-b p-2">
-                  <button
-                    className="bg-green-500 text-white px-2 py-1 rounded"
-                    onClick={() => navigate(`/solicitud/${solicitud.id_solicitud}`, { state: { solicitud } })}
-                  >
-                    <FiEye />
-                  </button>
-                </td>
-              </tr>
-            ))}
+          {historial.length === 0 ? (
+  <tr>
+    <td colSpan="7" className="text-center py-4 text-gray-500">
+      No existen solicitudes registradas.
+    </td>
+  </tr>
+) : (
+  historial.map((solicitud) => (
+    <tr
+      key={solicitud.id_solicitud}
+      className="text-center cursor-pointer hover:bg-gray-200"
+      onClick={() => handleHistorialClick(solicitud.id_solicitud)}
+    >
+      <td className="border-b p-2">{solicitud.id_solicitud}</td>
+      <td className="border-b p-2">{solicitud.estado}</td>
+      <td className="border-b p-2">{solicitud.subtipo}</td>
+      <td className="border-b p-2">{solicitud.tipo_solicitud}</td>
+      <td className="border-b p-2">{solicitud.fecha_creacion.toLocaleString()}</td>
+      <td className="border-b p-2">{solicitud.puntoGPS}</td>
+      <td className="border-b p-2">
+        <button
+          className="bg-green-500 text-white px-2 py-1 rounded"
+          onClick={() => navigate(`/solicitud/${solicitud.id_solicitud}`, { state: { solicitud } })}
+        >
+          <FiEye />
+        </button>
+      </td>
+    </tr>
+  ))
+)}
+
           </tbody>
         </table>
       </div>

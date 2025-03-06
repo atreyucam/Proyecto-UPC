@@ -1,4 +1,4 @@
-const circuitoService = require('./services/srv_circuito');
+const circuitoService = require('../services/srv_circuito');
 
 
 // Controlador para obtener todas las zonas con toda la jerarquía
