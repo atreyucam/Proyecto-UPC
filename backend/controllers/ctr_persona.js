@@ -137,8 +137,8 @@ exports.getPoliciaConSolicitudes = async (req, res) => {
 
 exports.getPoliciasDisponibles = async (req, res) => {
   try {
-    const { countPolicias, policias } = await personaService.getPoliciasDisponibles();
-    res.status(200).json({ countPolicias, policias });
+    const policias  = await personaService.obtenerPoliciasDisponibles();
+    res.status(200).json( policias );
   } catch (error) {
     console.log('entra?');
     res.status(500).json({ error: error.message });

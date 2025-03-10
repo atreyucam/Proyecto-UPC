@@ -36,8 +36,10 @@ exports.login = async (email, password) => {
     where: { email },
     include: {
       model: Rol,
+      as: "roles",
       through: PersonaRol,
       attributes: ["id_rol", "descripcion"],
+      through: {attributes: []},
     },
   });
 
@@ -62,6 +64,8 @@ exports.login = async (email, password) => {
     },
   };
 };
+
+
 // 🔹 Enviar código OTP para verificar el correo
 exports.sendVerificationEmail = async (email) => {
   const user = await Persona.findOne({ where: { email } });
@@ -142,20 +146,33 @@ exports.resetPassword = async ({ email, resetToken, newPassword }) => {
 
 exports.getAuthenticatedUser = async (token) => {
   try {
-    // console.log("📢 Token recibido para verificar:", token);
+    console.log("📢 Token recibido en backend:", token);
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // console.log("✅ Token decodificado:", decoded);
+    const decoded = jwt.decode(token, { complete: true });
+    console.log("🔍 Token decodificado sin verificar:", decoded);
 
-    const user = await Persona.findByPk(decoded.id_persona, {
-      attributes: ["id_persona", "email"],
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("✅ Token verificado:", verified);
+
+    const persona = await Persona.findOne({
+      where: { id_persona: verified.id_persona },
+      include: {
+        model: Rol,
+        as: "roles",
+        through: { attributes: [] },
+        attributes: ["id_rol", "descripcion"],
+      },
     });
 
-    if (!user) throw new Error("Usuario no encontrado");
+    if (!persona) throw new Error("Usuario no encontrado");
 
-    return user;
+    return {
+      id_persona: persona.id_persona,
+      email: persona.email,
+      roles: persona.roles.map((rol) => rol.id_rol),
+    };
   } catch (error) {
-    console.error("❌ Error en getAuthenticatedUser:", error.message);
-    throw new Error("Token inválido");
+    console.error("❌ Token inválido o expirado:", error.message);
+    throw new Error("Token no válido");
   }
 };

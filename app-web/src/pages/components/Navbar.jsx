@@ -16,7 +16,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../../context/redux/authSlide";
+import {  logout } from "../../context/redux/authSlide";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import socket from "../../services/socket";
@@ -117,7 +117,7 @@ export function DashboardNavbar() {
 
     // 🚪 Cerrar sesión
     const handleLogout = () => {
-        reduxDispatch(logoutUser());
+        reduxDispatch(logout());
         navigate("/login");
     };
 

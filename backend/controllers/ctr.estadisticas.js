@@ -2,15 +2,19 @@ const estadisticasService = require("../services/srv_estadisticas");
 const { getFechasPorPeriodo } = require("../utils/dateUtils");
 
 // Función para manejar la solicitud de contadores de policías
+const { getPoliciaCounts } = require("../services/srv_estadisticas");
+
 exports.getPoliciaCountsController = async (req, res) => {
     try {
-        const counts = await estadisticasService.getPoliciaCounts();
+        const counts = await getPoliciaCounts(req); // ✅ Pasar req en lugar de io
         res.status(200).json(counts);
     } catch (error) {
-        console.error("Error al obtener los contadores de policías:", error);
+        console.error("Error al obtener los contadores de policías:", error.message);
         res.status(500).json({ error: "Error interno del servidor" });
     }
 };
+
+
 
 // Función para manejar la solicitud de cantidad de solicitudes por tipo del mes actual
 exports.getContadorSolicitudesTotal = async (req, res) => {

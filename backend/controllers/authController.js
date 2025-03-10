@@ -5,42 +5,46 @@ const { Persona, Rol, PersonaRol } = require('../models/db_models'); // Asegúra
 
 const authService = require('./services/srv_auth');
 
+
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const persona = await Persona.findOne({
       where: { email },
-      include: {
-        model: Rol,
-        through: PersonaRol,
-        attributes: ['id_rol', 'descripcion']
-      }
+      include: [
+        {
+          model: Rol,
+          as: "roles", // ✅ Asegurar que coincide con la relación en el modelo
+          attributes: ["id_rol", "descripcion"],
+          through: { attributes: [] }, // ✅ No traer la tabla intermedia
+        }
+      ]
     });
 
     if (!persona) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
+      return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
     const validPassword = await bcrypt.compare(password, persona.password);
-
     if (!validPassword) {
-      return res.status(401).json({ message: 'Contraseña incorrecta' });
+      return res.status(401).json({ message: "Contraseña incorrecta" });
     }
 
-    const roles = persona.Rols.map(rol => rol.id_rol); // Obtener todos los roles del usuario
+    // ✅ Si no tiene roles asignados, aseguramos que siempre es un array vacío
+    const roles = persona.roles ? persona.roles.map(rol => rol.id_rol) : [];
 
-    // Generar token JWT
+    // ✅ Generar token JWT
     const expiresIn = 3600; // 1 hora en segundos
     const token = jwt.sign(
       { id_persona: persona.id_persona, roles }, 
       process.env.JWT_SECRET, 
       { expiresIn }
     );
-    const expirationTime = Date.now() + expiresIn * 1000; // Tiempo de expiración en milisegundos
+
     res.json({
       token,
-      expiresIn: expirationTime, // Devuelve el tiempo exacto en que expira el token
+      expiresIn, 
       user: {
         id_persona: persona.id_persona,
         email: persona.email,
@@ -48,12 +52,10 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error en el proceso de login:', error.message, error.stack);
-    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+    console.error("Error en el proceso de login:", error.message);
+    res.status(500).json({ message: "Error en el servidor", error: error.message });
   }
-  
 };
-
 
 
 
@@ -71,6 +73,10 @@ exports.getAuthenticatedUser = async (req, res) => {
     res.status(401).json({ message: error.message });
   }
 };
+
+
+
+
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;

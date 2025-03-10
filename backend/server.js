@@ -1,4 +1,6 @@
+
 require("dotenv").config();
+
 const cors = require("cors");
 const express = require("express");
 const http = require("http");
@@ -18,7 +20,7 @@ const estadisticasRoutes = require("./routes/estadisticas");
 const app = express();
 const server = http.createServer(app);
 const io = setupSocket(server); // Configurar socket.io de manera modular
-
+app.set("socketio", io);
 const port = process.env.PORT || 3000;
 
 app.use(cors({ origin: "*" })); // Reemplazar "*" por dominios permitidos en producción
@@ -38,9 +40,16 @@ app.use("/circuitos", circuitoRoutes);
 app.use("/subtipos", subtipoRoutes);
 app.use("/estadisticas", estadisticasRoutes);
 app.use("/auth", authRoutes);
-app.use("/persona", personaRoutes);
 app.use("/solicitud", solicitudRoutes);
+app.use("/persona", personaRoutes);
 setupCronJobs();
+// Verifica qué rutas están registradas en Express
+app._router.stack.forEach((r) => {
+  if (r.route && r.route.path) {
+      console.log(`🔹 Ruta registrada: ${r.route.path}`);
+  }
+});
+
 
 // 📌 Iniciar Servidor
 server.listen(port, "0.0.0.0", async () => {

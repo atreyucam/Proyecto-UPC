@@ -89,27 +89,45 @@ exports.resetPassword = async (email, code, newPassword) => {
  */
 exports.getAuthenticatedUser = async (token) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("📢 Token recibido:", token);
+    console.log("🔑 Usando JWT_SECRET:", process.env.JWT_SECRET);
 
+    // 🔎 Verificar el token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("✅ Token verificado:", decoded);
+    } catch (error) {
+      console.error("❌ Error en la verificación del token:", error.message);
+      throw new Error("Token inválido o expirado");
+    }
+
+    // 🔎 Buscar al usuario en la base de datos
     const persona = await Persona.findOne({
       where: { id_persona: decoded.id_persona },
       include: {
         model: Rol,
-        through: PersonaRol,
-        attributes: ['id_rol', 'descripcion']
+        as: "roles", // Asegúrate de que coincida con el alias en la relación
+        through: { attributes: [] }, // No incluir la tabla intermedia
+        attributes: ["id_rol", "descripcion"]
       }
     });
 
     if (!persona) {
-      throw new Error('Usuario no encontrado');
+      throw new Error("Usuario no encontrado");
     }
+
+    // 🔎 Obtener roles correctamente
+    const roles = persona.roles.map((rol) => rol.id_rol);
+    console.log("📌 Roles del usuario:", roles);
 
     return {
       id_persona: persona.id_persona,
       email: persona.email,
-      roles: persona.Rols.map((rol) => rol.id_rol),
+      roles,
     };
   } catch (error) {
-    throw new Error('Token no válido');
+    console.error("❌ Error en getAuthenticatedUser:", error.message);
+    throw new Error("Token no válido");
   }
 };

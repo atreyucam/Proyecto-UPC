@@ -78,7 +78,12 @@ const createUserByRole = async (userData, roleName) => {
 
     // 🔎 Obtener rol y asociarlo al usuario
     const rol = await Rol.findOne({ where: { descripcion: roleName }, transaction });
-    await newUser.addRol(rol, { transaction });
+
+    if (!rol) throw new Error(`Rol '${roleName}' no encontrado`);
+    
+    // 🔹 Asegurar que la relación de muchos a muchos se usa correctamente
+    await newUser.addRoles([rol], { transaction });
+    
 
     await transaction.commit();
 
@@ -127,8 +132,9 @@ exports.getCiudadanos = async () => {
       include: [
         {
           model: Rol,
+          as: "roles", // ✅ Usar alias si está definido en la relación
           where: { descripcion: "Ciudadano" },
-          attributes: [], // Excluye los atributos de Rol de la respuesta final
+          attributes: [], // No traer datos de Rol
         },
         {
           model: Canton,
@@ -145,43 +151,43 @@ exports.getCiudadanos = async () => {
               ],
             },
             {
-              model: Distrito, // Añadir distrito directamente en la relación con Canton
-              as: "distritos", // Usar alias definido
+              model: Distrito,
+              as: "distritos", // ✅ Usar alias definido en la relación muchos a muchos
               attributes: ["nombre_distrito"],
-              through: { attributes: [] }, // Para relación muchos a muchos
+              through: { attributes: [] }, // No incluir la tabla intermedia
             },
           ],
         },
         {
-          model: Parroquia, // Relaciona Parroquia directamente con Persona
+          model: Parroquia,
+          // ✅ Alias consistente con la relación en el modelo
           attributes: ["nombre_parroquia"],
           include: [
             {
-              model: Distrito, // Añadir Distrito dentro de Parroquia
+              model: Distrito,
+              as: "Distrito", // ✅ Usar alias si la relación lo usa
               attributes: ["nombre_distrito"],
             },
           ],
-          required: false, // Permitir que Parroquia sea opcional en la consulta
+          required: false, // Permitir que sea opcional
         },
       ],
     });
 
-    // Log para depurar
-    console.log(
-      "Datos de ciudadanos obtenidos:",
-      JSON.stringify(ciudadanos, null, 2)
-    );
+    // Log para depuración
+    console.log("Datos de ciudadanos obtenidos:", JSON.stringify(ciudadanos, null, 2));
 
     const countCiudadanos = await Persona.count({
       include: [
         {
           model: Rol,
+          as: "roles", // ✅ Usar alias
           where: { descripcion: "Ciudadano" },
         },
       ],
     });
 
-    // Mapeo para devolver solo los campos solicitados
+    // Mapeo final asegurando que los alias sean correctos
     const formattedCiudadanos = ciudadanos.map((ciudadano) => ({
       id_persona: ciudadano.id_persona,
       cedula: ciudadano.cedula,
@@ -189,23 +195,23 @@ exports.getCiudadanos = async () => {
       apellidos: ciudadano.apellidos,
       telefono: ciudadano.telefono,
       nombre_canton: ciudadano.Canton?.nombre_canton || "Sin Cantón",
-      nombre_subzona:
-        ciudadano.Canton?.Subzona?.nombre_subzona || "Sin Subzona",
+      nombre_subzona: ciudadano.Canton?.Subzona?.nombre_subzona || "Sin Subzona",
       nombre_zona: ciudadano.Canton?.Subzona?.Zona?.nombre_zona || "Sin Zona",
       nombre_distrito:
-        ciudadano.Parroquium?.Distrito?.nombre_distrito ||
-        ciudadano.Canton?.distritos?.[0]?.nombre_distrito ||
-        "Sin Distrito", // Usa Parroquium si existe, de lo contrario usa Canton
-      nombre_parroquia:
-        ciudadano.Parroquium?.nombre_parroquia || "Sin Parroquia", // Uso correcto de Parroquium
+        ciudadano.Parroquia?.Distrito?.nombre_distrito || // ✅ Corregido a Parroquia en lugar de Parroquium
+        ciudadano.Canton?.distritos?.[0]?.nombre_distrito || "Sin Distrito",
+      nombre_parroquia: ciudadano.Parroquia?.nombre_parroquia || "Sin Parroquia",
     }));
 
     return { countCiudadanos, ciudadanos: formattedCiudadanos };
   } catch (error) {
-    console.error("Error al obtener ciudadanos:", error);
+    console.error("❌ Error al obtener ciudadanos:", error);
     throw new Error("Error al obtener ciudadanos");
   }
 };
+
+
+
 
 // * Funcion que permite traer a todos los Policias Creados.
 exports.getPolicias = async () => {
@@ -222,6 +228,7 @@ exports.getPolicias = async () => {
       include: [
         {
           model: Rol,
+          as: "roles",
           where: { descripcion: "Policia" },
           attributes: [], // Excluye los atributos de Rol de la respuesta final
         },
@@ -265,6 +272,7 @@ exports.getPolicias = async () => {
       include: [
         {
           model: Rol,
+          as: "roles",
           where: { descripcion: "Policia" },
         },
       ],
@@ -321,22 +329,33 @@ exports.getPersonaById = async (id) => {
       include: [
         {
           model: Rol,
-          through: { attributes: [] }, // Elimina los atributos de la tabla intermedia PersonaRol
+          as: "roles", // ✅ Usa el alias correcto para la relación con Rol
+          through: { attributes: [] },
+          attributes: ["id_rol", "descripcion"] // Ahora sí devuelve los atributos necesarios
         },
         {
-          model: Circuito, // Incluye la relación directa con Circuito
+          model: Circuito,
+          as: "circuitos", // ✅ Usa el alias correcto para Circuito
+          attributes: ["id_circuito", "nombre_circuito"], // Asegura que traes solo lo necesario
+          through: { attributes: [] }, // ✅ No incluir la tabla intermedia
         },
       ],
     });
+
+    if (!persona) {
+      throw new Error(`Persona con ID ${id} no encontrada`);
+    }
+
     return persona;
   } catch (error) {
     console.error(
-      "Error al obtener la persona por ID con sus roles y circuitos:",
-      error
+      "❌ Error al obtener la persona por ID con sus roles y circuitos:",
+      error.message
     );
-    throw error; // Re-lanzamos el error para que pueda ser manejado por el controlador
+    throw new Error("Error al obtener la persona con sus relaciones.");
   }
 };
+
 
 // * Actualizar persona
 // * El metodo permite actualizar los datos de un usuario registrado por id.
@@ -693,6 +712,65 @@ exports.getPoliciaConSolicitudes = async (id_persona) => {
 
 
 
+exports.obtenerPoliciasDisponibles = async () => {
+  try {
+      const policias = await Persona.findAll({
+          where: {
+              solicitudes_activas: { [Op.lt]: 10 } // Menos de 10 solicitudes activas
+          },
+          include: [
+              {
+                  model: Rol,
+                  as: "roles", // ✅ Usa el alias correcto definido en el ORM
+                  where: { descripcion: "Policia" },
+                  attributes: ["descripcion"],
+                  through: { attributes: [] } // Excluye la tabla intermedia
+              },
+              {
+                  model: Canton,
+                  as: "Canton", // ✅ Usa el alias correcto definido en el ORM
+                  attributes: ["nombre_canton"],
+                  include: [
+                      {
+                          model: Subzona,
+                          as: "Subzona", // ✅ Usa el alias correcto definido en el ORM
+                          attributes: ["nombre_subzona"]
+                      }
+                  ]
+              },
+              {
+                  model: Distrito,
+                  as: "Distrito", // ✅ Alias corregido (antes intentamos con distritos)
+                  attributes: ["nombre_distrito"]
+              }
+          ],
+          attributes: ["id_persona", "nombres", "apellidos", "telefono", "solicitudes_activas"]
+      });
+
+      return policias.map(policia => ({
+          id_persona: policia.id_persona,
+          nombres: policia.nombres,
+          apellidos: policia.apellidos,
+          telefono: policia.telefono,
+          solicitudes_activas: `${policia.solicitudes_activas}/10`, // ✅ Formato `4/10`
+          roles: policia.roles.map(rol => rol.descripcion),
+          ubicacion: policia.Distrito || policia.Canton || policia.Canton?.Subzona
+    ? {
+        distrito: policia.Distrito?.nombre_distrito ?? "Sin Distrito",
+        canton: policia.Canton?.nombre_canton ?? "Sin Cantón",
+        subzona: policia.Canton?.Subzona?.nombre_subzona ?? "Sin Subzona"
+    }
+    : { distrito: "Sin Distrito", canton: "Sin Cantón", subzona: "Sin Subzona" }
+
+      }));
+  } catch (error) {
+      throw new Error("Error al obtener policías disponibles: " + error.message);
+  }
+};
+
+
+
+
 
 exports.getPoliciasDisponibles = async () => {
   try {
@@ -701,6 +779,7 @@ exports.getPoliciasDisponibles = async () => {
           include: [
               {
                   model: Rol,
+                  as: "roles",
                   where: { descripcion: "Policia" },
                   attributes: [] // Excluye los atributos de Rol de la respuesta final
               },

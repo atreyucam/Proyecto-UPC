@@ -51,7 +51,7 @@ const authSlice = createSlice({
 
 export const { loginSuccess, userLoaded, authError, logout } = authSlice.actions;
 
-export default authSlice.reducer;
+
 
 // 🔹 Esta función de login sigue funcionando si se quiere probar el login real
 export const login = (email, password) => async (dispatch) => {
@@ -69,29 +69,46 @@ export const login = (email, password) => async (dispatch) => {
       return;
     }
 
+    // ✅ Guardar `expiresIn` correctamente
+    const expirationTimestamp = Date.now() + res.data.expiresIn * 1000; // Convertir segundos a milisegundos
+
     setAuthToken(res.data.token);
-    dispatch(loginSuccess({ token: res.data.token, user: res.data.user, expirationTime: res.data.expiresIn }));
+    dispatch(loginSuccess({ 
+      token: res.data.token, 
+      user: res.data.user, 
+      expirationTime: expirationTimestamp // ✅ Guardar la fecha exacta de expiración
+    }));
+
     dispatch(loadUser());
   } catch (err) {
     dispatch(authError());
   }
 };
 
+
+
+
 export const loadUser = () => async (dispatch, getState) => {
   const token = getState().auth.token;
-  if (!token) return;
+
+  if (!token) {
+    console.warn("⚠️ No hay token disponible.");
+    return;
+  }
+
+  console.log("🔹 Cargando usuario con token:", token);
 
   try {
     const res = await axios.get(`${API_URL}/auth/authUser`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+
+    console.log("✅ Usuario cargado:", res.data);
     dispatch(userLoaded(res.data));
   } catch (err) {
+    console.error("❌ Error al cargar usuario:", err.response?.data || err.message);
     dispatch(authError());
   }
 };
 
-export const logoutUser = () => (dispatch) => {
-  setAuthToken(null);
-  dispatch(logout());
-};
+export default authSlice.reducer;

@@ -18,6 +18,18 @@ exports.getSolicitudes = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+exports.obtenerPoliciasDisponibles = async (req, res) => {
+  try {
+      console.log("📢 GET /policiasDisponibles recibido en el backend");
+      const policias = await solicitudService.obtenerPoliciasDisponibles();
+      console.log("✅ Policías encontrados:", policias.length);
+      res.status(200).json(policias);
+  } catch (error) {
+      console.error("❌ Error en obtenerPoliciasDisponibles:", error.message);
+      res.status(500).json({ error: error.message });
+  }
+};
+
 
 exports.asignarPolicia = async (req, res) => {
   try {
@@ -53,6 +65,8 @@ exports.cerrarSolicitud = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
 
 exports.agregarObservacion = async (req, res) => {
   try {

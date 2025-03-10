@@ -72,6 +72,17 @@ const Home4 = () => {
       }
     }, []);
 
+    const fetchPoliceData = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/persona/policiasDisponibles`);
+        console.log("Policías recibidos:", response.data); 
+        setPoliceData(response.data);
+      } catch (error) {
+        console.error("Error fetching police data:", error);
+      }
+    };
+    
+
   useEffect(() => {
     // Fetch police stats
     axios
@@ -91,11 +102,13 @@ const Home4 = () => {
 
     // Fetch police data (mock or actual API call)
     axios
-      .get(`${API_URL}/persona/policiasDisponibles`)
-      .then((response) => setPoliceData(response.data.policias))
-      .catch((error) => console.error("Error fetching police data:", error));
+    .get(`${API_URL}/persona/policiasDisponibles`)
+    .then((response) => setPoliceData(response.data)) // ✅ Ajuste aquí: No hay "policias" en la respuesta
+    .catch((error) => console.error("Error fetching police data:", error));
+  
 
       fetchSolicitudesPendientes();
+      fetchPoliceData();
 
        // Escuchar eventos de Socket.IO
     socket.on("nuevaSolicitud", (nuevaSolicitud) => {
@@ -108,9 +121,21 @@ const Home4 = () => {
     socket.on("solicitudCerrada", (data) => {
       eliminarSolicitudPendiente(data.id_solicitud);
     });
+      // ✅ Escuchar evento cuando un policía es asignado o su estado cambia
+  socket.on("actualizarPolicias", () => {
+    fetchPoliceData(); // 🔹 Refrescar lista de policías disponibles
+  });
+
+  socket.on("actualizarContadoresPolicias", (nuevosContadores) => {
+    setPoliceStats(nuevosContadores); // 🔹 Actualiza los contadores en el estado
+});
+    
 
     return () => {
       socket.off("nuevaSolicitud");
+      socket.off("solicitudCerrada");
+      socket.off("actualizarPolicias");
+      socket.off("actualizarContadoresPolicias");
     };
 
   }, [fetchSolicitudesPendientes]);
@@ -141,7 +166,6 @@ const Home4 = () => {
     setSelectedReport(solicitud);
     setIsAssignModalOpen(true);
   };
-
   const handleConfirmAssign = async () => {
     if (selectedPolice && selectedReport && user) {
       try {
@@ -149,23 +173,11 @@ const Home4 = () => {
         await axios.post(`${API_URL}/solicitud/asignarPolicia`, {
           id_solicitud: selectedReport.id_solicitud,
           id_persona_asignador: user.id_persona,
-          id_persona_policia: selectedPolice.id_persona,
+          id_persona_policia: selectedPolice?.id_persona,
         });
 
-        // Actualizar el estado del policía y eliminar el policía ocupado de la lista
-        setPoliceData((prevData) => {
-          // Actualizar la disponibilidad del policía seleccionado
-          const updatedPoliceData = prevData.map((police) =>
-            police.id_persona === selectedPolice.id_persona
-              ? { ...police, disponibilidad: "Ocupado" }
-              : police
-          );
-
-          // Filtrar los policías ocupados de la lista
-          return updatedPoliceData.filter(
-            (police) => police.disponibilidad !== "Ocupado"
-          );
-        });
+        // ✅ Actualizar policías disponibles tras asignación
+        await fetchPoliceData();
 
         // Eliminar la solicitud asignada de la lista de solicitudes pendientes
         setSolicitudesPendientes((prevRequests) =>
@@ -178,7 +190,7 @@ const Home4 = () => {
 
         setTimeout(() => {
           setNotification("");
-        }, 3000); // Hide notification after 3 seconds
+        }, 3000);
 
         setIsAssignModalOpen(false);
         setSelectedPolice(null);
@@ -191,7 +203,7 @@ const Home4 = () => {
         }, 3000);
       }
     }
-  };
+};
 
   const handleCancelAssign = () => {
     setIsAssignModalOpen(false);
@@ -367,52 +379,61 @@ const Home4 = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {policeData.length > 0 ? (
-                    policeData.map((police) => (
-                      <tr key={police.id_persona} className="text-center">
-                        <td className="border-b p-2">{police.id_persona}</td>
-                        <td className="border-b p-2">{police.nombres}</td>
-                        <td className="border-b p-2">{police.apellidos}</td>
-                        <td className="border-b p-2">{police.telefono}</td>
-                        <td className="border-b p-2">
-                          {police.nombre_distrito}
-                        </td>
-                        <td className="border-b p-2">
-                          {police.nombre_canton}
-                        </td>
-                        <td className="border-b p-2">
-                          {police.nombre_subzona}
-                        </td>
-                        <td className="border-b p-2">
-                          <EstadoBadge
-                            estado={police.disponibilidad}
-                            tipo="disponibilidad"
-                          />
-                        </td>
-                        <td className="border-b p-2">
-                          <button
-                            className={`px-3 py-1 rounded ${
-                              selectedPolice?.id_persona === police.id_persona
-                                ? "bg-blue-500 text-white"
-                                : "bg-gray-300"
-                            }`}
-                            onClick={() => handleSelectPolice(police)}
-                          >
-                            {selectedPolice?.id_persona === police.id_persona
-                              ? "Seleccionado"
-                              : "Seleccionar"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="9" className="text-center p-4 text-gray-500">
-                        No hay policías disponibles
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
+  {policeData.length > 0 ? (
+    policeData.map((police) => (
+      <tr key={police.id_persona} className="text-center">
+        <td className="border-b p-2">{police.id_persona}</td>
+        <td className="border-b p-2">{police.nombres}</td>
+        <td className="border-b p-2">{police.apellidos}</td>
+        <td className="border-b p-2">{police.telefono}</td>
+        <td className="border-b p-2">{police.ubicacion?.distrito ?? "Sin Distrito"}</td>
+<td className="border-b p-2">{police.ubicacion?.canton ?? "Sin Cantón"}</td>
+<td className="border-b p-2">{police.ubicacion?.subzona ?? "Sin Subzona"}</td>
+   {/* ✅ Mostrar Subzona */}
+        <td className="border-b p-2 flex items-center justify-center gap-2">
+  <span className="font-bold">{police.solicitudes_activas}</span>
+  <span
+    className={`px-2 py-1 rounded-full text-white text-sm font-bold ${
+      parseInt(police.solicitudes_activas) < 10 ? "bg-green-500" : "bg-red-500"
+    }`}
+  >
+    {parseInt(police.solicitudes_activas) < 10 ? "Disponible" : "Ocupado"}
+  </span>
+</td>
+
+<td className="border-b p-2">
+  <button
+    className={`px-3 py-1 rounded ${
+      parseInt(police.solicitudes_activas) >= 10
+        ? "bg-gray-400 text-white cursor-not-allowed"
+        : selectedPolice?.id_persona === police.id_persona
+        ? "bg-blue-500 text-white"
+        : "bg-gray-300"
+    }`}
+    onClick={() =>
+      parseInt(police.solicitudes_activas) < 10 && handleSelectPolice(police)
+    }
+    disabled={parseInt(police.solicitudes_activas) >= 10}
+  >
+    {parseInt(police.solicitudes_activas) >= 10
+      ? "No Disponible"
+      : selectedPolice?.id_persona === police.id_persona
+      ? "Seleccionado"
+      : "Seleccionar"}
+  </button>
+</td>
+
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="9" className="text-center p-4 text-gray-500">
+        No hay policías disponibles
+      </td>
+    </tr>
+  )}
+</tbody>
+
               </table>
             </div>
             <div className="flex justify-end mt-4">

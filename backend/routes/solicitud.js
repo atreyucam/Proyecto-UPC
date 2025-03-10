@@ -1,26 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const solicitudController = require('../controllers/ctr_solicitud');
-const authenticateJWT = require('../middleware/authMiddleware');
 
-
-
-router.get('/', solicitudController.getSolicitudes);
-
+// 🔹 Rutas más específicas primero
+router.get('/policiasDisponibles', solicitudController.obtenerPoliciasDisponibles);
 router.get('/solicitudesPendientes', solicitudController.getSolicitudesPendientes);
 router.get('/top10solicitudes', solicitudController.top10SolicitudesRecientes);
+router.get('/', solicitudController.getSolicitudes);
 
-
-
-// rutas
-// Acciones de solicitudes
+// 🔹 Acciones de solicitudes
 router.post('/nuevoBotonEmergencia', solicitudController.crearBotonEmergencia);
 router.post('/nuevaSolicitud', solicitudController.crearSolicitud);
-router.get('/:id', solicitudController.getSolicitudById);
 
-// Acciones de policias en solicitudes
-router.post('/asignarPolicia',solicitudController.asignarPolicia);
+// 🔹 Acciones de policías en solicitudes
+router.post('/asignarPolicia', solicitudController.asignarPolicia);
 router.post('/cerrarSolicitud', solicitudController.cerrarSolicitud);
 router.post('/agregarObservacion', solicitudController.agregarObservacion);
+
+// 🔹 📌 Esta ruta debe estar AL FINAL para evitar conflictos con otras rutas GET
+router.get('/:id', solicitudController.getSolicitudById);
 
 module.exports = router;

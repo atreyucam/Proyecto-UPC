@@ -4,53 +4,64 @@ const { Persona, Rol, PersonaRol, Circuito,sequelize,Solicitud,Estado,
 
 // Datos para estadisticas
 // **Función para obtener contadores de policías funciona
-exports.getPoliciaCounts = async () => {
+exports.getPoliciaCounts = async (req) => {
     try {
-        // Obtener la cantidad total de policías
+        // ✅ Obtener io desde req.app
+        const io = req.app.get("socketio");
+
+        if (!io) {
+            console.error("❌ Error: io no está definido en req.app");
+            return { total: 0, disponibles: 0, ocupados: 0 };
+        }
+
         const totalPolicias = await Persona.count({
             include: [
                 {
                     model: Rol,
+                    as: "roles",
                     through: { attributes: [] },
-                    where: { id_rol: 3 },
+                    where: { descripcion: "Policia" },
                 },
             ],
         });
 
-        // Obtener la cantidad de policías disponibles
         const disponibles = await Persona.count({
             include: [
                 {
                     model: Rol,
+                    as: "roles",
                     through: { attributes: [] },
-                    where: { id_rol: 3 },
+                    where: { descripcion: "Policia" },
                 },
             ],
-            where: { disponibilidad: "Disponible" },
+            where: { solicitudes_activas: { [Op.lt]: 10 } },
         });
 
-        // Obtener la cantidad de policías ocupados
         const ocupados = await Persona.count({
             include: [
                 {
                     model: Rol,
+                    as: "roles",
                     through: { attributes: [] },
-                    where: { id_rol: 3 },
+                    where: { descripcion: "Policia" },
                 },
             ],
-            where: { disponibilidad: "Ocupado" },
+            where: { solicitudes_activas: { [Op.gte]: 10 } },
         });
 
-        return {
-            total: totalPolicias,
-            disponibles: disponibles,
-            ocupados: ocupados,
-        };
+        const conteoActualizado = { total: totalPolicias, disponibles, ocupados };
+
+        // 🔹 Emitimos la actualización de los contadores a todos los clientes
+        io.emit("actualizarContadoresPolicias", conteoActualizado);
+
+        return conteoActualizado;
     } catch (error) {
         console.error("Error en getPoliciaCounts:", error.message);
         throw new Error("Error al obtener los contadores de policías");
     }
 };
+
+
 
 const mesesInglesToEspanol = {
     January: "Enero",

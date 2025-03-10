@@ -48,6 +48,7 @@ exports.notificarUsuariosPorRol = async (io, rolDescripcion, titulo, mensaje) =>
       include: [
         {
           model: Rol,
+          as: "roles",
           where: { descripcion: rolDescripcion },
           through: { attributes: [] },
         },

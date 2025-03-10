@@ -248,10 +248,16 @@ const Persona = sequelize.define('Persona', {
     type: DataTypes.STRING(100),
     allowNull: false
   },
-  disponibilidad: {
-    type: DataTypes.ENUM('Disponible', 'Ocupado'),
-    allowNull: true,
-  },
+  solicitudes_activas: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,  // Un policía inicia con 0 solicitudes
+},
+disponibilidad: {
+  type: DataTypes.STRING(20),
+  allowNull: true,
+  defaultValue: "Disponible"
+},
   genero: {
     type: DataTypes.ENUM('MASCULINO', 'FEMENINO', 'OTRO'),
     allowNull: true,
@@ -739,8 +745,9 @@ Persona.belongsTo(Canton, { foreignKey: 'id_canton' });
 
 
 // Persona -> Roles (Many-to-Many)
-Persona.belongsToMany(Rol, { through: PersonaRol, foreignKey: 'id_persona' });
-Rol.belongsToMany(Persona, { through: PersonaRol, foreignKey: 'id_rol' });
+Persona.belongsToMany(Rol, { through: PersonaRol, foreignKey: 'id_persona', as: 'roles' });
+Rol.belongsToMany(Persona, { through: PersonaRol, foreignKey: 'id_rol', as: 'personas' });
+
 
 // Persona -> Circuito (Many-to-Many)
 Persona.belongsToMany(Circuito, { through: PersonaCircuito, foreignKey: 'id_persona', as: 'circuitos' });
