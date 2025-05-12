@@ -16,6 +16,12 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { loadUser } from "./context/redux/authSlide";
 
+import ResumenGeneral from "./pages/reportes/ResumenGeneral";
+import DesempenoPolicial from "./pages/reportes/DesempenoPolicial";
+import TiposEmergencias from "./pages/reportes/TiposEmergencias";
+import UbicacionGeografica from "./pages/reportes/UbicacionGeografica";
+import Administrativos from "./pages/reportes/Administrativos";
+
 function App() {
   const dispatch = useDispatch();
 
@@ -47,7 +53,13 @@ function App() {
             element={<ConsultaSolicitudes />}
           />
           <Route path="/solicitudes/:id" element={<DetalleSolicitud />} />
-          <Route path="/reporte" element={<Reporte />} />
+          <Route path="reporte" element={<Reporte />}>
+                    <Route path="resumen" element={<ResumenGeneral />} />
+                    <Route path="desempeno" element={<DesempenoPolicial />} />
+                    <Route path="tipos" element={<TiposEmergencias />} />
+                    <Route path="ubicacion" element={<UbicacionGeografica />} />
+                    <Route path="administrativos" element={<Administrativos />} />
+                </Route>
         </Route>
       </Routes>
     </BrowserRouter>

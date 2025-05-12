@@ -8,7 +8,6 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "start:prod": "cross-env API_ENDPOINT=https://backend-upc.onrender.com expo start --clear"
-
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",

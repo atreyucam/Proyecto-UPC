@@ -448,6 +448,10 @@ const Solicitud = sequelize.define('Solicitud', {
     allowNull: false,
     defaultValue: DataTypes.NOW,
   },
+  fecha_cierre: {  // ✅ NUEVO CAMPO
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
   puntoGPS: {
     type: DataTypes.STRING,
     allowNull: false,

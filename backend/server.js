@@ -16,6 +16,7 @@ const personaRoutes = require("./routes/persona");
 const subtipoRoutes = require("./routes/subtipo");
 const solicitudRoutes = require("./routes/solicitud");
 const estadisticasRoutes = require("./routes/estadisticas");
+const reportesRoutes = require("./routes/reportes");
 
 const app = express();
 const server = http.createServer(app);
@@ -42,6 +43,7 @@ app.use("/estadisticas", estadisticasRoutes);
 app.use("/auth", authRoutes);
 app.use("/solicitud", solicitudRoutes);
 app.use("/persona", personaRoutes);
+app.use("/reportes", reportesRoutes);
 setupCronJobs();
 // Verifica qué rutas están registradas en Express
 app._router.stack.forEach((r) => {

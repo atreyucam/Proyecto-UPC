@@ -225,6 +225,7 @@ exports.getSolicitudById = async (id_solicitud) => {
             tipo: solicitud.Subtipo.TipoSolicitud.descripcion,
             subtipo: solicitud.Subtipo.descripcion,
             fecha_creacion: solicitud.fecha_creacion,
+            fecha_cierre: solicitud.fecha_cierre ?? "No cerrada",  // ✅ NUEVA LÍNEA
             puntoGPS: solicitud.puntoGPS,
             direccion: solicitud.direccion,
             ubicacion: {
@@ -358,7 +359,6 @@ exports.getSolicitudesPendientes = async () => {
     }
 };
 
-
 exports.top10SolicitudesRecientes = async () => {
     try {
         // Obtener todas las solicitudes con información asociada, ordenadas por fecha de creación ascendente
@@ -456,62 +456,7 @@ exports.top10SolicitudesRecientes = async () => {
     }
 };
 
-// * funcional
-// // 🔹 Crear un Botón de Emergencia
-// exports.crearBotonEmergencia = async (personaData, io) => {
-//     const { id_persona, puntoGPS } = personaData;
-//     const transaction = await sequelize.transaction();
-    
-//     try {
-//         console.log("➡️ Iniciando creación de botón de emergencia...");
-
-//         // 📌 Verificar si la persona existe
-//         const persona = await Persona.findByPk(id_persona);
-//         if (!persona) throw new Error("Persona no encontrada");
-
-//         console.log(`✅ Persona encontrada: ${persona.nombres} ${persona.apellidos}`);
-
-//         // 📌 Crear solicitud del botón de emergencia
-//         const nuevoBotonEmergencia = await Solicitud.create(
-//             { id_estado: 1, id_subtipo: 1, fecha_creacion: new Date(), puntoGPS, creado_por: id_persona },
-//             { transaction }
-//         );
-
-//         console.log(`✅ Botón de emergencia creado con ID: ${nuevoBotonEmergencia.id_solicitud}`);
-
-//         // 📌 Registrar el evento
-//         await SolicitudEventoPersona.create(
-//             { id_solicitud: nuevoBotonEmergencia.id_solicitud, id_evento: 1, id_persona },
-//             { transaction }
-//         );
-
-//         console.log("✅ Evento registrado en SolicitudEventoPersona");
-
-//         await transaction.commit(); // 🔹 Confirmar transacción antes de enviar notificaciones
-//         console.log("✅ Transacción confirmada con éxito.");
-        
-//        // 📌 Obtener fecha/hora actual formateada
-//        const timestamp = new Date();
-
-//        // 🔹 **Emitir evento en Socket.IO con fecha/hora**
-//       io.emit("nuevoBotonEmergencia", {
-//           id_solicitud: nuevoBotonEmergencia.id_solicitud,
-//           mensaje: "Se ha activado un Botón de Emergencia.",
-//           fecha_tiempo_creacion: timestamp, // Incluir fecha de creación
-//       });
-//       io.emit("nuevaSolicitud", {
-//         ...nuevoBotonEmergencia, // Asegurar que enviamos la solicitud correcta
-//         creado_por: nuevoBotonEmergencia.Creador?.nombres,
-//         ubicacion: nuevoBotonEmergencia.Distrito || nuevoBotonEmergencia.Canton || nuevoBotonEmergencia.Canton?.Subzona
-//             ? {
-//                 distrito: nuevoBotonEmergencia.Distrito?.nombre_distrito ?? "Sin Distrito",
-//                 canton: nuevoBotonEmergencia.Canton?.nombre_canton ?? "Sin Cantón",
-//                 subzona: nuevoBotonEmergencia.Canton?.Subzona?.nombre_subzona ?? "Sin Subzona"
-//             }
-//             : { distrito: "Sin Distrito", canton: "Sin Cantón", subzona: "Sin Subzona" }
-//     });
-    
-
+//  crear solicitud de emergencia
 exports.crearBotonEmergencia = async (personaData, io) => {
     const { id_persona, puntoGPS } = personaData;
     const transaction = await sequelize.transaction();
@@ -589,10 +534,6 @@ exports.crearBotonEmergencia = async (personaData, io) => {
     }
 };
 
-
-
-
-// * Funcional
 // 🔹 Crear una nueva solicitud (Denuncia Ciudadana o Servicio Comunitario)
 exports.crearSolicitud = async (personaData, io) => {
     const { id_persona, puntoGPS, direccion, id_subtipo, observacion } = personaData;
@@ -716,66 +657,6 @@ exports.crearSolicitud = async (personaData, io) => {
     }
 };
 
-
-
-
-
-// 🔹 Asignar un Policía a una Solicitud
-// exports.asignarPoliciaASolicitud = async (solicitudData, io) => {
-//     const { id_solicitud, id_persona_asignador, id_persona_policia } = solicitudData;
-//     const transaction = await sequelize.transaction();
-
-//     try {
-//         const asignador = await Persona.findByPk(id_persona_asignador);
-//         if (!asignador) throw new Error("Asignador no encontrado");
-
-//         const rolesAsignador = await asignador.getRols(); // Obtener roles
-//         if (!rolesAsignador.some(rol => rol.descripcion === "Admin")) {
-//             throw new Error("No tienes permisos para asignar policías");
-//         }
-
-//         const policia = await Persona.findByPk(id_persona_policia);
-//         if (!policia) throw new Error("El policía no existe");
-
-//         const rolesPolicia = await policia.getRols();
-//         if (!rolesPolicia.some(rol => rol.descripcion === "Policia")) {
-//             throw new Error("La persona a asignar no es un policía válido");
-//         }
-
-//         const solicitud = await Solicitud.findByPk(id_solicitud);
-//         if (!solicitud) throw new Error("Solicitud no encontrada");
-
-//         await Solicitud.update(
-//             { policia_asignado: id_persona_policia, id_estado: 2 }, 
-//             { where: { id_solicitud }, transaction }
-//         );
-
-//         await Persona.update(
-//             { disponibilidad: "Ocupado" },
-//             { where: { id_persona: id_persona_policia }, transaction }
-//         );
-
-//         await SolicitudEventoPersona.create(
-//             { id_solicitud, id_evento: 10, id_persona: id_persona_policia },
-//             { transaction }
-//         );
-
-        
-//         await transaction.commit();
-
-//         // 🔹 Notificar al policía y al creador de la solicitud
-//         notificarUsuarios(io, [id_persona_policia], "Nueva Asignación", "Se te ha asignado una nueva solicitud.");
-//         notificarUsuarios(io, [solicitud.creado_por], "Actualización", "Tu solicitud ya tiene un policía asignado.");  
-
-//         io.emit("actualizarSolicitud", { id_solicitud, estado: "En Progreso" });
-
-
-//         return { message: "Policía asignado correctamente." };
-//     } catch (error) {
-//         await transaction.rollback();
-//         throw error;
-//     }
-// };
 // 🔹 Asignar un Policía a una Solicitud
 exports.asignarPoliciaASolicitud = async (solicitudData, io) => {
     const { id_solicitud, id_persona_asignador, id_persona_policia } = solicitudData;
@@ -850,50 +731,7 @@ exports.asignarPoliciaASolicitud = async (solicitudData, io) => {
     }
 };
 
-
-
-
-// // 🔹 Cerrar una Solicitud
-// exports.cerrarSolicitud = async (cerrarData, io) => {
-//     const { id_solicitud, observacion, estado_cierre } = cerrarData;
-//     const transaction = await sequelize.transaction();
-//     try {
-//         const solicitud = await Solicitud.findByPk(id_solicitud);
-//         if (!solicitud) throw new Error("Solicitud no encontrada");
-
-//         const estadosValidos = { Resuelto: 3, Falso: 4 };
-//         if (!estadosValidos[estado_cierre]) throw new Error("Estado no válido");
-
-//         await Solicitud.update(
-//             { id_estado: estadosValidos[estado_cierre] },
-//             { where: { id_solicitud }, transaction }
-//         );
-//         await Observacion.create(
-//             { id_solicitud, observacion, id_persona: solicitud.policia_asignado },
-//             { transaction }
-//         );
-//         await transaction.commit();
-//         io.emit("solicitudCerrada", { id_solicitud, estado: estado_cierre });
-//         return { message: "Solicitud cerrada correctamente." };
-//     } catch (error) {
-//         await transaction.rollback();
-//         throw error;
-//     }
-// };
-
-// // 🔹 Agregar Observación a una Solicitud
-// exports.agregarObservacion = async (observacionData) => {
-//     const { id_solicitud, observacion, id_persona } = observacionData;
-//     try {
-//         await Observacion.create({ id_solicitud, observacion, id_persona });
-//         await SolicitudEventoPersona.create({ id_solicitud, id_evento: 16, id_persona });
-//         return { message: "Observación agregada exitosamente" };
-//     } catch (error) {
-//         throw error;
-//     }
-// };
 // 🔹 Cerrar una Solicitud
-
 exports.cerrarSolicitud = async (cerrarData, io) => {
     const { id_solicitud, observacion, estado_cierre } = cerrarData;
     const transaction = await sequelize.transaction();
@@ -905,7 +743,10 @@ exports.cerrarSolicitud = async (cerrarData, io) => {
         if (!estadosValidos[estado_cierre]) throw new Error("Estado no válido");
 
         await Solicitud.update(
-            { id_estado: estadosValidos[estado_cierre] },
+            { 
+                id_estado: estadosValidos[estado_cierre],
+                fecha_cierre: new Date()  // ✅ NUEVA LÍNEA
+            },
             { where: { id_solicitud }, transaction }
         );
 
@@ -932,10 +773,8 @@ exports.cerrarSolicitud = async (cerrarData, io) => {
         }
 
         await transaction.commit();
-        // await getPoliciaCounts({ app: { get: () => io } });
         io.emit("solicitudCerrada", { id_solicitud, estado: estado_cierre });
-         // 🔹 Emitir evento en Socket.IO para actualizar lista de policías
-    io.emit("actualizarPolicias");
+        io.emit("actualizarPolicias");
 
         return { message: "Solicitud cerrada correctamente." };
     } catch (error) {
@@ -968,366 +807,3 @@ exports.obtenerPoliciasDisponibles = async () => {
     }
 };
 
-
-// * Crear boton de emergencia
-
-
-// exports.crearBotonEmergencia = async (personaData, io) => {
-//     const { id_persona, puntoGPS } = personaData;
-//     const transaction = await sequelize.transaction();
-
-//     try {
-//         // Obtener el circuito de la persona que crea el botón de emergencia
-//         const persona = await Persona.findByPk(id_persona);
-//         if (!persona) {
-//             throw new Error("Persona no encontrada");
-//         }
-//         const id_circuito = persona.id_circuito;
-
-//         // Definir IDs para subtipo, estado y evento
-//         const id_subtipo = 1; // Botón de emergencia
-//         const id_estado = 1; // Estado [Pendiente]
-//         const id_evento = 1; // El Ciudadano ha presionado el botón de emergencia
-
-//         // Crear solicitud del botón de emergencia
-//         const nuevoBotonEmergencia = await Solicitud.create(
-//             {
-//                 id_estado,
-//                 id_subtipo,
-//                 fecha_creacion: new Date(),
-//                 puntoGPS,
-//                 direccion: null, // La dirección puede ser opcional si ya se tiene el puntoGPS
-//                 observacion: null,
-//                 id_circuito,
-//                 creado_por: id_persona,
-//             },
-//             { transaction }
-//         );
-
-//         // Crear la relación entre la solicitud y el evento
-//         await SolicitudEventoPersona.create(
-//             {
-//                 id_solicitud: nuevoBotonEmergencia.id_solicitud,
-//                 id_evento,
-//                 id_persona,
-//             },
-//             { transaction }
-//         );
-
-//         await transaction.commit();
-//         // Emitir el evento a través del socket
-//         io.emit("nuevoBotonEmergencia", nuevoBotonEmergencia);
-//         return nuevoBotonEmergencia;
-//     } catch (error) {
-//         await transaction.rollback();
-//         console.error(
-//             "Error al crear la solicitud de botón de emergencia:",
-//             error
-//         );
-//         throw error;
-//     }
-// };
-
-// *ddd
-// exports.crearSolicitud = async (personaData, io) => {
-//     console.log("Iniciando creación de solicitud con datos:", personaData); // Verifica el input recibido
-
-//     const { id_persona, puntoGPS, direccion, id_subtipo, observacion } =
-//         personaData;
-//     const transaction = await sequelize.transaction();
-
-//     try {
-//         // Obtener la persona que crea la solicitud
-//         const persona = await Persona.findByPk(id_persona);
-//         console.log("Persona encontrada:", persona);
-//         console.error("Error: Persona no encontrada con el ID:", id_persona);
-//         if (!persona) {
-//             throw new Error("Persona no encontrada");
-//         }
-
-//         // Obtener el subtipo y verificar que sea válido
-//         const subtipo = await Subtipo.findByPk(id_subtipo);
-//         if (!subtipo) {
-//             throw new Error("Subtipo no encontrado");
-//         }
-
-//         // Determinar el tipo de solicitud y el evento asociado
-//         const id_tipo = subtipo.id_tipo;
-//         let id_evento;
-
-//         if (id_tipo === 2) {
-//             id_evento = 2; // Denuncia ciudadana
-//         } else if (id_tipo === 3) {
-//             id_evento = 3; // Servicios comunitarios
-//         } else {
-//             console.error("Tipo de solicitud no válido:", id_tipo);
-//             throw new Error("Tipo de solicitud no válido");
-//         }
-
-//         console.log("ID de evento asignado:", id_evento);
-
-//         // Definir ID para estado
-//         const id_estado = 1; // Pendiente
-
-//         // Crear solicitud
-//         const nuevaSolicitud = await Solicitud.create(
-//             {
-//                 id_estado,
-//                 id_subtipo,
-//                 fecha_creacion: new Date(),
-//                 puntoGPS,
-//                 direccion, // Incluir la dirección proporcionada
-//                 creado_por: id_persona,
-//             },
-//             { transaction }
-//         );
-
-//         console.log("Antes de insertar en SolicitudEventoPersona:", {
-//             id_solicitud: nuevaSolicitud.id_solicitud,
-//             id_evento,
-//             id_persona,
-//         });
-
-            
-//         // Crear la relación entre la solicitud y el evento
-//         await SolicitudEventoPersona.create(
-//             {
-//                 id_solicitud: nuevaSolicitud.id_solicitud,
-//                 id_evento,
-//                 id_persona,
-//             },
-//             { transaction }
-//         );
-
-//         // Llamar al servicio agregarObservacion para registrar la observación dentro de la misma transacción
-//         if (observacion) {
-//             await exports.agregarObservacion(
-//                 {
-//                     id_solicitud: nuevaSolicitud.id_solicitud,
-//                     observacion: observacion,
-//                     id_persona: id_persona,
-//                 },
-//                 transaction
-//             );
-//         }
-
-//         await transaction.commit();
-
-//         // Emitir el evento a través del socket
-//         io.emit("nuevaSolicitud", nuevaSolicitud);
-
-//         return nuevaSolicitud;
-//     } catch (error) {
-//         await transaction.rollback();
-//         console.error("Error al crear la solicitud:", error);
-//         throw error;
-//     }
-// };
-
-// exports.asignarPoliciaASolicitud = async (solicitudData, io) => {
-//     const { id_solicitud, id_persona_asignador, id_persona_policia } =
-//         solicitudData;
-//     const transaction = await sequelize.transaction();
-//     const id_evento = 10; // Un policia ha sido asignado a tu solicitud.
-
-//     try {
-//         const asignador = await Persona.findByPk(id_persona_asignador);
-//         if (!asignador) {
-//             throw new Error("La persona que realiza la asignación no existe.");
-//         }
-//         const rolesAsignador = await asignador.getRols(); // Obtener roles de la persona
-//         if (!rolesAsignador.some((rol) => rol.descripcion === "Admin")) {
-//             throw new Error(
-//                 "La persona que realiza la asignación no es administrador."
-//             );
-//         }
-
-//         // Verificar que el policía a asignar existe y es un policía
-//         const policia = await Persona.findByPk(id_persona_policia);
-//         if (!policia) {
-//             throw new Error("El policía especificado no existe.");
-//         }
-//         const rolesPolicia = await policia.getRols(); // Obtener roles del policía
-//         if (!rolesPolicia.some((rol) => rol.descripcion === "Policia")) {
-//             throw new Error("La persona a asignar no es un policía.");
-//         }
-
-//         // Verificar que la solicitud existe
-//         const solicitud = await Solicitud.findByPk(id_solicitud);
-//         if (!solicitud) {
-//             throw new Error("La solicitud especificada no existe.");
-//         }
-
-//         // Asignar el policía a la solicitud y actualizar el estado de la solicitud
-//         await Solicitud.update(
-//             { policia_asignado: id_persona_policia, id_estado: 2 }, // Actualizar a 'En progreso'
-//             { where: { id_solicitud }, transaction }
-//         );
-
-//         // Actualizar la disponibilidad del policía a 'Ocupado'
-//         await Persona.update(
-//             { disponibilidad: "Ocupado" },
-//             { where: { id_persona: id_persona_policia }, transaction }
-//         );
-
-//         // Crear la relación entre la solicitud y el evento
-//         await SolicitudEventoPersona.create(
-//             {
-//                 id_solicitud: id_solicitud,
-//                 id_evento,
-//                 id_persona: id_persona_policia,
-//             },
-//             { transaction }
-//         );
-
-//         await transaction.commit();
-
-//        // Obtener la solicitud actualizada con datos completos para el frontend
-//        const solicitudActualizada = await Solicitud.findByPk(id_solicitud, {
-//         include: [
-//             { model: Persona, as: "policia", attributes: ["nombres", "apellidos"] },
-//             { model: Estado, attributes: ["descripcion"] },
-//         ],
-//     });
-
-//     // **Emitir evento con la solicitud actualizada**
-//     io.emit("actualizarSolicitud", {
-//         id_solicitud: solicitudActualizada.id_solicitud,
-//         estado: solicitudActualizada.Estado.descripcion,
-//         policia_asignado: solicitudActualizada.policia
-//             ? `${solicitudActualizada.policia.nombres} ${solicitudActualizada.policia.apellidos}`
-//             : "No asignado",
-//     });
-
-//         return { message: "Policía asignado a la solicitud correctamente." };
-//     } catch (error) {
-//         await transaction.rollback();
-//         throw error;
-//     }
-// };
-
-// exports.cerrarSolicitud = async (cerrarData, io) => {
-//     const { id_solicitud, observacion, estado_cierre } = cerrarData;
-//     const transaction = await sequelize.transaction();
-//     try {
-//         // Verificar que la solicitud existe
-//         const solicitud = await Solicitud.findByPk(id_solicitud);
-//         if (!solicitud) {
-//             throw new Error("La solicitud especificada no existe.");
-//         }
-
-//         const id_persona_policia = solicitud.policia_asignado;
-
-//         // Verificar que el policía asignado existe
-//         const policia = await Persona.findByPk(id_persona_policia);
-//         if (!policia) {
-//             throw new Error("El policía asignado no existe.");
-//         }
-
-//         // Verificar que el estado de cierre es válido ("Resuelto" o "Falso")
-//         const estadosValidos = {
-//             Resuelto: 3,
-//             Falso: 4,
-//         };
-
-//         if (!estadosValidos[estado_cierre]) {
-//             throw new Error("El estado de cierre especificado no es válido.");
-//         }
-
-//         // Actualizar el estado de la solicitud al estado seleccionado
-//         await Solicitud.update(
-//             { id_estado: estadosValidos[estado_cierre] },
-//             { where: { id_solicitud }, transaction }
-//         );
-
-//         // Actualizar la disponibilidad del policía a "Disponible"
-//         await Persona.update(
-//             { disponibilidad: "Disponible" },
-//             { where: { id_persona: id_persona_policia }, transaction }
-//         );
-
-//         // Crear la observación
-//         await Observacion.create(
-//             {
-//                 id_solicitud,
-//                 observacion,
-//                 id_persona: id_persona_policia, // El mismo policía asignado hace la observación
-//             },
-//             { transaction }
-//         );
-
-//         // Crear la relación entre la solicitud y el evento
-//         await SolicitudEventoPersona.create(
-//             {
-//                 id_solicitud: id_solicitud,
-//                 id_evento: 14, // Asumiendo que el evento ID 8 es el cierre de solicitud
-//                 id_persona: id_persona_policia,
-//             },
-//             { transaction }
-//         );
-
-//         await transaction.commit();
-
-//          // Obtener la solicitud con información completa para el frontend
-//          const solicitudActualizada = await Solicitud.findByPk(id_solicitud, {
-//             include: [
-//                 { model: Estado, attributes: ["descripcion"] },
-//                 { model: Persona, as: "policia", attributes: ["nombres", "apellidos"] },
-//             ],
-//         });
-
-//         // **Emitir el evento de cierre de solicitud**
-//         io.emit("solicitudCerrada", {
-//             id_solicitud: solicitudActualizada.id_solicitud,
-//             estado: solicitudActualizada.Estado.descripcion, // Será "Resuelto" o "Falso"
-//             policia_asignado: solicitudActualizada.policia
-//                 ? `${solicitudActualizada.policia.nombres} ${solicitudActualizada.policia.apellidos}`
-//                 : "No asignado",
-//         });
-
-//         return { message: "Solicitud cerrada correctamente." };
-//     } catch (error) {
-//         await transaction.rollback();
-//         throw error;
-//     }
-// };
-
-// exports.agregarObservacion = async (
-//     observacionData,
-//     externalTransaction = null
-// ) => {
-//     const { id_solicitud, observacion, id_persona } = observacionData;
-//     const transaction = externalTransaction || (await sequelize.transaction());
-
-//     try {
-//         // * 1. Registramos la observación
-//         await Observacion.create(
-//             {
-//                 id_solicitud: id_solicitud,
-//                 observacion: observacion,
-//                 id_persona: id_persona,
-//             },
-//             { transaction }
-//         );
-
-//         // Crear la relación entre la solicitud y el evento
-//         await SolicitudEventoPersona.create(
-//             {
-//                 id_solicitud: id_solicitud,
-//                 id_evento: 16,
-//                 id_persona: id_persona,
-//             },
-//             { transaction }
-//         );
-
-//         if (!externalTransaction) {
-//             await transaction.commit();
-//         }
-//     } catch (error) {
-//         if (!externalTransaction) {
-//             await transaction.rollback();
-//         }
-//         console.log("Error al agregar observación: ", error);
-//         throw error;
-//     }
-// };
