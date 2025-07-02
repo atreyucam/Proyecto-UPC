@@ -1,9 +1,13 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
-import { API_ENDPOINT } from "@env"; // Importar del .env
+// import { API_URL } from "@env"; // Importar del .env
 const UserContext = createContext();
 
-console.log("API_ENDPOINT:", API_ENDPOINT); // Debe mostrar el URL de la API
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig.extra.API_URL;
+console.log("📌 API en uso:", API_URL);
+// Debe mostrar el URL de la API
 const UserProvider = ({ children }) => {
     const [userState, setUserState] = useState({
         errorNewUser: null,
@@ -13,7 +17,7 @@ const UserProvider = ({ children }) => {
     const registroUsuario = async (userData) => {
         try {
             const response = await axios.post(
-                `${API_ENDPOINT}/persona/nuevoCiudadano`,
+                `${API_URL}/persona/nuevoCiudadano`,
                 userData
             );
             setUserState({

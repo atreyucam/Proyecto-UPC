@@ -2,6 +2,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
 import axios from 'axios';
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig.extra.API_URL;
 
 const PasswordResetScreen = () => {
   const [step, setStep] = useState('forgot'); // 'forgot' o 'reset'
@@ -16,7 +19,7 @@ const PasswordResetScreen = () => {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:3000/upc/forgot-password', { email });
+      const response = await axios.post(`http://${API_URL}/upc/forgot-password`, { email });
       Alert.alert('Éxito', response.data.message);
       // Cambiamos al paso de reseteo para que el usuario ingrese el código y nueva contraseña
       setStep('reset');
@@ -36,7 +39,7 @@ const PasswordResetScreen = () => {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:3000/upc/reset-password', {
+      const response = await axios.post(`http://${API_URL}/upc/reset-password`, {
         email,
         code,
         newPassword,

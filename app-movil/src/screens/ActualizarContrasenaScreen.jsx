@@ -3,7 +3,9 @@ import { View, Text, StyleSheet, Alert } from "react-native";
 import { TextInput, Button, Appbar, IconButton } from "react-native-paper";
 import { useNavigate } from "react-router-native";
 import axios from "axios";
-import { API_ENDPOINT } from "@env";
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig.extra.API_URL;
 import { AuthContext } from "../context/AuthContext";
 
 export default function ActualizarContrasenaScreen() {
@@ -22,7 +24,7 @@ export default function ActualizarContrasenaScreen() {
             });
     
             const response = await axios.post(
-                `${API_ENDPOINT}/persona/verificar-contrasena/${authState.user}`,
+                `${API_URL}/persona/verificar-contrasena/${authState.user}`,
                 {
                     contrasena: contrasenaActual
                 }
@@ -50,7 +52,7 @@ export default function ActualizarContrasenaScreen() {
 
     try {
         const response = await axios.put(
-            `${API_ENDPOINT}/persona/actualizar-contrasena/${authState.user}`, // <-- Aquí pasamos el ID en la URL
+            `${API_URL}/persona/actualizar-contrasena/${authState.user}`, // <-- Aquí pasamos el ID en la URL
             { nuevaContrasena }, // <-- Solo enviamos la nueva contraseña en el body
             { headers: { "Content-Type": "application/json" } }
         );

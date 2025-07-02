@@ -807,3 +807,24 @@ exports.obtenerPoliciasDisponibles = async () => {
     }
 };
 
+
+
+exports.agregarObservacion = async ({ id_solicitud, observacion, id_persona }) => {
+  try {
+    if (!id_solicitud || !observacion || !id_persona) {
+      throw new Error("Faltan datos obligatorios para registrar la observación.");
+    }
+
+    await Observacion.create({
+      id_solicitud,
+      observacion,
+      id_persona,
+      fecha: new Date()
+    });
+
+    return { message: "Observación registrada con éxito." };
+  } catch (error) {
+    console.error("❌ Error en agregarObservacion:", error.message);
+    throw error;
+  }
+};

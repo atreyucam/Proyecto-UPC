@@ -19,8 +19,10 @@ import {
 import { useNavigate, useParams } from "react-router-native";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext"; // Importa el contexto de autenticación
-import { API_ENDPOINT } from "@env"; // Importar del .env
-// const API_ENDPOINT = "http://192.168.0.14:3000"; // Asegúrate de que esta URL apunte a tu backend
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig.extra.API_URL;
+
 
 const DenunciaItemPoliceScreen = () => {
     const navigate = useNavigate();
@@ -39,7 +41,7 @@ const DenunciaItemPoliceScreen = () => {
         const obtenerDetalleDenuncia = async () => {
             try {
                 const response = await axios.get(
-                    `${API_ENDPOINT}/solicitud/${denunciaId}`
+                    `${API_URL}/solicitud/${denunciaId}`
                 );
                 const data = response.data;
                 setDenuncia(data);
@@ -72,7 +74,7 @@ const DenunciaItemPoliceScreen = () => {
 
     const handleCerrarSolicitud = async () => {
         try {
-            await axios.post(`${API_ENDPOINT}/solicitud/cerrarSolicitud`, {
+            await axios.post(`${API_URL}/solicitud/cerrarSolicitud`, {
                 id_solicitud: denunciaId,
                 observacion,
                 estado_cierre: estadoCierre,
@@ -81,7 +83,7 @@ const DenunciaItemPoliceScreen = () => {
             setModalVisible(false);
             // Opcional: recargar la denuncia para mostrar la nueva observación
             const response = await axios.get(
-                `${API_ENDPOINT}/solicitud/${denunciaId}`
+                `${API_URL}/solicitud/${denunciaId}`
             );
             setDenuncia(response.data);
         } catch (error) {
@@ -93,7 +95,7 @@ const DenunciaItemPoliceScreen = () => {
     const handleAgregarObservacion = async () => {
         console.log("ID Persona:", authState.user);
         try {
-            await axios.post(`${API_ENDPOINT}/solicitud/agregarObservacion`, {
+            await axios.post(`${API_URL}/solicitud/agregarObservacion`, {
                 id_solicitud: denunciaId,
                 observacion: observacionNueva,
                 id_persona: authState.user, // Asegúrate de que este es el ID del policía logueado
@@ -102,7 +104,7 @@ const DenunciaItemPoliceScreen = () => {
             setModalObservacionVisible(false);
             // Opcional: recargar la denuncia para mostrar la nueva observación
             const response = await axios.get(
-                `${API_ENDPOINT}/solicitud/${denunciaId}`
+                `${API_URL}/solicitud/${denunciaId}`
             );
             setDenuncia(response.data);
         } catch (error) {

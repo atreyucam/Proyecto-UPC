@@ -6,7 +6,9 @@ import { useNavigate } from "react-router-native";
 import { UserContext } from "../context/UserContext";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
-import { API_ENDPOINT } from "@env";
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig.extra.API_URL;
 
 const RegistroScreen = () => {
     const navigate = useNavigate();
@@ -19,7 +21,7 @@ const RegistroScreen = () => {
     useEffect(() => {
         const fetchSubzonas = async () => {
             try {
-                const response = await axios.get(`${API_ENDPOINT}/circuitos/subzonas`);
+                const response = await axios.get(`${API_URL}/circuitos/subzonas`);
                 setSubzonas(response.data);
             } catch (error) {
                 console.error("❌ Error al obtener subzonas:", error);
@@ -35,7 +37,7 @@ const RegistroScreen = () => {
         setValue("id_parroquia", "");
     
         try {
-            const response = await axios.get(`${API_ENDPOINT}/circuitos/subzonas/${subzonaId}/cantones`);
+            const response = await axios.get(`${API_URL}/circuitos/subzonas/${subzonaId}/cantones`);
             setCantones(response.data);
         } catch (error) {
             console.error("❌ Error al obtener cantones:", error);
@@ -48,7 +50,7 @@ const RegistroScreen = () => {
         setValue("id_parroquia", "");
     
         try {
-            const response = await axios.get(`${API_ENDPOINT}/circuitos/cantones/${cantonId}/parroquias`);
+            const response = await axios.get(`${API_URL}/circuitos/cantones/${cantonId}/parroquias`);
             setParroquias(response.data);
         } catch (error) {
             console.error("❌ Error al obtener parroquias:", error);
@@ -77,7 +79,7 @@ const RegistroScreen = () => {
 
         setIsVerifying(true);
         try {
-            const response = await axios.get(`${API_ENDPOINT}/persona/verificarCedula/${cedula}`);
+            const response = await axios.get(`${API_URL}/persona/verificarCedula/${cedula}`);
             console.log("✅ Respuesta de la API:", response.data);
 
             const { nombres, apellidos, fecha_nacimiento, genero } = response.data;
@@ -101,7 +103,7 @@ const RegistroScreen = () => {
             console.log("📤 Enviando datos al backend:", data);
             
             // Enviar solicitud al backend
-            const response = await axios.post(`${API_ENDPOINT}/persona/nuevoCiudadano`, {
+            const response = await axios.post(`${API_URL}/persona/nuevoCiudadano`, {
                 cedula: data.cedula,
                 email: data.email,
                 password: data.password,

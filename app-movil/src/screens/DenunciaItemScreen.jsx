@@ -4,9 +4,9 @@ import MapView, { Marker } from "react-native-maps";
 import { Appbar, IconButton, Card } from "react-native-paper";
 import { useNavigate, useParams } from "react-router-native";
 import axios from "axios";
-import { API_ENDPOINT } from "@env"; // Importar del .env
-// const API_ENDPOINT = "http://192.168.0.14:3000"; // Asegúrate de que esta URL apunte a tu backend
+import Constants from 'expo-constants';
 
+const API_URL = Constants.expoConfig.extra.API_URL;
 const DenunciaItemScreen = () => {
     const navigate = useNavigate();
     const { denunciaId } = useParams();
@@ -17,7 +17,7 @@ const DenunciaItemScreen = () => {
         const obtenerDetalleDenuncia = async () => {
             try {
                 const response = await axios.get(
-                    `${API_ENDPOINT}/solicitud/${denunciaId}`
+                    `${API_URL}/solicitud/${denunciaId}`
                 );
                 const data = response.data;
                 setDenuncia(data);

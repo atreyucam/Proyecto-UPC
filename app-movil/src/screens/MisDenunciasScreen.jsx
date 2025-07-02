@@ -11,9 +11,9 @@ import { useNavigate } from "react-router-native";
 import Notificacion from "./components/Notificacion";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
-import { API_ENDPOINT } from "@env"; // Importar del .env
+import Constants from 'expo-constants';
 
-
+const API_URL = Constants.expoConfig.extra.API_URL;
 const MisDenunciasScreen = () => {
     const { authState } = useContext(AuthContext); // Obtener el estado de autenticación
     const navigate = useNavigate();
@@ -24,7 +24,7 @@ const MisDenunciasScreen = () => {
         const obtenerDenuncias = async () => {
             try {
                 const response = await axios.get(
-                    `${API_ENDPOINT}/personas/ciudadano/${authState.user}`
+                    `${API_URL}/persona/ciudadano/${authState.user}`
                 );
                 setDenuncias(response.data.solicitudes_creadas);
             } catch (error) {

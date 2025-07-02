@@ -14,8 +14,9 @@ import Notificacion from "./components/Notificacion";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext"; // Importa tu contexto de autenticación
 import { useNavigate } from "react-router-native"; // Importa el hook para la navegación
-import { API_ENDPOINT } from "@env"; // Importar del .env
-// const API_ENDPOINT = "http://192.168.0.14:3000";
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig.extra.API_URL;
 
 export default function EmergenciaScreen() {
     const { authState } = useContext(AuthContext); // Obtén la información del usuario desde el contexto
@@ -84,7 +85,7 @@ export default function EmergenciaScreen() {
             console.log("Datos enviados:", emergenciaData);
 
             const response = await axios.post(
-                `${API_ENDPOINT}/solicitud/nuevoBotonEmergencia`,
+                `${API_URL}/solicitud/nuevoBotonEmergencia`,
                 emergenciaData
             );
 

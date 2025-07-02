@@ -56,7 +56,7 @@ export default function AjustesScreen() {
                                 resizeMode="contain"
                             />
                             <Text style={styles.paragraph}>
-                                Ajustes en mi perfilsss
+                                Ajustes en mi perfil
                             </Text>
                         </Card.Content>
                     </Card>

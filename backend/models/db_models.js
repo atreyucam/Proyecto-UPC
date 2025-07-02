@@ -234,7 +234,7 @@ const Persona = sequelize.define('Persona', {
   verified:{
     type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: true
   },
   verificationCode: {
     type: DataTypes.STRING(6),

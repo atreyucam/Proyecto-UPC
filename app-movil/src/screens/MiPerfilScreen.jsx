@@ -5,8 +5,9 @@ import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-native";
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
-import { API_ENDPOINT } from "@env";
+import Constants from 'expo-constants';
 
+const API_URL = Constants.expoConfig.extra.API_URL;
 export default function MiPerfilScreen() {
     const { authState } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -23,7 +24,7 @@ export default function MiPerfilScreen() {
         const cargarPerfil = async () => {
             try {
                 const response = await axios.get(
-                    `${API_ENDPOINT}/persona/ciudadanoUser/${authState.user}`
+                    `${API_URL}/persona/ciudadanoUser/${authState.user}`
                 );
                 const data = response.data;
                 console.log("Datos del usuario:", data);
@@ -64,7 +65,7 @@ export default function MiPerfilScreen() {
             }
 
             const response = await axios.put(
-                `${API_ENDPOINT}/personas/${authState.user}`,
+                `${API_URL}/personas/${authState.user}`,
                 actualizacionData
             );
 
