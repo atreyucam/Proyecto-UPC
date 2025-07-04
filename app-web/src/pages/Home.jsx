@@ -50,60 +50,60 @@ const Home = () => {
     const [contadoresPorTipo, setContadoresPorTipo] = useState([]);
     const navigate = useNavigate();
     
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [statsRes, solicitudesRes, tiposRes] = await Promise.all([
-                    axios.get(`${API_URL}/estadisticas/solicitudesPorEstado?periodo=${periodo}`),
-                    axios.get(`${API_URL}/estadisticas/top10Solicitudes?periodo=${periodo}`),
-                    axios.get(`${API_URL}/estadisticas/solicitudes-por-tipo?periodo=${periodo}`),
-                ]);
+  useEffect(() => {
+    const fetchData = async () => {
+        try {
+            const [statsRes, solicitudesRes, tiposRes] = await Promise.all([
+                axios.get(`${API_URL}/estadisticas/solicitudesPorEstado?periodo=${periodo}`),
+                axios.get(`${API_URL}/estadisticas/top10Solicitudes?periodo=${periodo}`),
+                axios.get(`${API_URL}/estadisticas/solicitudes-por-tipo?periodo=${periodo}`),
+            ]);
 
-                setStats(statsRes.data);
-                setTopSolicitudes(solicitudesRes.data || []);
+            setStats(statsRes.data);
+            setTopSolicitudes(solicitudesRes.data || []);
 
-                const meses = obtenerMeses(periodo);
-                const tiposUnicos = new Set();
+            const meses = obtenerMeses(periodo);
+            const tiposUnicos = new Set();
 
-                meses.forEach((mes) => {
-                    (tiposRes.data[mes] || []).forEach((item) => tiposUnicos.add(item.tipo));
+            meses.forEach((mes) => {
+                (tiposRes.data[mes] || []).forEach((item) => tiposUnicos.add(item.tipo));
+            });
+
+            const series = Array.from(tiposUnicos).map((tipo) => ({
+                name: tipo,
+                data: meses.map((mes) => {
+                    const mesData = tiposRes.data[mes] || [];
+                    const item = mesData.find((i) => i.tipo === tipo);
+                    return item ? parseInt(item.total, 10) : 0;
+                }),
+            }));
+
+            const nuevosContadores = [];
+            Object.values(tiposRes.data).forEach((mesData) => {
+                mesData.forEach((tipo) => {
+                    const index = nuevosContadores.findIndex(t => t.tipo === tipo.tipo);
+                    if (index !== -1) {
+                        nuevosContadores[index].total += parseInt(tipo.total, 10);
+                    } else {
+                        nuevosContadores.push({ tipo: tipo.tipo, total: parseInt(tipo.total, 10) });
+                    }
                 });
+            });
 
-                const series = Array.from(tiposUnicos).map((tipo) => ({
-                    name: tipo,
-                    data: meses.map((mes) => {
-                        const mesData = tiposRes.data[mes] || [];
-                        const item = mesData.find((i) => i.tipo === tipo);
-                        return item ? parseInt(item.total, 10) : 0;
-                    }),
-                }));
-
-                
-                const nuevosContadores = [];
-// `tiposRes.data` puede ser un objeto con meses como claves
-Object.values(tiposRes.data).forEach((mesData) => {
-    mesData.forEach((tipo) => {
-        const index = nuevosContadores.findIndex(t => t.tipo === tipo.tipo);
-        if (index !== -1) {
-            nuevosContadores[index].total += parseInt(tipo.total, 10);
-        } else {
-            nuevosContadores.push({ tipo: tipo.tipo, total: parseInt(tipo.total, 10) });
+            setContadoresPorTipo(nuevosContadores);
+            setBarSeries(series);
+        } catch (error) {
+            console.error("❌ Error al obtener datos:", error);
         }
-    });
-});
+    };
 
-console.log("📊 Tipos de solicitud cargados:", nuevosContadores);
-setContadoresPorTipo(nuevosContadores);
+    fetchData();
 
+    const interval = setInterval(fetchData, 10000); // cada 10 segundos
 
-                setBarSeries(series);
-            } catch (error) {
-                console.error("❌ Error al obtener datos:", error);
-            }
-        };
+    return () => clearInterval(interval); // limpia el intervalo al desmontar
+}, [periodo]);
 
-        fetchData();
-    }, [periodo]);
     
 
     // Manejar clic en fila de solicitud

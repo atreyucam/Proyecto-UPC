@@ -74,7 +74,7 @@ const Sidebar = () => {
                                             color="inherit"
                                             className="font-medium capitalize"
                                         >
-                                            Registro de usuarios
+                                            Registro de Policias
                                         </Typography>
                                     </Button>
                                 )}

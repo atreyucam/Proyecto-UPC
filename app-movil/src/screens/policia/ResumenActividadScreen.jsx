@@ -59,7 +59,8 @@ const ResumenActividadScreen = () => {
         <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleBackPress}>
-                    <MaterialIcons name="arrow-back" size={24} color="black" />
+                    <MaterialIcons name="arrow-back" size={24} color="#1976D2" />
+
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Resumen de Actividad</Text>
                 <View style={{ width: 24 }} />
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
     container: {
         padding: 16,
         paddingTop: 70,
-        backgroundColor: "#F7F7F7",
+        backgroundColor: "#FFFFFF", // Fondo blanco
     },
     header: {
         flexDirection: "row",
@@ -154,13 +155,21 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         flex: 1,
         textAlign: "center",
+        color: "#1976D2", // Azul para título
     },
-    card: {
-        marginVertical: 8,
-        borderRadius: 10,
-        backgroundColor: "#FFF",
-        elevation: 2,
-    },
+   card: {
+    marginVertical: 8,
+    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
+    elevation: 3,
+    borderWidth: 1.2,
+    borderColor: "#BBDEFB", // azul claro
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+},
+
     tableRow: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -172,14 +181,15 @@ const styles = StyleSheet.create({
         fontSize: 14,
         flex: 1,
         textAlign: "center",
-        color: "#333",
+        color: "#444",
     },
     loadingContainer: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#FFF",
+        backgroundColor: "#FFFFFF",
     },
 });
+
 
 export default ResumenActividadScreen;
