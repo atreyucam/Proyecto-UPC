@@ -18,6 +18,8 @@ services:
     build: 
       context: ./backend
     container_name: backend_upc
+    env_file:
+      - ./backend/.env
     restart: always
     depends_on:
       - postgres
