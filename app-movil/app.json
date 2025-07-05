@@ -16,6 +16,10 @@
       "supportsTablet": true
     },
     "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyByUK0pzxE3Ze08xw2BWyot64SyJL2nIDg"}
+      },
       "package": "com.upcriobamba.upcmovil",
       "versionCode": 1,
       "adaptiveIcon": {

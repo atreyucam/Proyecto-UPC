@@ -13,7 +13,12 @@ export default {
     },
     android: {
       package: "com.upc.upcdigital",
-      versionCode: 1
+      versionCode: 1,
+      config: {
+    googleMaps: {
+      apiKey: "AIzaSyByUK0pzxE3Ze08xw2BWyot64SyJL2nIDg"
+    }
+  }
     }
     // ⏬ todo lo demás igual que en tu app.json
   }
