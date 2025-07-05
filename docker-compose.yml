@@ -25,6 +25,16 @@ services:
       DATABASE_URL: postgresql://upc_admin:140220@postgres:5432/db_upc_dev
       PORT: 3000
       JWT_SECRET: mysecretkey
+      FIREBASE_PROJECT_ID: mi-proyecto
+      FIREBASE_PRIVATE_KEY_ID: d5682433148c9bd0f2fdc35e491ee58738f5299c
+      FIREBASE_PRIVATE_KEY: -----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC+D1GvXXzm7IcI\nYNMZg43bL0iRtqmdCv/WmWnZPqlQMnvybpv+6cPytKeiNphhxNPU6g4NF4No7TE2\nBdWIeRJdRphSco6iQaOodCZ/ZLFpcQeTYQp+S43IiOqI9CnvSNTCp+PN9C2aAOwO\nqZqoABFEb+RuSVdGm8KgGJ1G0VN4v8OBpcGtHqmU4iUHCXmT4ksZ7yutxjJf6eI6\nrdISbSr6JzPZNiAUIO1/1ASlZ1U/iGnk2HyuY/RRXGT+Dwotb/RhisJrEmVb3+Su\nbtqSMHx4QLGNedoXQXAFbuuDFMZ6Tc28qJItb3GqaKaXiJFUAi8X10+4pcbVT4g4\njyAs8CNXAgMBAAECggEAJQd2Cj0kJxehLWQz7M4hNrmNIXqdrC+m7cghA8b+FNZp\nKLAdK3qfByvkVync4XuIK/zX9PwGScygoF5dnoO8LLki1zljicBRIvJSR9K18A2q\nBLBM65NL0ey/CSTNAMZHUY+FRiyTL+SLGUY5EA9HTfag4k3et66EKk3xYolJAoa/\n/8TA4kbCehxcqxJnXv38jMeH2g2tcgpkOs+ZpKPy6TWAnVk96HuE9L+JW8pLmK/p\neLPb8XCURd0lmQ3TXWVoqQS6uSjfTgAhuD+sPRptVwPRJKSS/okWc4eu51arqn/m\njjNQbAWdI3mO7+9vDzeHxTAJH7PcHA00XzEHEu9lRQKBgQDoHK36MI96DSEPj4Yq\nXUpyBRAAdiNsD1c04wB9i2894cFOopFzO8Se3FVpAxqEeRO2iFOwCFVyya7HYeLB\nyRzJjocAP2yjYjE6ab3dwXKBq0Czdy1kVC6frvawORu8T3jjaji/eDjNs0X7Yk0k\nofGCUwFjtRvZB/lz1k2RhPoRFQKBgQDRnrcG3zggWHN3nqXV5ZOd4WnbhP7hoKnP\nAuROcADkdf12PkuCt40g6Sf4/LgxKat7die8yy11OIj3W11yBRhU1D/7WnsX61u6\nAmugivUBmUJu0LkdWix3m2gX3IB+Mw+EuE9kDH9dwsXKvuS7Oc6xWIXg86uJDlHk\nDpUJkb9FuwKBgQC7Omcb6Q/S48RHSP5wLdBfKLY/qQvpnnY5suIyYsbYo8HKLFgn\nG47+lbxPeLFrKj88fbsDw7UpYoYZTlwa9J7D9rPu/zoikJIlDCabOe+jqQAHw5pZ\n043IQNm8TFSTEYfx6TzdNZycUH+ixyhy5C5rcYktZGmSJ1yQk8z+FMWiAQKBgQCr\n724aod8MkOBs/mDx2DPDbRAB8c2KTdjapnmTaMUinzD92sze9CU7GGMkFE4UbSRt\nyRWBAnpPysZ1dahpDIrPkaTFS4rprK/5G2EiNrgNzqKx+FvOGpecp4izAbcXTFRv\nPSpJWwLhahAIY5mDhD/oMT7mq5dIfMlosRlH1xc3XwKBgQCUjsxalV3gF6aTCcf4\nnl1LbzNxrBVW0lBoQE8sNHLNMjB6oZhRlIWFq7Cvhn69suY5XSRk0TOzPf/XBZur\n/pHY8dyoZatfRhFxcYAwmAnJsHc/RRxRWTjdZ98efEb2is4u1cuG8vplGPuj0VYk\nBgKPGQIrMGA4WzcfQ9pqIFwnTQ==\n-----END PRIVATE KEY-----\n,
+      FIREBASE_CLIENT_EMAIL: firebase-adminsdk@mi-proyecto.iam.gserviceaccount.com
+      FIREBASE_CLIENT_ID: 1234567890
+      FIREBASE_AUTH_URI: https://accounts.google.com/o/oauth2/auth
+      FIREBASE_TOKEN_URI: https://oauth2.googleapis.com/token
+      FIREBASE_AUTH_PROVIDER_CERT_URL: https://www.googleapis.com/oauth2/v1/certs
+      FIREBASE_CLIENT_CERT_URL: https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk@mi-proyecto.iam.gserviceaccount.com
+
     ports:
       - "3000:3000"
 
