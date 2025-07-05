@@ -15,7 +15,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: .
+    build: 
+      context: ./backend
     container_name: backend_upc
     restart: always
     depends_on:
@@ -26,6 +27,14 @@ services:
       JWT_SECRET: mysecretkey
     ports:
       - "3000:3000"
+
+  frontend:
+    build:
+      context: ./app-web
+    container_name: frontend_upc
+    restart: always
+    ports:
+    - "80:80"
 
 volumes:
   postgres_data:
