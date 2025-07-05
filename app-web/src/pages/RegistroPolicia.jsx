@@ -6,7 +6,8 @@
     ShieldCheckIcon,
   } from "@heroicons/react/24/solid";
 
-  const API_URL = import.meta.env.VITE_API_URL_LOCAL;
+  const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+
 
   const RegistroPolicia = () => {
     const [formData, setFormData] = useState({
