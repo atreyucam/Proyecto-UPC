@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
-// import { API_URL } from "@env"; // Importar del .env
 const UserContext = createContext();
 
 import Constants from 'expo-constants';

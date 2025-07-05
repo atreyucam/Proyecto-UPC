@@ -6,7 +6,7 @@ export default {
     slug: "Seguridad_Policial",
     version: "1.0.0",
     extra: {
-      API_URL: process.env.API_URL || "http://192.168.0.6:3000"
+      API_URL: process.env.API_URL || "http://34.16.26.53:3000"
     },
     // ⏬ todo lo demás igual que en tu app.json
   }

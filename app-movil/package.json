@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "main": "expo/AppEntry.js",
   "scripts": {
-    "start:dev": "cross-env API_ENDPOINT=http://192.168.0.11:3000 expo start --clear",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "start:prod": "cross-env API_ENDPOINT=https://backend-upc.onrender.com expo start --clear"
+    "start:prod": "cross-env expo start --clear"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
