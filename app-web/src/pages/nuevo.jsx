@@ -3,7 +3,8 @@ import axios from "axios";
 import { FiX, FiShield, FiUsers, FiUserPlus, FiAlertCircle } from "react-icons/fi";
 import { motion } from "framer-motion";
 
-const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+  const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL;
+
 
 const Home3 = () => {
   const [successMessage, setSuccessMessage] = useState("");

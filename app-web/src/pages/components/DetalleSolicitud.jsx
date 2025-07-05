@@ -4,7 +4,8 @@ import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import EstadoBadge from "./EstadoBadge";
-const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+  const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL;
+
 
 
 const DetalleSolicitud = () => {

@@ -7,7 +7,8 @@ import Button from "./components/Button";
 import EstadoBadge from "./components/EstadoBadge";
 
 // Definir la URL de la API
-const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+  const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL;
+
 
 // Opciones de períodos predefinidos
 const PERIODOS = [

@@ -6,7 +6,8 @@ import {
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+  const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL;
+
 
 const ResumenGeneral = () => {
   const [data, setData] = useState(null);

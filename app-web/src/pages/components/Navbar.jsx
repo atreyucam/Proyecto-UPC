@@ -22,7 +22,8 @@ import { useEffect, useState } from "react";
 import socket from "../../services/socket";
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+  const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL;
+
 
 export function DashboardNavbar() {
     // Control del estado de la barra lateral

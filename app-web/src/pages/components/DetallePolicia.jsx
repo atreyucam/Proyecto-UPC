@@ -3,7 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import {FiEye } from "react-icons/fi";
 import axios from "axios";
 import EstadoBadge from "./EstadoBadge"; // Importa el componente
-const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+  const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL;
+
 
 
 const PoliciaDetail = () => {

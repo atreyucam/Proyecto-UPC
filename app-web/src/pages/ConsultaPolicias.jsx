@@ -4,7 +4,8 @@ import { FiCheckCircle, FiEdit, FiTrash, FiSave, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import EstadoBadge from "./components/EstadoBadge"; // Importa el componente
 import socket from "../services/socket"; // 📡 Importar socket.io
-const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL_LOCAL;
+  const API_URL = import.meta.env.VITE_API_URL_PROD || import.meta.env.VITE_API_URL;
+
 
 
 const ConsultaPolicias = () => {
